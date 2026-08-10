@@ -172,17 +172,20 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                        
                         <div className="logo-area">
                             {/* Logo and Partner Branding Area */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-                                <Link to="/" className="brand-logo" style={{ display: 'flex', alignItems: 'center' }}>
-                                    <img src="/WhatsApp%20Image%202026-04-15%20at%204.49.39%20PM.jpeg" alt="Logo" style={{ height: '40px', width: 'auto', objectFit: 'contain', display: 'block' }} />
+                            <div className="header-branding">
+                                <Link to="/" className="brand-logo" aria-label="CaseProz Home">
+                                    <img
+                                        src="/WhatsApp%20Image%202026-04-15%20at%204.49.39%20PM.jpeg"
+                                        alt="CaseProz logo"
+                                        className="header-logo-img"
+                                    />
                                 </Link>
-                                <div style={{ height: '32px', width: '1.5px', background: '#e0e0e0', margin: '0 8px' }}></div>
+                                <div className="brand-divider" aria-hidden="true"></div>
                                 <button
                                     className="partner-logo"
                                     onClick={() => navigate('/')}
                                     onMouseDown={e => e.preventDefault()} // Prevents focus border
                                     type="button"
-                                    style={{ fontWeight: 600, fontSize: '1.1rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0, margin: 0, color: '#222', display: 'flex', alignItems: 'center' }}
                                 >
                                     ANKER
                                 </button>
@@ -282,7 +285,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                         {/* Icons Area */}
                         <div className="actions-area">
                             <div
-                                className="action-ic"
+                                className="action-ic hide-on-mobile"
                                 title="Wishlist"
                                 role="button"
                                 tabIndex={0}
@@ -353,7 +356,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     )}
                                 </div>
                             ) : (
-                                <Link to="/login" className="login-pill">
+                                <Link to="/login" className="login-pill hide-on-mobile">
                                     <i className="far fa-user"></i> LOGIN
                                 </Link>
                             )}
@@ -386,7 +389,9 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                 value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
                             />
-                            <button type="submit">Go</button>
+                            <button type="submit" aria-label="Search">
+                                <i className="fas fa-arrow-right"></i>
+                            </button>
                         </form>
                     </div>
                 </div>

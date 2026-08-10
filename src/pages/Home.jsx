@@ -12,6 +12,7 @@ import { useSiteConfig } from '../context/SiteConfigContext';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
+import { trackEvent } from '../utils/analytics';
 
 const homeBrands = [
     'Anker',
@@ -51,6 +52,8 @@ const Home = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showMobileCta, setShowMobileCta] = useState(false);
+    const [mobileCtaTracked, setMobileCtaTracked] = useState(false);
     const { config } = useSiteConfig();
 
     useEffect(() => {
@@ -72,6 +75,46 @@ const Home = () => {
 
         fetchProducts();
     }, []);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const isMobile = window.innerWidth <= 768;
+            if (!isMobile) {
+                setShowMobileCta(false);
+                return;
+            }
+            setShowMobileCta(window.scrollY > 260);
+        };
+
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onScroll);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (showMobileCta && !mobileCtaTracked) {
+            trackEvent('home_mobile_cta_shown', {
+                page: 'home',
+                section: 'mobile_cta',
+                label: 'shown_after_scroll',
+                metadata: { scrollThreshold: 260 },
+            });
+            setMobileCtaTracked(true);
+        }
+    }, [showMobileCta, mobileCtaTracked]);
+
+    const trackHomeClick = (eventName, section, label, metadata = {}) => {
+        trackEvent(eventName, {
+            page: 'home',
+            section,
+            label,
+            metadata,
+        });
+    };
 
     const featured = products.slice(0, 16);
     const onSale = products.filter((p) => p.onSale).slice(0, 8);
@@ -98,6 +141,14 @@ const Home = () => {
         .slice(0, 8);
 
     const featuredByFlag = products.filter((p) => p.isFeatured).slice(0, 8);
+    const mostLoved = [...products]
+        .filter((p) => p.stock > 0)
+        .sort((a, b) => {
+            const aScore = (a.isFeatured ? 2 : 0) + (a.onSale ? 1 : 0) + (typeof a.stock === 'number' ? Math.max(0, 10 - a.stock) : 0);
+            const bScore = (b.isFeatured ? 2 : 0) + (b.onSale ? 1 : 0) + (typeof b.stock === 'number' ? Math.max(0, 10 - b.stock) : 0);
+            return bScore - aScore;
+        })
+        .slice(0, 8);
 
     const budgetBrackets = [
         { id: 'under-50k', label: 'Under KES 50,000', min: 0, max: 50000 },
@@ -259,6 +310,123 @@ const Home = () => {
             )}
 
             <HomeSlider />
+            <section className="home-trust-strip">
+                <div className="container home-trust-grid">
+                    <button
+                        type="button"
+                        className="home-trust-item"
+                        onClick={() => trackHomeClick('home_trust_click', 'trust_strip', 'authorized_reseller')}
+                    >
+                        <i className="fas fa-shield-check"></i>
+                        <span>Authorized Anker &amp; Soundcore reseller</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="home-trust-item"
+                        onClick={() => trackHomeClick('home_trust_click', 'trust_strip', 'same_day_delivery')}
+                    >
+                        <i className="fas fa-truck-fast"></i>
+                        <span>Same-day Nairobi delivery on early orders</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="home-trust-item"
+                        onClick={() => trackHomeClick('home_trust_click', 'trust_strip', 'secure_checkout')}
+                    >
+                        <i className="fas fa-lock"></i>
+                        <span>Secure checkout with trusted payments</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="home-trust-item"
+                        onClick={() => trackHomeClick('home_trust_click', 'trust_strip', 'easy_returns_support')}
+                    >
+                        <i className="fas fa-rotate-left"></i>
+                        <span>Easy returns and responsive support</span>
+                    </button>
+                </div>
+            </section>
+
+            <section className="home-quick-shop container">
+                <div className="section-header">
+                    <div className="title-area">
+                        <span className="subtitle">START SHOPPING FAST</span>
+                        <h2 className="main-title">Jump Into What You Need</h2>
+                        <p className="section-kicker">
+                            Choose your brand, budget, or hottest picks in one tap.
+                        </p>
+                    </div>
+                </div>
+                <div className="home-quick-shop-grid">
+                    <div className="home-quick-card">
+                        <p className="home-quick-label">Shop by brand</p>
+                        <h3>Trusted Originals</h3>
+                        <div className="home-quick-actions">
+                            <Link
+                                to="/search?brand=Anker"
+                                className="home-quick-pill"
+                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_brand', 'anker')}
+                            >
+                                Anker
+                            </Link>
+                            <Link
+                                to="/search?brand=Soundcore"
+                                className="home-quick-pill"
+                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_brand', 'soundcore')}
+                            >
+                                Soundcore
+                            </Link>
+                            <Link
+                                to="/search?brand=Samsung"
+                                className="home-quick-pill"
+                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_brand', 'samsung')}
+                            >
+                                Samsung
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="home-quick-card">
+                        <p className="home-quick-label">Shop by budget</p>
+                        <h3>Smart Price Bands</h3>
+                        <div className="home-quick-actions">
+                            <Link
+                                to="/search?maxPrice=2000"
+                                className="home-quick-pill"
+                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_budget', 'under_2000')}
+                            >
+                                Under KSh 2,000
+                            </Link>
+                            <Link
+                                to="/search?minPrice=2000&maxPrice=5000"
+                                className="home-quick-pill"
+                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_budget', '2000_5000')}
+                            >
+                                KSh 2,000 - 5,000
+                            </Link>
+                            <Link
+                                to="/search?minPrice=5000"
+                                className="home-quick-pill"
+                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_budget', '5000_plus')}
+                            >
+                                KSh 5,000+
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="home-quick-card home-quick-card-highlight">
+                        <p className="home-quick-label">Need inspiration?</p>
+                        <h3>See what everyone is buying</h3>
+                        <p className="home-quick-copy">Browse trending picks and best deals curated by the CaseProz team.</p>
+                        <Link
+                            to="/search?sort=newest"
+                            className="home-quick-cta"
+                            onClick={() => trackHomeClick('home_quick_cta_click', 'quick_shop_trending', 'explore_trending')}
+                        >
+                            Explore trending now <ChevronRight size={14} />
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
             <FeatureStats />
             <CategoryShowcase />
             <PromoBanners />
@@ -311,7 +479,11 @@ const Home = () => {
                         <span className="subtitle">TRENDING</span>
                         <h2 className="main-title">Featured Products</h2>
                     </div>
-                    <Link to="/search" className="view-all">
+                    <Link
+                        to="/search"
+                        className="view-all"
+                        onClick={() => trackHomeClick('home_section_cta_click', 'featured_products', 'shop_all')}
+                    >
                         Shop All <ChevronRight size={16} />
                     </Link>
                 </div>
@@ -326,6 +498,32 @@ const Home = () => {
                     </div>
                 )}
             </section>
+
+            {!loading && mostLoved.length > 0 && (
+                <section className="home-layer-section container">
+                    <div className="section-header">
+                        <div className="title-area">
+                            <span className="subtitle">MOST LOVED</span>
+                            <h2 className="main-title">Most Bought This Week</h2>
+                            <p className="section-kicker">
+                                Fast-moving products shoppers keep picking first.
+                            </p>
+                        </div>
+                        <Link
+                            to="/search?sort=newest"
+                            className="view-all"
+                            onClick={() => trackHomeClick('home_section_cta_click', 'most_bought_week', 'see_trending')}
+                        >
+                            See what&apos;s trending <ChevronRight size={16} />
+                        </Link>
+                    </div>
+                    <div className="product-grid">
+                        {mostLoved.map((product) => (
+                            <ProductCard key={product._id} product={product} />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* New arrivals */}
             {!loading && latest.length > 0 && (
@@ -352,7 +550,11 @@ const Home = () => {
                             <span className="subtitle">HOT DEALS</span>
                             <h2 className="main-title">On Sale Right Now</h2>
                         </div>
-                        <Link to="/search?sort=newest" className="view-all">
+                        <Link
+                            to="/search?sort=newest"
+                            className="view-all"
+                            onClick={() => trackHomeClick('home_section_cta_click', 'on_sale', 'view_more_deals')}
+                        >
                             View More Deals <ChevronRight size={16} />
                         </Link>
                     </div>
@@ -694,6 +896,27 @@ const Home = () => {
                     )}
                 </section>
             ))}
+
+            {showMobileCta && (
+                <div className="home-mobile-sticky-cta" role="region" aria-label="Quick mobile actions">
+                    <Link
+                        to="/search"
+                        className="home-mobile-cta-btn home-mobile-cta-btn-secondary"
+                        onClick={() => trackHomeClick('home_mobile_cta_click', 'mobile_cta', 'open_search')}
+                    >
+                        <i className="fas fa-search"></i>
+                        Open Search
+                    </Link>
+                    <Link
+                        to="/search?brand=Anker"
+                        className="home-mobile-cta-btn"
+                        onClick={() => trackHomeClick('home_mobile_cta_click', 'mobile_cta', 'shop_by_brand_anker')}
+                    >
+                        <i className="fas fa-bolt"></i>
+                        Shop by Brand
+                    </Link>
+                </div>
+            )}
         </div>
     );
 };
