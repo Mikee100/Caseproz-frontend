@@ -15,6 +15,23 @@ const ProductList = () => {
     const [bulkPriceMode, setBulkPriceMode] = useState('increasePercent');
     const [bulkUpdating, setBulkUpdating] = useState(false);
     const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const filteredProducts = normalizedQuery
+        ? products.filter((product) => {
+            const searchable = [
+                product.name,
+                product.category,
+                product.subCategory,
+                product._id,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+            return searchable.includes(normalizedQuery);
+        })
+        : products;
 
     const fetchProducts = async () => {
         try {
@@ -53,10 +70,15 @@ const ProductList = () => {
     };
 
     const toggleSelectAll = () => {
-        if (selectedProductIds.length === products.length) {
-            setSelectedProductIds([]);
+        const visibleProductIds = filteredProducts.map((p) => p._id);
+        const allVisibleSelected =
+            visibleProductIds.length > 0 &&
+            visibleProductIds.every((id) => selectedProductIds.includes(id));
+
+        if (allVisibleSelected) {
+            setSelectedProductIds((prev) => prev.filter((id) => !visibleProductIds.includes(id)));
         } else {
-            setSelectedProductIds(products.map((p) => p._id));
+            setSelectedProductIds((prev) => Array.from(new Set([...prev, ...visibleProductIds])));
         }
     };
 
@@ -280,7 +302,7 @@ const ProductList = () => {
                     {selectedProductIds.length > 0 ? (
                         <span>{selectedProductIds.length} selected</span>
                     ) : (
-                        <span>{products.length} products</span>
+                        <span>{filteredProducts.length} products</span>
                     )}
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -383,6 +405,64 @@ const ProductList = () => {
                 </div>
             </div>
 
+            <div
+                style={{
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                }}
+            >
+                <div style={{ position: 'relative', width: '100%', maxWidth: '420px' }}>
+                    <i
+                        className="fas fa-search"
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '12px',
+                            transform: 'translateY(-50%)',
+                            color: '#9ca3af',
+                            fontSize: '13px',
+                        }}
+                    ></i>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search by name, category, subcategory, or ID"
+                        style={{
+                            width: '100%',
+                            padding: '10px 12px 10px 36px',
+                            borderRadius: '10px',
+                            border: '1px solid #e5e7eb',
+                            fontSize: '13px',
+                            color: '#111827',
+                            outline: 'none',
+                            backgroundColor: '#fff',
+                        }}
+                    />
+                </div>
+                {searchQuery && (
+                    <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        style={{
+                            padding: '10px 12px',
+                            borderRadius: '10px',
+                            border: '1px solid #e5e7eb',
+                            backgroundColor: '#fff',
+                            color: '#4b5563',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        Clear
+                    </button>
+                )}
+            </div>
+
             {error && <div style={{ color: '#dc2626', marginBottom: '20px' }}>{error}</div>}
 
             <div style={styles.tableContainer}>
@@ -392,7 +472,10 @@ const ProductList = () => {
                             <th style={styles.th}>
                                 <input
                                     type="checkbox"
-                                    checked={products.length > 0 && selectedProductIds.length === products.length}
+                                    checked={
+                                        filteredProducts.length > 0 &&
+                                        filteredProducts.every((product) => selectedProductIds.includes(product._id))
+                                    }
                                     onChange={toggleSelectAll}
                                 />
                             </th>
@@ -406,7 +489,7 @@ const ProductList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {products.map((product) => {
+                        {filteredProducts.map((product) => {
                             const isSelected = selectedProductIds.includes(product._id);
                             return (
                                 <tr key={product._id} style={{ transition: 'background 0.2s', backgroundColor: isSelected ? '#f9fafb' : 'transparent' }}>
@@ -469,6 +552,21 @@ const ProductList = () => {
                                 </tr>
                             );
                         })}
+                        {filteredProducts.length === 0 && (
+                            <tr>
+                                <td
+                                    colSpan="8"
+                                    style={{
+                                        ...styles.td,
+                                        textAlign: 'center',
+                                        color: '#6b7280',
+                                        padding: '28px 24px',
+                                    }}
+                                >
+                                    No products matched your search.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

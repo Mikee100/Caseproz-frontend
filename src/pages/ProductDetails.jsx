@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/apiClient';
 import ProductDescriptionSection from '../components/ProductDescriptionSection';
 import ProductCard from '../components/ProductCard';
+import SeoMeta from '../components/SeoMeta';
 
 const buildVariantDisplayName = (variant) => {
     if (!variant) return 'Option';
@@ -205,10 +206,14 @@ const ProductDetails = () => {
 
     return (
         <div className="product-details-page container">
+            <SeoMeta
+                title={pageTitle}
+                description={metaDescription}
+                canonicalPath={`/product/${product.slug}`}
+                image={mainImageUrl}
+                type="product"
+            />
             <Helmet>
-                <title>{pageTitle}</title>
-                <meta name="description" content={metaDescription} />
-                {mainImageUrl && <meta property="og:image" content={mainImageUrl} />}
                 <script type="application/ld+json">
                     {JSON.stringify(structuredData)}
                 </script>

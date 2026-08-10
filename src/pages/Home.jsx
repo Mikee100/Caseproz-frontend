@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
+import SeoMeta from '../components/SeoMeta';
 
 const homeBrands = [
     'Anker',
@@ -184,7 +185,35 @@ const Home = () => {
               ];
 
     const productCount = products.length;
+    const organizationSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'CaseProz Kenya',
+        url: 'https://caseproz.vercel.app',
+        logo: 'https://caseproz.vercel.app/favicon.ico',
+        sameAs: ['https://www.instagram.com/caseproz/'],
+        contactPoint: [
+            {
+                '@type': 'ContactPoint',
+                telephone: '+254700000000',
+                contactType: 'customer service',
+                areaServed: 'KE',
+                availableLanguage: ['en'],
+            },
+        ],
+    };
 
+    const websiteSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'CaseProz Kenya',
+        url: 'https://caseproz.vercel.app',
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://caseproz.vercel.app/search?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+        },
+    };
     // --- Fetch homepage sections from backend ---
     const [homeSections, setHomeSections] = useState([]);
     const [sectionsLoading, setSectionsLoading] = useState(true);
@@ -208,22 +237,20 @@ const Home = () => {
 
     return (
         <div className="home-page">
+            <SeoMeta
+                title="CaseProz | Premium Tech, Cases & Accessories in Kenya"
+                description="Shop premium phone cases, chargers, audio, power and accessories at CaseProz. Fast delivery across Kenya and curated picks from brands like Anker, Soundcore, Samsung and more."
+                keywords="CaseProz, phone cases Kenya, Anker Kenya, chargers, power banks, headphones, electronics accessories Nairobi"
+                canonicalPath="/"
+                noIndex={productCount <= 0}
+            />
             <Helmet>
-                <title>CaseProz | Premium Tech, Cases & Accessories in Kenya</title>
-                <meta
-                    name="description"
-                    content="Shop premium phone cases, chargers, audio, power and accessories at CaseProz. Fast delivery across Kenya and curated picks from brands like Anker, Soundcore, Samsung and more."
-                />
-                <meta
-                    name="keywords"
-                    content="CaseProz, phone cases Kenya, Anker Kenya, chargers, power banks, headphones, electronics accessories Nairobi"
-                />
-                {productCount > 0 && (
-                    <meta
-                        name="robots"
-                        content="index,follow"
-                    />
-                )}
+                <script type="application/ld+json">
+                    {JSON.stringify(organizationSchema)}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(websiteSchema)}
+                </script>
             </Helmet>
             {error && (
                 <div className="container" style={{ marginTop: '16px' }}>

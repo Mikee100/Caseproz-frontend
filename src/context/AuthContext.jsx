@@ -12,12 +12,22 @@ export const AuthProvider = ({ children }) => {
     // On app load, hydrate user from server using cookie-based auth
     useEffect(() => {
         const loadProfile = async () => {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                setUser(null);
+                setInitializing(false);
+                return;
+            }
+
             try {
                 const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/users/profile`);
                 setUser(data);
             } catch (err) {
                 // Not logged in or profile fetch failed; start with no user
                 setUser(null);
+                if (err instanceof ApiError && err.status === 401) {
+                    localStorage.removeItem('authToken');
+                }
             } finally {
                 setInitializing(false);
             }

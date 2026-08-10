@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/ProductCard';
 import SkeletonProduct from '../components/SkeletonProduct';
 import SearchFilters from '../components/SearchFilters';
 import { SlidersHorizontal, X } from 'lucide-react';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
+import SeoMeta from '../components/SeoMeta';
 
 const POPULAR_BRANDS = ['Apple', 'Samsung', 'Sony', 'Dell', 'ASUS', 'HP', 'Lenovo'];
 const POPULAR_CATEGORY_QUERIES = [
@@ -41,6 +41,25 @@ const Search = () => {
     const maxPriceParam = queryParams.get('maxPrice') || '';
     const sortParamFromUrl = queryParams.get('sort') || '';
     const hasQuery = q.trim().length > 0;
+
+    // When URL carries no explicit filter params, clear any stale in-memory filters.
+    // This prevents hidden state from previous searches from forcing zero results.
+    useEffect(() => {
+        const hasExplicitFiltersInUrl =
+            !!categoryParam ||
+            !!subCategoryParam ||
+            !!brandParam ||
+            !!minPriceParam ||
+            !!maxPriceParam;
+
+        if (!hasExplicitFiltersInUrl) {
+            setSelectedCategory('');
+            setSelectedBrand('');
+            setPriceRange((prev) =>
+                prev.min === '' && prev.max === '' ? prev : { min: '', max: '' }
+            );
+        }
+    }, [categoryParam, subCategoryParam, brandParam, minPriceParam, maxPriceParam]);
 
     // Keep selectedCategory in sync when landing on URLs like /search?category=...
     useEffect(() => {
@@ -252,11 +271,12 @@ const Search = () => {
 
     return (
         <div className="search-page">
-            <Helmet>
-                <title>{pageTitle}</title>
-                <meta name="description" content={metaDescription} />
-                {!hasAnyFilters && <meta name="robots" content="noindex,follow" />}
-            </Helmet>
+            <SeoMeta
+                title={pageTitle}
+                description={metaDescription}
+                canonicalPath={`/search${location.search}`}
+                noIndex={!hasAnyFilters}
+            />
             <section className="search-hero">
                 <div className="container">
                     <div className="search-hero-content">

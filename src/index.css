@@ -160,7 +160,8 @@
   --text-secondary: #777;
   --font-main: 'Poppins', sans-serif;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --max-width: 1400px;
+  --max-width: 1200px;
+  --page-gutter: clamp(12px, 2.2vw, 28px);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -188,13 +189,7 @@ body {
 }
 
 main {
-  padding: 0 12px;
-}
-
-@media (max-width: 768px) {
-  main {
-    padding: 0 8px;
-  }
+  padding: 0 var(--page-gutter);
 }
 
 .cart-page {
@@ -239,9 +234,9 @@ img {
 }
 
 .container {
-  max-width: var(--max-width);
+  width: min(var(--max-width), 100%);
   margin: 0 auto;
-  padding: 0 30px;
+  padding: 0 var(--page-gutter);
 }
 
 button {

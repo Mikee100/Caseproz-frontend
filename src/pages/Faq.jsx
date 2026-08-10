@@ -1,9 +1,62 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
+const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+        {
+            '@type': 'Question',
+            name: 'How long does delivery take?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'For Nairobi and nearby areas, most orders placed before 3:00pm are delivered the same day. Other major towns usually take 1 business day, and up-country deliveries take 1 to 3 business days depending on courier route.',
+            },
+        },
+        {
+            '@type': 'Question',
+            name: 'How much is the delivery fee?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Delivery fees depend on your location. You can view the exact amount on the cart and checkout pages and get a full breakdown on the Delivery Information page.',
+            },
+        },
+        {
+            '@type': 'Question',
+            name: 'What payment methods do you accept?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'CaseProz supports M-Pesa, major debit and credit cards, and bank transfer. Cash on delivery may be available for selected locations and order types.',
+            },
+        },
+        {
+            '@type': 'Question',
+            name: 'What is your returns policy?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Returns are accepted for wrong items, items damaged on arrival, and products not as described. Some restrictions apply for opened accessories and hygiene-sensitive items.',
+            },
+        },
+        {
+            '@type': 'Question',
+            name: 'How long do refunds take?',
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'M-Pesa refunds typically take 24 to 48 hours once approved. Card and bank refunds may take 3 to 7 business days depending on your provider.',
+            },
+        },
+    ],
+};
 
 const Faq = () => {
     return (
         <div className="faq-page">
+            <Helmet>
+                <script type="application/ld+json">
+                    {JSON.stringify(faqSchema)}
+                </script>
+            </Helmet>
             <section className="faq-hero">
                 <div className="container">
                     <p className="faq-badge">HELP CENTER</p>

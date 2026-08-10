@@ -80,8 +80,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
 
         const handler = setTimeout(() => {
             const trimmed = searchKeyword.trim();
-            const params = new URLSearchParams(location.search);
-            const currentQ = params.get('q') || '';
+            const currentQ = new URLSearchParams(location.search).get('q') || '';
 
             // Require at least 2 characters for auto-search (but allow clearing)
             if (trimmed && trimmed.length < 2) {
@@ -93,16 +92,9 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                 return;
             }
 
-            if (trimmed) {
-                params.set('q', trimmed);
-            } else {
-                params.delete('q');
-            }
-            // Reset page when search term changes
-            params.delete('page');
-
-            const searchString = params.toString();
-            const targetPath = '/search' + (searchString ? `?${searchString}` : '');
+            const targetPath = trimmed
+                ? `/search?q=${encodeURIComponent(trimmed)}`
+                : '/search';
 
             navigate(targetPath, { replace: true });
         }, 600);
@@ -113,22 +105,15 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     const handleSearch = (e) => {
         e.preventDefault();
         const trimmed = searchKeyword.trim();
-        const params = new URLSearchParams(location.search);
 
-        // If nothing typed and nothing in URL, do nothing
-        if (!trimmed && !params.get('q')) {
+        // If nothing typed and user is already on a clean search page, do nothing
+        if (!trimmed && location.pathname === '/search' && !location.search) {
             return;
         }
 
-        if (trimmed) {
-            params.set('q', trimmed);
-        } else {
-            params.delete('q');
-        }
-        params.delete('page');
-
-        const searchString = params.toString();
-        const targetPath = '/search' + (searchString ? `?${searchString}` : '');
+        const targetPath = trimmed
+            ? `/search?q=${encodeURIComponent(trimmed)}`
+            : '/search';
         const replace = location.pathname === '/search';
 
         navigate(targetPath, { replace });

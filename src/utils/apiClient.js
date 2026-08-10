@@ -26,6 +26,10 @@ export const apiFetch = async (url, options = {}) => {
     try {
         response = await fetch(url, finalOptions);
     } catch (networkErr) {
+        // Preserve aborted requests so callers can handle cancellation gracefully.
+        if (networkErr?.name === 'AbortError') {
+            throw networkErr;
+        }
         throw new ApiError('Unable to reach the server. Please check your connection and try again.', {
             code: 'NETWORK_ERROR',
         });

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { slugify, matchesCategorySlug } from '../utils/categoryMap';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
+import SeoMeta from '../components/SeoMeta';
 
 const Category = () => {
     const { categoryName } = useParams();
@@ -50,13 +50,13 @@ const Category = () => {
 
     const pageTitle = `${formattedTitle} | CaseProz Kenya`;
     const metaDescription = `Browse ${formattedTitle} at CaseProz – curated tech, accessories and gadgets in Kenya.`;
-
     return (
         <div className="category-page container" style={{ padding: '40px 0' }}>
-            <Helmet>
-                <title>{pageTitle}</title>
-                <meta name="description" content={metaDescription} />
-            </Helmet>
+            <SeoMeta
+                title={pageTitle}
+                description={metaDescription}
+                canonicalPath={`/category/${categoryName}`}
+            />
             <div className="breadcrumb" style={{ marginBottom: '18px', color: '#666', fontSize: '14px' }}>
                 <Link to="/" style={{ color: '#E41E26', textDecoration: 'none' }}>Home</Link> /
                 <span style={{ marginLeft: '5px', fontWeight: 'bold' }}>{formattedTitle}</span>

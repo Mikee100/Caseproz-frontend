@@ -40,6 +40,7 @@ import OrderDetailsAdmin from './pages/Admin/OrderDetailsAdmin'
 import AdminCategoriesBrands from './pages/Admin/AdminCategoriesBrands'
 import HomeSections from './pages/Admin/HomeSections'
 import DeliveryRoutes from './pages/Admin/DeliveryRoutes'
+import RouteSeo from './components/RouteSeo'
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -61,6 +62,7 @@ function App() {
   return (
     <ErrorBoundary>
       <div className={`app ${isAuthRoute ? 'auth-layout' : ''} ${isAdminRoute ? 'admin-layout' : ''}`}>
+        {!isAdminRoute && <RouteSeo />}
         {!isAdminRoute && !isAuthRoute && (
           <Header isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
         )}
