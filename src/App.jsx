@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import MobileBottomNav from './components/MobileBottomNav'
 import CartDrawer from './components/CartDrawer'
 import Home from './pages/Home'
 import Cart from './pages/Cart'
@@ -112,9 +111,6 @@ function App() {
         {!isAdminRoute && !isAuthRoute && <Footer />}
         {!isAdminRoute && !isAuthRoute && (
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-        )}
-        {!isAdminRoute && !isAuthRoute && (
-          <MobileBottomNav onCartOpen={() => setIsCartOpen(true)} />
         )}
       </div>
     </ErrorBoundary>

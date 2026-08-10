@@ -55,6 +55,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
 
     // Helper for easier access
     const BRANDS_LIST = dynamicBrands.map(b => typeof b === 'string' ? b : b.name);
+    const mobileDrawerBrands = BRANDS_LIST.slice(0, 5);
 
     useEffect(() => {
         if (isModalOpen || isMobileMenuOpen || isCartOpen) {
@@ -441,13 +442,14 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                 </button>
                             </li>
                             <li>
-                                <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: '#9ca3af' }}>
+                                <span className="drawer-section-label">
                                     Shop by brand
                                 </span>
                             </li>
-                            {BRANDS_LIST.map((brand) => (
+                            {mobileDrawerBrands.map((brand) => (
                                 <li key={brand}>
                                     <button
+                                        className="drawer-brand-link"
                                         onClick={() => {
                                             setIsMobileMenuOpen(false);
                                             navigate(`/search?brand=${encodeURIComponent(brand)}`);
@@ -457,6 +459,17 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     </button>
                                 </li>
                             ))}
+                            {BRANDS_LIST.length > mobileDrawerBrands.length && (
+                                <li>
+                                    <Link
+                                        to="/search"
+                                        className="drawer-brand-all"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <i className="fas fa-layer-group"></i> All brands
+                                    </Link>
+                                </li>
+                            )}
                             <li><Link to="/favourites" onClick={() => setIsMobileMenuOpen(false)}><i className="far fa-heart"></i> WISHLIST {favourites.length > 0 && <span className="drawer-badge">{favourites.length}</span>}</Link></li>
                             {user ? (
                                 <>
