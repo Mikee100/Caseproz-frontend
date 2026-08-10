@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/ProductCard';
 import SkeletonProduct from '../components/SkeletonProduct';
 import SearchFilters from '../components/SearchFilters';
@@ -269,6 +270,18 @@ const Search = () => {
         metaDescription = `Discover ${brandParam} products at CaseProz – premium tech, power and accessories.`;
     }
 
+    const searchListSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: hasQuery ? `Search results for ${q}` : 'Filtered products',
+        itemListElement: products.slice(0, 24).map((product, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            url: `https://caseproz.vercel.app/product/${product.slug}`,
+            name: product.name,
+        })),
+    };
+
     return (
         <div className="search-page">
             <SeoMeta
@@ -277,6 +290,13 @@ const Search = () => {
                 canonicalPath={`/search${location.search}`}
                 noIndex={!hasAnyFilters}
             />
+            {hasAnyFilters && products.length > 0 && (
+                <Helmet>
+                    <script type="application/ld+json">
+                        {JSON.stringify(searchListSchema)}
+                    </script>
+                </Helmet>
+            )}
             <section className="search-hero">
                 <div className="container">
                     <div className="search-hero-content">

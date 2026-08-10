@@ -153,6 +153,17 @@ const routeMeta = (pathname) => {
 
 const RouteSeo = () => {
     const location = useLocation();
+
+    // These routes manage their own dynamic SEO metadata at page level.
+    if (
+        location.pathname === '/' ||
+        location.pathname === '/search' ||
+        location.pathname.startsWith('/category/') ||
+        location.pathname.startsWith('/product/')
+    ) {
+        return null;
+    }
+
     const meta = routeMeta(location.pathname);
 
     return (

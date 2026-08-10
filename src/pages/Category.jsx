@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { slugify, matchesCategorySlug } from '../utils/categoryMap';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
@@ -50,6 +51,37 @@ const Category = () => {
 
     const pageTitle = `${formattedTitle} | CaseProz Kenya`;
     const metaDescription = `Browse ${formattedTitle} at CaseProz – curated tech, accessories and gadgets in Kenya.`;
+
+    const categoryListSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: `${formattedTitle} products`,
+        itemListElement: products.slice(0, 24).map((product, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            url: `https://caseproz.vercel.app/product/${product.slug}`,
+            name: product.name,
+        })),
+    };
+
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://caseproz.vercel.app/',
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: formattedTitle,
+                item: `https://caseproz.vercel.app/category/${categoryName}`,
+            },
+        ],
+    };
     return (
         <div className="category-page container" style={{ padding: '40px 0' }}>
             <SeoMeta
@@ -57,6 +89,16 @@ const Category = () => {
                 description={metaDescription}
                 canonicalPath={`/category/${categoryName}`}
             />
+            <Helmet>
+                {products.length > 0 && (
+                    <script type="application/ld+json">
+                        {JSON.stringify(categoryListSchema)}
+                    </script>
+                )}
+                <script type="application/ld+json">
+                    {JSON.stringify(breadcrumbSchema)}
+                </script>
+            </Helmet>
             <div className="breadcrumb" style={{ marginBottom: '18px', color: '#666', fontSize: '14px' }}>
                 <Link to="/" style={{ color: '#E41E26', textDecoration: 'none' }}>Home</Link> /
                 <span style={{ marginLeft: '5px', fontWeight: 'bold' }}>{formattedTitle}</span>

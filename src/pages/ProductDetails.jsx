@@ -204,6 +204,33 @@ const ProductDetails = () => {
         },
     };
 
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://caseproz.vercel.app/',
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: product.category || 'Category',
+                item: product.category
+                    ? `https://caseproz.vercel.app/search?category=${encodeURIComponent(product.category)}`
+                    : 'https://caseproz.vercel.app/search',
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: product.name,
+                item: `https://caseproz.vercel.app/product/${product.slug}`,
+            },
+        ],
+    };
+
     return (
         <div className="product-details-page container">
             <SeoMeta
@@ -216,6 +243,9 @@ const ProductDetails = () => {
             <Helmet>
                 <script type="application/ld+json">
                     {JSON.stringify(structuredData)}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(breadcrumbSchema)}
                 </script>
             </Helmet>
             <div className="pd-layout">
