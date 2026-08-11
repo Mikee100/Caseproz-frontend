@@ -5,6 +5,7 @@ import { slugify, matchesCategorySlug } from '../utils/categoryMap';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
+import ProductCard from '../components/ProductCard';
 
 const Category = () => {
     const { categoryName } = useParams();
@@ -18,9 +19,14 @@ const Category = () => {
             setError('');
             try {
                 const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products`);
+                const allProducts = Array.isArray(data)
+                    ? data
+                    : Array.isArray(data?.products)
+                        ? data.products
+                        : [];
 
                 const targetSlug = slugify(categoryName || '');
-                const filtered = data.filter((p) => matchesCategorySlug(p, targetSlug));
+                const filtered = allProducts.filter((p) => matchesCategorySlug(p, targetSlug));
 
                 setProducts(filtered);
             } catch (err) {
@@ -116,56 +122,9 @@ const Category = () => {
                     <Link to="/" style={{ color: '#E41E26', textDecoration: 'none', fontWeight: 'bold', marginTop: '20px', display: 'inline-block' }}>Continue Shopping</Link>
                 </div>
             ) : (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '30px'
-                }}>
-                    {products.map(product => (
-                        <Link
-                            to={`/product/${product.slug}`}
-                            key={product._id}
-                            style={{ textDecoration: 'none', color: 'inherit' }}
-                        >
-                            <div className="product-card" style={{
-                                backgroundColor: 'white',
-                                padding: '20px',
-                                borderRadius: '16px',
-                                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-                                transition: 'transform 0.3s',
-                                height: '100%',
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}>
-                                <div style={{
-                                    width: '100%',
-                                    height: '240px',
-                                    marginBottom: '20px',
-                                    borderRadius: '12px',
-                                    overflow: 'hidden',
-                                    backgroundColor: '#f9f9f9'
-                                }}>
-                                    <img
-                                        src={product.images[0]}
-                                        alt={product.name}
-                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                    />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '10px', color: '#1a1a1a' }}>{product.name}</h3>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#E41E26' }}>
-                                            KSh {product.price.toLocaleString()}
-                                        </span>
-                                        {product.originalPrice > product.price && (
-                                            <span style={{ fontSize: '14px', textDecoration: 'line-through', color: '#999' }}>
-                                                KSh {product.originalPrice.toLocaleString()}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
+                <div className="product-grid">
+                    {products.map((product) => (
+                        <ProductCard key={product._id} product={product} />
                     ))}
                 </div>
             )}

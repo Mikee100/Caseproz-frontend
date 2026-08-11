@@ -20,6 +20,13 @@ const emptyCollection = () => ({
     query: '',
 });
 
+const toCsv = (arr) => (Array.isArray(arr) ? arr.join(', ') : '');
+const fromCsv = (value) =>
+    String(value || '')
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean);
+
 const SiteSettings = () => {
     const { user } = useAuth();
     const { config, setConfig } = useSiteConfig();
@@ -29,6 +36,7 @@ const SiteSettings = () => {
     const [promoBarLink, setPromoBarLink] = useState('');
     const [heroSlides, setHeroSlides] = useState([]);
     const [curatedCollections, setCuratedCollections] = useState([]);
+    const [homeShowcaseCategories, setHomeShowcaseCategories] = useState('');
     const [globalLowStockThreshold, setGlobalLowStockThreshold] = useState(5);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -54,6 +62,7 @@ const SiteSettings = () => {
                 ? config.curatedCollections
                 : []
         );
+        setHomeShowcaseCategories(toCsv(config.homeShowcaseCategories));
         setGlobalLowStockThreshold(
             typeof config.globalLowStockThreshold === 'number' ? config.globalLowStockThreshold : 5
         );
@@ -111,6 +120,7 @@ const SiteSettings = () => {
                 promoBarLink,
                 heroSlides,
                 curatedCollections,
+                homeShowcaseCategories: fromCsv(homeShowcaseCategories),
                 globalLowStockThreshold: Number(globalLowStockThreshold),
             };
 
@@ -208,7 +218,7 @@ const SiteSettings = () => {
                                 type="text"
                                 value={promoBarText}
                                 onChange={(e) => setPromoBarText(e.target.value)}
-                                placeholder="Same day delivery for all orders placed before 1pm."
+                                placeholder="Enter promo message"
                                 style={styles.input}
                             />
                             <label style={{ ...styles.label, marginTop: '10px' }}>Promo bar link (optional)</label>
@@ -235,6 +245,20 @@ const SiteSettings = () => {
                                 Applies to all products/variants unless a product overrides it.
                             </p>
                         </div>
+                    </div>
+
+                    <div style={{ marginTop: '16px' }}>
+                        <label style={styles.label}>Homepage Top Categories (comma separated)</label>
+                        <input
+                            type="text"
+                            value={homeShowcaseCategories}
+                            onChange={(e) => setHomeShowcaseCategories(e.target.value)}
+                            placeholder="iPhone Cases, Audio & Headphones, Phones & Tablets, Samsung Cases"
+                            style={styles.input}
+                        />
+                        <p style={{ marginTop: '6px', fontSize: '12px', color: '#6b7280' }}>
+                            These categories will be prioritized in the Top Categories block on homepage.
+                        </p>
                     </div>
                 </div>
 
