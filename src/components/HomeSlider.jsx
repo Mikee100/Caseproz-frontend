@@ -119,8 +119,8 @@ const HomeSlider = () => {
                                 <Link to={slides[current].link} className="btn-primary slider-btn">
                                     {slides[current].cta}
                                 </Link>
-                                <Link to="/search" className="btn-outline slider-btn-secondary slider-btn-secondary-desktop">
-                                    Learn More
+                                <Link to="/search" className="slider-text-link slider-btn-secondary-desktop">
+                                    Learn more <ChevronRight size={14} />
                                 </Link>
                             </div>
                         </motion.div>

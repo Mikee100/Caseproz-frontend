@@ -77,31 +77,24 @@ const ProductCard = ({ product, highlightQuery }) => {
                     <p className="product-category">
                         {highlightText(product.category || 'Electronics', highlightQuery)}
                     </p>
+                    <h3 className="product-title">
+                        {highlightText(product.name, highlightQuery)}
+                    </h3>
                     {primaryMeta && (
                         <p className="product-meta">
                             {highlightText(primaryMeta, highlightQuery)}
                         </p>
                     )}
-                    <h3 className="product-title">
-                        {highlightText(product.name, highlightQuery)}
-                    </h3>
                 </Link>
-                <div className="product-footer-animated">
-                    <div className="product-footer-layer product-footer-price">
-                        <div className="product-price">
-                            {product.originalPrice && (
-                                <span className="original-price">
-                                    Ksh {product.originalPrice.toLocaleString()}
-                                </span>
-                            )}
-                            <span className="current-price">
-                                Ksh {product.price.toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="product-footer-layer product-footer-readmore">
-                        <span className="product-readmore-pill">Read more...</span>
-                    </div>
+                <div className="product-price">
+                    {product.originalPrice && (
+                        <span className="original-price">
+                            Ksh {product.originalPrice.toLocaleString()}
+                        </span>
+                    )}
+                    <span className={`current-price ${product.onSale ? 'sale-price' : ''}`}>
+                        Ksh {product.price.toLocaleString()}
+                    </span>
                 </div>
             </div>
         </div>

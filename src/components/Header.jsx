@@ -132,40 +132,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     return (
         <>
             <header className="modern-header">
-                <div className="top-banner">
-                    <div className="container">
-                        {config && config.promoBarText ? (
-                            config.promoBarLink ? (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (config.promoBarLink.startsWith('http')) {
-                                            window.open(config.promoBarLink, '_blank');
-                                        } else {
-                                            navigate(config.promoBarLink);
-                                        }
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'inherit',
-                                        cursor: 'pointer',
-                                        padding: 0,
-                                        font: 'inherit',
-                                        textDecoration: 'underline',
-                                        textUnderlineOffset: '2px',
-                                    }}
-                                >
-                                    {config.promoBarText}
-                                </button>
-                            ) : (
-                                <p>{config.promoBarText}</p>
-                            )
-                        ) : (
-                            <p>Same day delivery for all orders placed before 1pm.</p>
-                        )}
-                    </div>
-                </div>
+               
 
                 <div className="main-nav-wrapper">
                     <div className="container header-grid">
@@ -188,7 +155,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     onMouseDown={e => e.preventDefault()} // Prevents focus border
                                     type="button"
                                 >
-                                    ANKER
+                             Anker 
                                 </button>
                             </div>
                         </div>

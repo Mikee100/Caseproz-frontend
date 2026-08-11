@@ -1,36 +1,87 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const categories = [
-    {
-        name: "Phones & Tablets",
-        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1780&auto=format&fit=crop",
-        count: "Explore Now",
-        color: "#fdf2f2"
-    },
-    {
-        name: "Computers & Laptops",
-        image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=2071&auto=format&fit=crop",
-        count: "View Items",
-        color: "#f0f7ff"
-    },
-    {
-        name: "Audio & Headphones",
-        image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=2065&auto=format&fit=crop",
-        count: "Top Picks",
-        color: "#f5f3ff"
-    },
-    {
-        name: "Gaming",
-        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop",
-        count: "Trending",
-        color: "#fdfcea"
-    }
-];
+import { apiFetch } from '../utils/apiClient';
+import { slugify } from '../utils/categoryMap';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 const CategoryShowcase = () => {
+    const [categories, setCategories] = useState([]);
+    const { config } = useSiteConfig();
+
+    useEffect(() => {
+        const loadCategoryCards = async () => {
+            try {
+                const [categoriesRes, productsRes] = await Promise.all([
+                    apiFetch(`${import.meta.env.VITE_API_URL}/api/categories`),
+                    apiFetch(`${import.meta.env.VITE_API_URL}/api/products`),
+                ]);
+
+                const categoryRows = Array.isArray(categoriesRes) ? categoriesRes : [];
+                const allProducts = Array.isArray(productsRes)
+                    ? productsRes
+                    : Array.isArray(productsRes?.products)
+                        ? productsRes.products
+                        : [];
+
+                const cards = categoryRows
+                    .map((cat) => {
+                        const catName = String(cat?.name || '').trim();
+                        if (!catName) return null;
+
+                        const productsInCategory = allProducts.filter(
+                            (p) => String(p?.category || '').toLowerCase() === catName.toLowerCase()
+                        );
+
+                        const coverImage = productsInCategory.find(
+                            (p) => Array.isArray(p.images) && p.images.length > 0 && p.images[0]
+                        )?.images?.[0] || '/placeholder-product.svg';
+
+                        return {
+                            name: catName,
+                            slug: slugify(catName),
+                            image: coverImage,
+                            countLabel: productsInCategory.length > 0 ? 'Explore' : 'View',
+                            detail: `${productsInCategory.length} products`,
+                            productCount: productsInCategory.length,
+                        };
+                    })
+                    .filter(Boolean)
+                    .sort((a, b) => b.productCount - a.productCount);
+
+                const preferredNames = Array.isArray(config?.homeShowcaseCategories)
+                    ? config.homeShowcaseCategories.map((n) => String(n || '').trim().toLowerCase()).filter(Boolean)
+                    : [];
+
+                let nextCards = cards;
+                if (preferredNames.length > 0) {
+                    const byName = new Map(cards.map((c) => [c.name.toLowerCase(), c]));
+                    const preferred = preferredNames
+                        .map((name) => byName.get(name))
+                        .filter(Boolean);
+                    const remainder = cards.filter(
+                        (card) => !preferredNames.includes(card.name.toLowerCase())
+                    );
+                    nextCards = [...preferred, ...remainder];
+                }
+
+                nextCards = nextCards.slice(0, 4);
+
+                setCategories(nextCards);
+            } catch (error) {
+                console.error('Failed to load dynamic category showcase:', error);
+                setCategories([]);
+            }
+        };
+
+        loadCategoryCards();
+    }, [config]);
+
+    if (categories.length === 0) {
+        return null;
+    }
+
     return (
         <section className="category-showcase container">
             <div className="section-header">
@@ -46,19 +97,19 @@ const CategoryShowcase = () => {
             <div className="category-grid">
                 {categories.map((cat, index) => (
                     <motion.div
-                        key={index}
+                        key={cat.slug || index}
                         className="category-card"
                         whileHover={{ y: -10 }}
                         transition={{ duration: 0.3 }}
                     >
-                        <Link to={`/category/${cat.name}`}>
+                        <Link to={`/category/${cat.slug}`}>
                             <div className="cat-image-wrapper">
                                 <img src={cat.image} alt={cat.name} />
-                                <div className="item-count">{cat.count}</div>
+                                <div className="item-count">{cat.countLabel}</div>
                             </div>
                             <div className="cat-info">
                                 <h3>{cat.name}</h3>
-                                <p>Great collection</p>
+                                <p>{cat.detail}</p>
                             </div>
                         </Link>
                     </motion.div>

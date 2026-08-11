@@ -23,12 +23,12 @@ const Footer = () => {
             <div className="container">
                 <div className="footer-grid">
                     <div className="footer-col">
-                        <h2 className="logo-text" style={{ color: '#fff', marginBottom: '25px' }}>CASEPROZ</h2>
+                        <h2 className="logo-text">CASEPROZ</h2>
                         <p>Kenya's coolest online shop for premium electronics, gadgets, and tech accessories. Experience same-day delivery and unbeatable service.</p>
-                        <div className="social-links" style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                            <a href="#" style={{ color: '#fff', fontSize: '20px' }}><i className="fab fa-facebook"></i></a>
-                            <a href="#" style={{ color: '#fff', fontSize: '20px' }}><i className="fab fa-instagram"></i></a>
-                            <a href="#" style={{ color: '#fff', fontSize: '20px' }}><i className="fab fa-twitter"></i></a>
+                        <div className="social-links">
+                            <a href="#"><i className="fab fa-facebook"></i></a>
+                            <a href="#"><i className="fab fa-instagram"></i></a>
+                            <a href="#"><i className="fab fa-twitter"></i></a>
                         </div>
                     </div>
                     <div className="footer-col">
@@ -53,25 +53,24 @@ const Footer = () => {
                     <div className="footer-col">
                         <h3>Newsletter</h3>
                         <p>Subscribe to get the latest tech deals and updates.</p>
-                        <form className="newsletter-form" style={{ marginTop: '20px' }} onSubmit={handleSubmit}>
+                        <form className="newsletter-form" onSubmit={handleSubmit}>
                             <input
                                 type="email"
                                 placeholder="Email Address"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                style={{ padding: '12px', width: '100%', border: 'none', borderRadius: '4px', marginBottom: '10px' }}
                                 required
                             />
-                            <button type="submit" className="btn-primary" style={{ width: '100%', padding: '10px' }}>
+                            <button type="submit" className="btn-primary footer-subscribe-btn">
                                 SUBSCRIBE
                             </button>
                             {status === 'success' && (
-                                <p style={{ color: '#4ade80', marginTop: '10px', fontSize: '0.9rem' }}>
+                                <p className="newsletter-status success">
                                     You&apos;re subscribed! Check your inbox.
                                 </p>
                             )}
                             {status === 'error' && (
-                                <p style={{ color: '#f97373', marginTop: '10px', fontSize: '0.9rem' }}>
+                                <p className="newsletter-status error">
                                     Please enter a valid email address.
                                 </p>
                             )}
@@ -79,7 +78,7 @@ const Footer = () => {
                     </div>
                 </div>
                 <div className="footer-bottom">
-                    <p>&copy; {new Date().getFullYear()} CASEPROZ. All rights reserved. | Design inspired by CaseProz.</p>
+                    <p>&copy; {new Date().getFullYear()} CASEPROZ. All rights reserved.</p>
                 </div>
             </div>
         </footer>

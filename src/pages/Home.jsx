@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import HomeSlider from '../components/HomeSlider';
 import CategoryShowcase from '../components/CategoryShowcase';
 import ProductCard from '../components/ProductCard';
@@ -11,18 +10,109 @@ import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
 import { trackEvent } from '../utils/analytics';
 
-const homeBrands = [
-    'Anker',
-    'Baseus',
-    'Belkin',
-    'DJI',
-    'EcoFlow',
-    'JBL',
-    'Logitech',
-    'Samsung',
-    'Sandisk',
-    'Soundcore',
+const CASE_STYLE_DEFINITIONS = [
+    { key: 'silicone', label: 'Silicone', searchQuery: 'silicone', terms: ['silicone'] },
+    { key: 'leopard', label: 'Leopard', searchQuery: 'leopard', terms: ['leopard'] },
+    { key: 'magsafe', label: 'MagSafe', searchQuery: 'magsafe', terms: ['magsafe', 'mag safe'] },
+    { key: 'rugged', label: 'Rugged', searchQuery: 'rugged', terms: ['rugged', 'shockproof'] },
+    { key: 'clear', label: 'Clear', searchQuery: 'clear', terms: ['clear', 'transparent'] },
+    { key: 'leather', label: 'Leather', searchQuery: 'leather', terms: ['leather'] },
 ];
+
+const PHONE_MODEL_LINKS = [
+    { label: 'iPhone 17 Pro Max', path: '/category/iphone-17-pro-max-case' },
+    { label: 'iPhone 17 Pro', path: '/category/iphone-17-pro-case' },
+    { label: 'iPhone 16 Pro Max', path: '/category/iphone-16-pro-max-case' },
+    { label: 'Galaxy S26', path: '/category/galaxy-s26-case' },
+];
+
+const isCaseProduct = (product) => {
+    const category = String(product?.category || '').toLowerCase();
+    const subCategory = String(product?.subCategory || '').toLowerCase();
+    const name = String(product?.name || '').toLowerCase();
+    const tags = Array.isArray(product?.categories)
+        ? product.categories.map((c) => String(c || '').toLowerCase())
+        : [];
+
+    return (
+        category.includes('case') ||
+        subCategory.includes('case') ||
+        name.includes(' case') ||
+        tags.some((tag) => tag.includes('case'))
+    );
+};
+
+const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildCaseStyleHaystack = (product) => {
+    const name = String(product?.name || '').toLowerCase();
+    const category = String(product?.category || '').toLowerCase();
+    const subCategory = String(product?.subCategory || '').toLowerCase();
+    const categories = Array.isArray(product?.categories)
+        ? product.categories.map((c) => String(c || '').toLowerCase()).join(' ')
+        : '';
+    const variantLabels = Array.isArray(product?.variants)
+        ? product.variants.map((v) => String(v?.label || '').toLowerCase()).join(' ')
+        : '';
+    const variantStyles = Array.isArray(product?.variants)
+        ? product.variants.map((v) => String(v?.style || '').toLowerCase()).join(' ')
+        : '';
+
+    return `${name} ${category} ${subCategory} ${categories} ${variantLabels} ${variantStyles}`;
+};
+
+const matchesAnyCaseStyleTerm = (haystack, terms = []) => {
+    if (!haystack || !terms.length) return false;
+
+    return terms.some((term) => {
+        const safeTerm = escapeRegex(term.toLowerCase().trim());
+        if (!safeTerm) return false;
+        const pattern = new RegExp(`(^|[^a-z0-9])${safeTerm}([^a-z0-9]|$)`, 'i');
+        return pattern.test(haystack);
+    });
+};
+
+const pickBalancedProducts = (list, options = {}) => {
+    const {
+        total = 8,
+        maxCaseItems = 3,
+        minNonCaseItems = 4,
+        excludeIds = new Set(),
+    } = options;
+
+    const nonCases = [];
+    const cases = [];
+
+    for (const item of list) {
+        if (!item?._id || excludeIds.has(item._id)) continue;
+        if (isCaseProduct(item)) {
+            cases.push(item);
+        } else {
+            nonCases.push(item);
+        }
+    }
+
+    const selected = [];
+    const addUntil = (source, limit) => {
+        for (const item of source) {
+            if (selected.length >= limit) break;
+            selected.push(item);
+        }
+    };
+
+    addUntil(nonCases, Math.min(minNonCaseItems, total));
+    addUntil(cases, Math.min(total, selected.length + maxCaseItems));
+
+    if (selected.length < total) {
+        addUntil(nonCases.slice(selected.length), total);
+    }
+
+    if (selected.length < total) {
+        addUntil(cases.slice(maxCaseItems), total);
+    }
+
+    return selected.slice(0, total);
+};
 
 const Home = () => {
     const [products, setProducts] = useState([]);
@@ -58,44 +148,47 @@ const Home = () => {
         });
     };
 
-    const featured = products.slice(0, 16);
-    const onSale = products.filter((p) => p.onSale).slice(0, 8);
-    const latest = [...products]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    const onSale = products.filter((p) => p.onSale);
+    const sortedNewest = [...products]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const allCaseProducts = sortedNewest.filter((p) => isCaseProduct(p));
+    const caseFamilyCards = CASE_STYLE_DEFINITIONS.map((def) => {
+        const matches = allCaseProducts.filter((p) => {
+            const haystack = buildCaseStyleHaystack(p);
+            return matchesAnyCaseStyleTerm(haystack, def.terms);
+        });
+
+        return {
+            ...def,
+            count: matches.length,
+            image:
+                matches.find((p) => Array.isArray(p.images) && p.images[0])?.images?.[0] ||
+                '/placeholder-product.svg',
+        };
+    }).filter((card) => card.count > 0);
+
+    const latest = pickBalancedProducts(sortedNewest, {
+        total: 8,
+        maxCaseItems: 3,
+        minNonCaseItems: 4,
+    });
+
+    const featuredByFlag = products.filter((p) => p.isFeatured).slice(0, 12);
+    const bestSellerCandidates = featuredByFlag.length > 0 ? featuredByFlag : (onSale.length > 0 ? onSale : products);
+    const latestIds = new Set(latest.map((p) => p._id));
+    const bestSellers = pickBalancedProducts(bestSellerCandidates, {
+        total: 8,
+        maxCaseItems: 3,
+        minNonCaseItems: 4,
+        excludeIds: latestIds,
+    });
+
+    const nonCaseSpotlight = sortedNewest
+        .filter((p) => !isCaseProduct(p))
         .slice(0, 8);
 
-    const featuredByFlag = products.filter((p) => p.isFeatured).slice(0, 8);
-
     const productCount = products.length;
-    const organizationSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'CaseProz Kenya',
-        url: 'https://caseproz.vercel.app',
-        logo: 'https://caseproz.vercel.app/favicon.ico',
-        sameAs: ['https://www.instagram.com/caseproz/'],
-        contactPoint: [
-            {
-                '@type': 'ContactPoint',
-                telephone: '+254700000000',
-                contactType: 'customer service',
-                areaServed: 'KE',
-                availableLanguage: ['en'],
-            },
-        ],
-    };
-
-    const websiteSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'CaseProz Kenya',
-        url: 'https://caseproz.vercel.app',
-        potentialAction: {
-            '@type': 'SearchAction',
-            target: 'https://caseproz.vercel.app/search?q={search_term_string}',
-            'query-input': 'required name=search_term_string',
-        },
-    };
 
     return (
         <div className="home-page">
@@ -106,112 +199,81 @@ const Home = () => {
                 canonicalPath="/"
                 noIndex={productCount <= 0}
             />
-            <Helmet>
-                <script type="application/ld+json">
-                    {JSON.stringify(organizationSchema)}
-                </script>
-                <script type="application/ld+json">
-                    {JSON.stringify(websiteSchema)}
-                </script>
-            </Helmet>
-            {error && (
-                <div className="container" style={{ marginTop: '16px' }}>
-                    <ErrorBanner message={error} onClose={() => setError('')} />
-                </div>
-            )}
 
             <HomeSlider />
 
-            <section className="home-quick-shop container">
+            <section className="home-case-families container">
                 <div className="section-header">
                     <div className="title-area">
-                        <span className="subtitle">QUICK SHOP</span>
-                        <h2 className="main-title">Shop in One Tap</h2>
+                        <span className="subtitle">FEATURED CASE FAMILIES</span>
+                        <h2 className="main-title">Shop by Case Style</h2>
+                        <p className="home-case-families-note">Pick your look first, then choose your phone fit.</p>
                     </div>
                 </div>
-                <div className="home-quick-shop-grid">
-                    <div className="home-quick-card">
-                        <p className="home-quick-label">Shop by brand</p>
-                        <h3>Trusted Originals</h3>
-                        <div className="home-quick-actions">
-                            <Link
-                                to="/search?brand=Anker"
-                                className="home-quick-pill"
-                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_brand', 'anker')}
-                            >
-                                Anker
-                            </Link>
-                            <Link
-                                to="/search?brand=Soundcore"
-                                className="home-quick-pill"
-                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_brand', 'soundcore')}
-                            >
-                                Soundcore
-                            </Link>
-                            <Link
-                                to="/search?brand=Samsung"
-                                className="home-quick-pill"
-                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_brand', 'samsung')}
-                            >
-                                Samsung
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="home-quick-card">
-                        <p className="home-quick-label">Shop by budget</p>
-                        <h3>Smart Price Bands</h3>
-                        <div className="home-quick-actions">
-                            <Link
-                                to="/search?maxPrice=2000"
-                                className="home-quick-pill"
-                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_budget', 'under_2000')}
-                            >
-                                Under KSh 2,000
-                            </Link>
-                            <Link
-                                to="/search?minPrice=2000&maxPrice=5000"
-                                className="home-quick-pill"
-                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_budget', '2000_5000')}
-                            >
-                                KSh 2,000 - 5,000
-                            </Link>
-                            <Link
-                                to="/search?minPrice=5000"
-                                className="home-quick-pill"
-                                onClick={() => trackHomeClick('home_quick_pill_click', 'quick_shop_budget', '5000_plus')}
-                            >
-                                KSh 5,000+
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="home-quick-card home-quick-card-highlight">
-                        <p className="home-quick-label">Trending</p>
-                        <h3>Top Picks</h3>
+                <div className="home-case-style-grid">
+                    {caseFamilyCards.map((card) => (
                         <Link
-                            to="/search?sort=newest"
-                            className="home-quick-cta"
-                            onClick={() => trackHomeClick('home_quick_cta_click', 'quick_shop_trending', 'explore_trending')}
+                            key={card.key}
+                            to={`/search?q=${encodeURIComponent(card.searchQuery)}`}
+                            className="home-case-style-card"
+                            onClick={() =>
+                                trackHomeClick('home_case_family_click', 'case_families', card.key, {
+                                    count: card.count,
+                                })
+                            }
                         >
-                            Explore trending now <ChevronRight size={14} />
+                            <div className="home-case-style-image-wrap">
+                                <img src={card.image} alt={`${card.label} case`} />
+                                <span className="home-case-style-chip">{card.label}</span>
+                            </div>
+                            <div className="home-case-style-meta">
+                                <h3>{card.label}</h3>
+                                <p>{card.count} products</p>
+                            </div>
                         </Link>
+                    ))}
+                </div>
+            </section>
+
+            <section className="home-model-fit container">
+                <div className="section-header">
+                    <div className="title-area">
+                        <span className="subtitle">SHOP BY PHONE MODEL</span>
+                        <h2 className="main-title">Find Your Exact Fit</h2>
+                        <p className="home-model-fit-note">Jump directly into cases made for your exact device.</p>
                     </div>
+                </div>
+                <div className="home-model-fit-row">
+                    {PHONE_MODEL_LINKS.map((item) => (
+                        <Link
+                            key={item.label}
+                            to={item.path}
+                            className="home-model-fit-pill"
+                            onClick={() =>
+                                trackHomeClick('home_model_fit_click', 'model_fit', item.label)
+                            }
+                        >
+                            <span className="home-model-fit-pill-title">{item.label}</span>
+                            <span className="home-model-fit-pill-cta">Shop fit</span>
+                        </Link>
+                    ))}
                 </div>
             </section>
 
             <CategoryShowcase />
-            {/* Featured products – bigger grid */}
+
             <section className="featured-section container">
                 <div className="section-header">
                     <div className="title-area">
-                        <span className="subtitle">TRENDING</span>
-                        <h2 className="main-title">Featured Products</h2>
+                        <span className="subtitle">JUST IN</span>
+                        <h2 className="main-title">New Arrivals</h2>
                     </div>
                     <Link
-                        to="/search"
+                        to="/search?sort=newest"
                         className="view-all"
-                        onClick={() => trackHomeClick('home_section_cta_click', 'featured_products', 'shop_all')}
+                        onClick={() => trackHomeClick('home_section_cta_click', 'new_arrivals', 'shop_new')}
                     >
-                        Shop All <ChevronRight size={16} />
+                        Shop New <ChevronRight size={16} />
                     </Link>
                 </div>
 
@@ -219,96 +281,58 @@ const Home = () => {
                     <div className="loading-state">Loading products...</div>
                 ) : (
                     <div className="product-grid">
-                        {featured.map((product) => (
+                        {latest.map((product) => (
                             <ProductCard key={product._id} product={product} />
                         ))}
                     </div>
                 )}
             </section>
 
-            {/* New arrivals */}
-            {!loading && latest.length > 0 && (
+            {!loading && bestSellers.length > 0 && (
                 <section className="featured-section container">
                     <div className="section-header">
                         <div className="title-area">
-                            <span className="subtitle">JUST IN</span>
-                            <h2 className="main-title">New Arrivals</h2>
-                        </div>
-                    </div>
-                    <div className="product-grid">
-                        {latest.map((product) => (
-                            <ProductCard key={product._id} product={product} />
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* On sale now */}
-            {!loading && onSale.length > 0 && (
-                <section className="featured-section container">
-                    <div className="section-header">
-                        <div className="title-area">
-                            <span className="subtitle">HOT DEALS</span>
-                            <h2 className="main-title">On Sale Right Now</h2>
+                            <span className="subtitle">CURATED</span>
+                            <h2 className="main-title">Best Sellers</h2>
                         </div>
                         <Link
-                            to="/search?sort=newest"
+                            to="/search"
                             className="view-all"
-                            onClick={() => trackHomeClick('home_section_cta_click', 'on_sale', 'view_more_deals')}
+                            onClick={() => trackHomeClick('home_section_cta_click', 'best_sellers', 'shop_the_edit')}
                         >
-                            View More Deals <ChevronRight size={16} />
+                            Shop the Edit <ChevronRight size={16} />
                         </Link>
                     </div>
                     <div className="product-grid">
-                        {onSale.map((product) => (
+                        {bestSellers.map((product) => (
                             <ProductCard key={product._id} product={product} />
                         ))}
                     </div>
                 </section>
             )}
 
-            {/* Layer: Featured by admin flag */}
-            {!loading && featuredByFlag.length > 0 && (
-                <section className="home-layer-section container">
+            {!loading && nonCaseSpotlight.length > 0 && (
+                <section className="featured-section container">
                     <div className="section-header">
                         <div className="title-area">
-                            <span className="subtitle">EDITOR&apos;S CHOICE</span>
-                            <h2 className="main-title">Editor&apos;s Picks</h2>
+                            <span className="subtitle">BEYOND CASES</span>
+                            <h2 className="main-title">Power, Audio & More</h2>
                         </div>
+                        <Link
+                            to="/search"
+                            className="view-all"
+                            onClick={() => trackHomeClick('home_section_cta_click', 'beyond_cases', 'shop_all_products')}
+                        >
+                            Shop All Products <ChevronRight size={16} />
+                        </Link>
                     </div>
                     <div className="product-grid">
-                        {featuredByFlag.map((product) => (
+                        {nonCaseSpotlight.map((product) => (
                             <ProductCard key={product._id} product={product} />
                         ))}
                     </div>
                 </section>
             )}
-
-            {/* Layer: Brands we stock */}
-            <section className="home-brands">
-                <div className="container home-brands-inner">
-                    <div className="home-brands-header">
-                        <div>
-                            <p className="home-brands-eyebrow">BRANDS</p>
-                            <h2>Shop by Brand</h2>
-                        </div>
-                        <Link to="/search" className="home-brands-link">
-                            View all brands <ChevronRight size={16} />
-                        </Link>
-                    </div>
-                    <div className="home-brands-row">
-                        {homeBrands.map((brand) => (
-                            <Link
-                                key={brand}
-                                to={`/search?brand=${encodeURIComponent(brand)}`}
-                                className="home-brand-pill"
-                            >
-                                <span className="home-brand-name">{brand}</span>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
         </div>
     );
