@@ -75,7 +75,7 @@ const HomeSections = () => {
     }
     try {
       const url = (type || modalSection?.type) === 'Product'
-        ? `${import.meta.env.VITE_API_URL}/api/products?keyword=${encodeURIComponent(q)}`
+        ? `${import.meta.env.VITE_API_URL}/api/products?keyword=${encodeURIComponent(q)}&page=1&pageSize=24&sort=newest`
         : `${import.meta.env.VITE_API_URL}/api/categories`;
       const data = await apiFetch(url);
       let results = Array.isArray(data) ? data : (data.products || []);
@@ -136,7 +136,7 @@ const HomeSections = () => {
   };
 
   return (
-    <div className="admin-section-page" style={{ maxWidth: 900, margin: '0 auto', padding: '32px 0' }}>
+    <div className="admin-section-page" style={{ padding: '32px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
         <div>
           <h1 style={{ margin: 0 }}>Home Sections</h1>

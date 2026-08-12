@@ -43,10 +43,21 @@ const Discounts = () => {
         const fetchProducts = async () => {
             setProductsLoading(true);
             try {
-                const url = `${import.meta.env.VITE_API_URL}/api/products`;
-                const data = await apiFetch(url);
-                // If paginated, use data.products; else, use data
-                setProducts(Array.isArray(data) ? data : data.products || []);
+                const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
+                const pageSize = 60;
+                let page = 1;
+                let totalPages = 1;
+                const aggregated = [];
+
+                while (page <= totalPages) {
+                    const data = await apiFetch(`${baseUrl}?page=${page}&pageSize=${pageSize}&sort=nameAsc`);
+                    const pageProducts = Array.isArray(data?.products) ? data.products : [];
+                    aggregated.push(...pageProducts);
+                    totalPages = Number.isFinite(data?.pages) && data.pages > 0 ? data.pages : 1;
+                    page += 1;
+                }
+
+                setProducts(aggregated);
             } catch (err) {
                 // ignore for now
             } finally {

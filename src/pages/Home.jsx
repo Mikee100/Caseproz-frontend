@@ -116,23 +116,44 @@ const pickBalancedProducts = (list, options = {}) => {
 
 const Home = () => {
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [onSaleProducts, setOnSaleProducts] = useState([]);
+    const [loadingNewest, setLoadingNewest] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchProducts = async () => {
+            const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
+
             try {
-                const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products`);
-                setProducts(Array.isArray(data.products) ? data.products : []);
+                const newestData = await apiFetch(`${baseUrl}?page=1&pageSize=36&sort=newest&isActive=true`);
+                setProducts(Array.isArray(newestData?.products) ? newestData.products : []);
             } catch (err) {
-                console.error('Error fetching products:', err);
+                console.error('Error fetching newest products:', err);
                 if (err instanceof ApiError) {
                     setError(err.message || 'We could not load products right now.');
                 } else {
                     setError('We could not load products right now. Please refresh in a moment.');
                 }
             } finally {
-                setLoading(false);
+                setLoadingNewest(false);
+            }
+
+            const [featuredResult, onSaleResult] = await Promise.allSettled([
+                apiFetch(`${baseUrl}?page=1&pageSize=24&sort=newest&isActive=true&isFeatured=true`),
+                apiFetch(`${baseUrl}?page=1&pageSize=24&sort=newest&isActive=true&onSale=true`),
+            ]);
+
+            if (featuredResult.status === 'fulfilled') {
+                setFeaturedProducts(Array.isArray(featuredResult.value?.products) ? featuredResult.value.products : []);
+            } else {
+                console.error('Error fetching featured products:', featuredResult.reason);
+            }
+
+            if (onSaleResult.status === 'fulfilled') {
+                setOnSaleProducts(Array.isArray(onSaleResult.value?.products) ? onSaleResult.value.products : []);
+            } else {
+                console.error('Error fetching on-sale products:', onSaleResult.reason);
             }
         };
 
@@ -148,7 +169,7 @@ const Home = () => {
         });
     };
 
-    const onSale = products.filter((p) => p.onSale);
+    const onSale = onSaleProducts.length > 0 ? onSaleProducts : products.filter((p) => p.onSale);
     const sortedNewest = [...products]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -174,7 +195,9 @@ const Home = () => {
         minNonCaseItems: 4,
     });
 
-    const featuredByFlag = products.filter((p) => p.isFeatured).slice(0, 12);
+    const featuredByFlag = featuredProducts.length > 0
+        ? featuredProducts.slice(0, 12)
+        : products.filter((p) => p.isFeatured).slice(0, 12);
     const bestSellerCandidates = featuredByFlag.length > 0 ? featuredByFlag : (onSale.length > 0 ? onSale : products);
     const latestIds = new Set(latest.map((p) => p._id));
     const bestSellers = pickBalancedProducts(bestSellerCandidates, {
@@ -202,38 +225,40 @@ const Home = () => {
 
             <HomeSlider />
 
-            <section className="home-case-families container">
-                <div className="section-header">
-                    <div className="title-area">
-                        <span className="subtitle">FEATURED CASE FAMILIES</span>
-                        <h2 className="main-title">Shop by Case Style</h2>
-                        <p className="home-case-families-note">Pick your look first, then choose your phone fit.</p>
+            {false && (
+                <section className="home-case-families container">
+                    <div className="section-header">
+                        <div className="title-area">
+                            <span className="subtitle">FEATURED CASE FAMILIES</span>
+                            <h2 className="main-title">Shop by Case Style</h2>
+                            <p className="home-case-families-note">Pick your look first, then choose your phone fit.</p>
+                        </div>
                     </div>
-                </div>
-                <div className="home-case-style-grid">
-                    {caseFamilyCards.map((card) => (
-                        <Link
-                            key={card.key}
-                            to={`/search?q=${encodeURIComponent(card.searchQuery)}`}
-                            className="home-case-style-card"
-                            onClick={() =>
-                                trackHomeClick('home_case_family_click', 'case_families', card.key, {
-                                    count: card.count,
-                                })
-                            }
-                        >
-                            <div className="home-case-style-image-wrap">
-                                <img src={card.image} alt={`${card.label} case`} />
-                                <span className="home-case-style-chip">{card.label}</span>
-                            </div>
-                            <div className="home-case-style-meta">
-                                <h3>{card.label}</h3>
-                                <p>{card.count} products</p>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            </section>
+                    <div className="home-case-style-grid">
+                        {caseFamilyCards.map((card) => (
+                            <Link
+                                key={card.key}
+                                to={`/search?q=${encodeURIComponent(card.searchQuery)}`}
+                                className="home-case-style-card"
+                                onClick={() =>
+                                    trackHomeClick('home_case_family_click', 'case_families', card.key, {
+                                        count: card.count,
+                                    })
+                                }
+                            >
+                                <div className="home-case-style-image-wrap">
+                                    <img src={card.image} alt={`${card.label} case`} />
+                                    <span className="home-case-style-chip">{card.label}</span>
+                                </div>
+                                <div className="home-case-style-meta">
+                                    <h3>{card.label}</h3>
+                                    <p>{card.count} products</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <section className="home-model-fit container">
                 <div className="section-header">
@@ -260,7 +285,7 @@ const Home = () => {
                 </div>
             </section>
 
-            <CategoryShowcase />
+            <CategoryShowcase products={products} />
 
             <section className="featured-section container">
                 <div className="section-header">
@@ -277,7 +302,7 @@ const Home = () => {
                     </Link>
                 </div>
 
-                {loading ? (
+                {loadingNewest ? (
                     <div className="loading-state">Loading products...</div>
                 ) : (
                     <div className="product-grid">
@@ -288,7 +313,7 @@ const Home = () => {
                 )}
             </section>
 
-            {!loading && bestSellers.length > 0 && (
+            {!loadingNewest && bestSellers.length > 0 && (
                 <section className="featured-section container">
                     <div className="section-header">
                         <div className="title-area">
@@ -311,7 +336,7 @@ const Home = () => {
                 </section>
             )}
 
-            {!loading && nonCaseSpotlight.length > 0 && (
+            {!loadingNewest && nonCaseSpotlight.length > 0 && (
                 <section className="featured-section container">
                     <div className="section-header">
                         <div className="title-area">

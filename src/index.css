@@ -193,6 +193,10 @@ main {
   padding: 0 var(--page-gutter);
 }
 
+.app.admin-layout main {
+  padding: 0;
+}
+
 .cart-page {
   min-height: 60vh;
 }

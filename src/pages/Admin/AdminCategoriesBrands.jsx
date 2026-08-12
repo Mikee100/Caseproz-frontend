@@ -217,8 +217,6 @@ const AdminCategoriesBrands = () => {
   const styles = {
     container: {
       padding: '40px',
-      maxWidth: '1200px',
-      margin: '0 auto',
     },
     header: {
       marginBottom: '40px',

@@ -3,70 +3,77 @@ import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../utils/apiClient';
-import { slugify } from '../utils/categoryMap';
-import { useSiteConfig } from '../context/SiteConfigContext';
 
-const CategoryShowcase = () => {
+const CURATED_TOP_CATEGORY_CARDS = [
+    {
+        key: 'iphone-cases',
+        name: 'iPhone Cases',
+        path: '/category/iphone-cases',
+        terms: ['iphone case', 'iphone cases', 'iphone'],
+    },
+    {
+        key: 'soundcore',
+        name: 'Soundcore',
+        path: '/search?q=soundcore',
+        terms: ['soundcore'],
+    },
+    {
+        key: 'anker',
+        name: 'Anker',
+        path: '/search?q=anker',
+        terms: ['anker'],
+    },
+];
+
+const buildProductHaystack = (product) => {
+    const name = String(product?.name || '').toLowerCase();
+    const category = String(product?.category || '').toLowerCase();
+    const subCategory = String(product?.subCategory || '').toLowerCase();
+    const brand = String(product?.brand || '').toLowerCase();
+    const tags = Array.isArray(product?.categories)
+        ? product.categories.map((c) => String(c || '').toLowerCase()).join(' ')
+        : '';
+
+    return `${name} ${category} ${subCategory} ${brand} ${tags}`;
+};
+
+const productMatchesTerms = (product, terms = []) => {
+    if (!terms.length) return false;
+    const haystack = buildProductHaystack(product);
+    return terms.some((term) => haystack.includes(String(term || '').toLowerCase()));
+};
+
+const CategoryShowcase = ({ products = null }) => {
     const [categories, setCategories] = useState([]);
-    const { config } = useSiteConfig();
 
     useEffect(() => {
         const loadCategoryCards = async () => {
             try {
-                const [categoriesRes, productsRes] = await Promise.all([
-                    apiFetch(`${import.meta.env.VITE_API_URL}/api/categories`),
-                    apiFetch(`${import.meta.env.VITE_API_URL}/api/products`),
-                ]);
+                let allProducts = Array.isArray(products) ? products : [];
 
-                const categoryRows = Array.isArray(categoriesRes) ? categoriesRes : [];
-                const allProducts = Array.isArray(productsRes)
-                    ? productsRes
-                    : Array.isArray(productsRes?.products)
+                if (allProducts.length === 0) {
+                    const productsRes = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products?page=1&pageSize=60&sort=newest&isActive=true`);
+                    allProducts = Array.isArray(productsRes?.products)
                         ? productsRes.products
                         : [];
-
-                const cards = categoryRows
-                    .map((cat) => {
-                        const catName = String(cat?.name || '').trim();
-                        if (!catName) return null;
-
-                        const productsInCategory = allProducts.filter(
-                            (p) => String(p?.category || '').toLowerCase() === catName.toLowerCase()
-                        );
-
-                        const coverImage = productsInCategory.find(
-                            (p) => Array.isArray(p.images) && p.images.length > 0 && p.images[0]
-                        )?.images?.[0] || '/placeholder-product.svg';
-
-                        return {
-                            name: catName,
-                            slug: slugify(catName),
-                            image: coverImage,
-                            countLabel: productsInCategory.length > 0 ? 'Explore' : 'View',
-                            detail: `${productsInCategory.length} products`,
-                            productCount: productsInCategory.length,
-                        };
-                    })
-                    .filter(Boolean)
-                    .sort((a, b) => b.productCount - a.productCount);
-
-                const preferredNames = Array.isArray(config?.homeShowcaseCategories)
-                    ? config.homeShowcaseCategories.map((n) => String(n || '').trim().toLowerCase()).filter(Boolean)
-                    : [];
-
-                let nextCards = cards;
-                if (preferredNames.length > 0) {
-                    const byName = new Map(cards.map((c) => [c.name.toLowerCase(), c]));
-                    const preferred = preferredNames
-                        .map((name) => byName.get(name))
-                        .filter(Boolean);
-                    const remainder = cards.filter(
-                        (card) => !preferredNames.includes(card.name.toLowerCase())
-                    );
-                    nextCards = [...preferred, ...remainder];
                 }
 
-                nextCards = nextCards.slice(0, 4);
+                const nextCards = CURATED_TOP_CATEGORY_CARDS.map((card) => {
+                    const matchingProducts = allProducts.filter((p) => productMatchesTerms(p, card.terms));
+                    const coverImage = matchingProducts.find(
+                        (p) => Array.isArray(p.images) && p.images.length > 0 && p.images[0]
+                    )?.images?.[0] || '/placeholder-product.svg';
+                    const count = matchingProducts.length;
+
+                    return {
+                        key: card.key,
+                        name: card.name,
+                        path: card.path,
+                        image: coverImage,
+                        countLabel: count > 0 ? 'Explore' : 'View',
+                        detail: `${count} product${count === 1 ? '' : 's'}`,
+                    };
+                });
 
                 setCategories(nextCards);
             } catch (error) {
@@ -76,7 +83,7 @@ const CategoryShowcase = () => {
         };
 
         loadCategoryCards();
-    }, [config]);
+    }, [products]);
 
     if (categories.length === 0) {
         return null;
@@ -97,12 +104,12 @@ const CategoryShowcase = () => {
             <div className="category-grid">
                 {categories.map((cat, index) => (
                     <motion.div
-                        key={cat.slug || index}
+                        key={cat.key || index}
                         className="category-card"
                         whileHover={{ y: -10 }}
                         transition={{ duration: 0.3 }}
                     >
-                        <Link to={`/category/${cat.slug}`}>
+                        <Link to={cat.path}>
                             <div className="cat-image-wrapper">
                                 <img src={cat.image} alt={cat.name} />
                                 <div className="item-count">{cat.countLabel}</div>

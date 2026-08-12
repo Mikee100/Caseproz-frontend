@@ -35,8 +35,21 @@ const ProductList = () => {
 
     const fetchProducts = async () => {
         try {
-            const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products`);
-            setProducts(Array.isArray(data.products) ? data.products : []);
+            const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
+            const pageSize = 60;
+            let page = 1;
+            let totalPages = 1;
+            const aggregated = [];
+
+            while (page <= totalPages) {
+                const data = await apiFetch(`${baseUrl}?page=${page}&pageSize=${pageSize}&sort=newest`);
+                const pageProducts = Array.isArray(data?.products) ? data.products : [];
+                aggregated.push(...pageProducts);
+                totalPages = Number.isFinite(data?.pages) && data.pages > 0 ? data.pages : 1;
+                page += 1;
+            }
+
+            setProducts(aggregated);
             setSelectedProductIds([]);
             setLoading(false);
         } catch (err) {
@@ -155,39 +168,37 @@ const ProductList = () => {
 
     const styles = {
         container: {
-            padding: '20px 0'
+            padding: '8px 0'
         },
         header: {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '30px'
+            marginBottom: '14px'
         },
         title: {
-            fontSize: '28px',
-            fontWeight: '800',
+            fontSize: '22px',
+            fontWeight: '700',
             color: '#1a1a1a',
             margin: 0
         },
         createBtn: {
-            backgroundColor: '#E41E26',
+            backgroundColor: '#111827',
             color: 'white',
-            padding: '12px 24px',
-            borderRadius: '10px',
+            padding: '9px 14px',
+            borderRadius: '8px',
             textDecoration: 'none',
-            fontWeight: '700',
-            fontSize: '14px',
+            fontWeight: '600',
+            fontSize: '13px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            boxShadow: '0 4px 15px rgba(228, 30, 38, 0.2)',
-            transition: 'all 0.3s'
+            gap: '8px',
+            transition: 'all 0.2s'
         },
         tableContainer: {
             backgroundColor: 'white',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-            border: '1px solid #eee',
+            borderRadius: '10px',
+            border: '1px solid #e5e7eb',
             overflow: 'hidden'
         },
         table: {
@@ -196,50 +207,50 @@ const ProductList = () => {
             textAlign: 'left'
         },
         th: {
-            padding: '18px 24px',
-            backgroundColor: '#f9f9f9',
-            borderBottom: '1px solid #eee',
-            color: '#666',
-            fontSize: '13px',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
+            padding: '10px 12px',
+            backgroundColor: '#f8fafc',
+            borderBottom: '1px solid #e5e7eb',
+            color: '#6b7280',
+            fontSize: '12px',
+            fontWeight: '600',
+            textTransform: 'none',
+            letterSpacing: 0
         },
         td: {
-            padding: '18px 24px',
-            borderBottom: '1px solid #eee',
-            fontSize: '14px',
+            padding: '10px 12px',
+            borderBottom: '1px solid #f1f5f9',
+            fontSize: '13px',
             color: '#333'
         },
         productCell: {
             display: 'flex',
             alignItems: 'center',
-            gap: '15px'
+            gap: '10px'
         },
         productImg: {
-            width: '45px',
-            height: '45px',
-            borderRadius: '8px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '6px',
             objectFit: 'cover',
             backgroundColor: '#f5f5f5'
         },
         badge: {
-            padding: '4px 10px',
+            padding: '3px 8px',
             borderRadius: '20px',
-            fontSize: '11px',
-            fontWeight: '700',
+            fontSize: '10px',
+            fontWeight: '600',
             textTransform: 'uppercase'
         },
         actionBtn: {
-            padding: '8px',
+            padding: '6px',
             borderRadius: '6px',
-            border: '1px solid #eee',
+            border: '1px solid #e5e7eb',
             backgroundColor: 'white',
             cursor: 'pointer',
-            marginRight: '8px',
+            marginRight: '6px',
             color: '#666',
             transition: 'all 0.2s',
-            fontSize: '14px'
+            fontSize: '13px'
         }
     };
 
@@ -256,19 +267,19 @@ const ProductList = () => {
             <div style={styles.header}>
                 <div>
                     <h1 style={styles.title}>Products List</h1>
-                    <p style={{ color: '#666', marginTop: '5px' }}>Manage all your physical and digital inventory in one place.</p>
+                    <p style={{ color: '#6b7280', marginTop: '2px', fontSize: '13px' }}>Simple inventory control for products, prices, and visibility.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <button
                         type="button"
                         onClick={handleExportCsv}
                         style={{
-                            padding: '10px 16px',
-                            borderRadius: '10px',
+                            padding: '9px 12px',
+                            borderRadius: '8px',
                             border: '1px solid #e5e7eb',
                             backgroundColor: '#fff',
                             color: '#111827',
-                            fontSize: '13px',
+                            fontSize: '12px',
                             fontWeight: 600,
                             cursor: 'pointer',
                         }}
@@ -282,19 +293,19 @@ const ProductList = () => {
                 </div>
             </div>
 
-            {/* Bulk controls */}
+            {/* Bulk controls temporarily hidden
             <div
                 style={{
-                    marginBottom: '16px',
-                    padding: '12px 16px',
+                    marginBottom: '10px',
+                    padding: '10px 12px',
                     backgroundColor: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
                     display: 'flex',
                     justifyContent: 'space-between',
-                    gap: '16px',
+                    gap: '12px',
                     alignItems: 'center',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     color: '#4b5563',
                 }}
             >
@@ -313,14 +324,14 @@ const ProductList = () => {
                             disabled={selectedProductIds.length === 0 || availabilityUpdating}
                             onClick={() => handleBulkAvailability(true)}
                             style={{
-                                padding: '6px 10px',
+                                padding: '5px 9px',
                                 borderRadius: '8px',
                                 border: 'none',
                                 backgroundColor:
                                     selectedProductIds.length === 0 || availabilityUpdating ? '#e5e7eb' : '#16a34a',
                                 color:
                                     selectedProductIds.length === 0 || availabilityUpdating ? '#9ca3af' : '#ffffff',
-                                fontSize: '12px',
+                                fontSize: '11px',
                                 fontWeight: 600,
                                 cursor:
                                     selectedProductIds.length === 0 || availabilityUpdating
@@ -335,14 +346,14 @@ const ProductList = () => {
                             disabled={selectedProductIds.length === 0 || availabilityUpdating}
                             onClick={() => handleBulkAvailability(false)}
                             style={{
-                                padding: '6px 10px',
+                                padding: '5px 9px',
                                 borderRadius: '8px',
                                 border: 'none',
                                 backgroundColor:
                                     selectedProductIds.length === 0 || availabilityUpdating ? '#e5e7eb' : '#dc2626',
                                 color:
                                     selectedProductIds.length === 0 || availabilityUpdating ? '#9ca3af' : '#ffffff',
-                                fontSize: '12px',
+                                fontSize: '11px',
                                 fontWeight: 600,
                                 cursor:
                                     selectedProductIds.length === 0 || availabilityUpdating
@@ -359,10 +370,10 @@ const ProductList = () => {
                             value={bulkPriceMode}
                             onChange={(e) => setBulkPriceMode(e.target.value)}
                             style={{
-                                padding: '6px 8px',
+                                padding: '5px 8px',
                                 borderRadius: '8px',
                                 border: '1px solid #e5e7eb',
-                                fontSize: '12px',
+                                fontSize: '11px',
                             }}
                         >
                             <option value="increasePercent">Increase %</option>
@@ -375,10 +386,10 @@ const ProductList = () => {
                             placeholder="%"
                             style={{
                                 width: '80px',
-                                padding: '6px 8px',
+                                padding: '5px 8px',
                                 borderRadius: '8px',
                                 border: '1px solid #e5e7eb',
-                                fontSize: '12px',
+                                fontSize: '11px',
                             }}
                         />
                         <button
@@ -386,14 +397,14 @@ const ProductList = () => {
                             disabled={selectedProductIds.length === 0 || bulkUpdating}
                             onClick={handleBulkPriceUpdate}
                             style={{
-                                padding: '6px 10px',
+                                padding: '5px 9px',
                                 borderRadius: '8px',
                                 border: 'none',
                                 backgroundColor:
                                     selectedProductIds.length === 0 || bulkUpdating ? '#e5e7eb' : '#111827',
                                 color:
                                     selectedProductIds.length === 0 || bulkUpdating ? '#9ca3af' : '#ffffff',
-                                fontSize: '12px',
+                                fontSize: '11px',
                                 fontWeight: 600,
                                 cursor:
                                     selectedProductIds.length === 0 || bulkUpdating ? 'not-allowed' : 'pointer',
@@ -404,16 +415,17 @@ const ProductList = () => {
                     </div>
                 </div>
             </div>
+            */}
 
             <div
                 style={{
-                    marginBottom: '16px',
+                    marginBottom: '10px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
                 }}
             >
-                <div style={{ position: 'relative', width: '100%', maxWidth: '420px' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
                     <i
                         className="fas fa-search"
                         style={{
@@ -422,7 +434,7 @@ const ProductList = () => {
                             left: '12px',
                             transform: 'translateY(-50%)',
                             color: '#9ca3af',
-                            fontSize: '13px',
+                            fontSize: '12px',
                         }}
                     ></i>
                     <input
@@ -432,10 +444,10 @@ const ProductList = () => {
                         placeholder="Search by name, category, subcategory, or ID"
                         style={{
                             width: '100%',
-                            padding: '10px 12px 10px 36px',
-                            borderRadius: '10px',
+                            padding: '8px 10px 8px 32px',
+                            borderRadius: '8px',
                             border: '1px solid #e5e7eb',
-                            fontSize: '13px',
+                            fontSize: '12px',
                             color: '#111827',
                             outline: 'none',
                             backgroundColor: '#fff',
@@ -447,12 +459,12 @@ const ProductList = () => {
                         type="button"
                         onClick={() => setSearchQuery('')}
                         style={{
-                            padding: '10px 12px',
-                            borderRadius: '10px',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
                             border: '1px solid #e5e7eb',
                             backgroundColor: '#fff',
                             color: '#4b5563',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             fontWeight: 600,
                             cursor: 'pointer',
                             whiteSpace: 'nowrap',
@@ -505,13 +517,13 @@ const ProductList = () => {
                                             <img src={product.images[0]} alt="" style={styles.productImg} />
                                             <div>
                                                 <div style={{ fontWeight: '700', color: '#1a1a1a' }}>{product.name}</div>
-                                                <div style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>ID: {product._id.slice(-8)}</div>
+                                                <div style={{ fontSize: '11px', color: '#999', marginTop: '1px' }}>ID: {product._id.slice(-8)}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td style={styles.td}>
                                         <span style={{ color: '#666' }}>{product.category}</span>
-                                        <div style={{ fontSize: '11px', color: '#999' }}>{product.subCategory}</div>
+                                        <div style={{ fontSize: '10px', color: '#999' }}>{product.subCategory}</div>
                                     </td>
                                     <td style={styles.td}>
                                         {product.onSale ? (
