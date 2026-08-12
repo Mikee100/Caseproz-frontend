@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useSiteConfig } from '../context/SiteConfigContext';
 
 const defaultSlides = [
     {
@@ -34,17 +32,21 @@ const defaultSlides = [
     }
 ];
 
+const HOME_SLIDE_IMAGES = [
+    '/home-banner-2026-08-11.png',
+    '/home-banner-2026-08-11-slide-2.png',
+    '/home-banner-2026-08-11-slide-3.png',
+];
+
 const HomeSlider = () => {
     const [current, setCurrent] = useState(0);
-    const { config } = useSiteConfig();
     const touchStartX = useRef(null);
     const touchEndX = useRef(null);
 
-    const activeSlidesFromConfig = Array.isArray(config?.heroSlides)
-        ? config.heroSlides.filter((s) => s && s.active !== false && s.title && s.image)
-        : [];
-
-    const slides = activeSlidesFromConfig.length > 0 ? activeSlidesFromConfig : defaultSlides;
+    const slides = defaultSlides.map((slide, index) => ({
+        ...slide,
+        image: HOME_SLIDE_IMAGES[index] || HOME_SLIDE_IMAGES[HOME_SLIDE_IMAGES.length - 1],
+    }));
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -99,31 +101,7 @@ const HomeSlider = () => {
                     style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), url(${slides[current].image})` }}
                 >
                     <div className="container slide-content-wrapper">
-                        <motion.div
-                            className="slide-content"
-                            initial={{ y: 30, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.3, duration: 0.6 }}
-                        >
-                            <motion.span
-                                className="slide-badge"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.2 }}
-                            >
-                                Limited Edition
-                            </motion.span>
-                            <h1>{slides[current].title}</h1>
-                            <p>{slides[current].subtitle}</p>
-                            <div className="slide-actions">
-                                <Link to={slides[current].link} className="btn-primary slider-btn">
-                                    {slides[current].cta}
-                                </Link>
-                                <Link to="/search" className="slider-text-link slider-btn-secondary-desktop">
-                                    Learn more <ChevronRight size={14} />
-                                </Link>
-                            </div>
-                        </motion.div>
+                        <div className="slide-content" />
                     </div>
                 </motion.div>
             </AnimatePresence>

@@ -91,14 +91,17 @@ const Cart = () => {
     useEffect(() => {
         const fetchRecommendations = async () => {
             try {
-const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products`);
+                const data = await apiFetch(
+                    `${import.meta.env.VITE_API_URL}/api/products?page=1&pageSize=60&sort=newest&isActive=true`
+                );
+                const allProducts = Array.isArray(data?.products) ? data.products : [];
                 const cartIds = new Set(cart.map((item) => item._id));
-                const filtered = data.filter((p) => !cartIds.has(p._id));
+                const filtered = allProducts.filter((p) => !cartIds.has(p._id));
                 setRecommendations(filtered.slice(0, 4));
 
                 // Light price consistency check: if any prices changed, let the user know
                 const priceChanged = cart.some((item) => {
-                    const latest = data.find((p) => p._id === item._id);
+                    const latest = allProducts.find((p) => p._id === item._id);
                     return latest && latest.price !== item.price;
                 });
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { slugify, matchesCategorySlug } from '../utils/categoryMap';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
@@ -18,17 +17,27 @@ const Category = () => {
             setLoading(true);
             setError('');
             try {
-                const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products`);
-                const allProducts = Array.isArray(data)
-                    ? data
-                    : Array.isArray(data?.products)
-                        ? data.products
-                        : [];
+                const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
+                const pageSize = 48;
+                const slug = encodeURIComponent(categoryName || '');
 
-                const targetSlug = slugify(categoryName || '');
-                const filtered = allProducts.filter((p) => matchesCategorySlug(p, targetSlug));
+                let page = 1;
+                let totalPages = 1;
+                const aggregated = [];
 
-                setProducts(filtered);
+                while (page <= totalPages) {
+                    const data = await apiFetch(
+                        `${baseUrl}?categorySlug=${slug}&isActive=true&page=${page}&pageSize=${pageSize}&sort=newest`
+                    );
+
+                    const pageProducts = Array.isArray(data?.products) ? data.products : [];
+                    aggregated.push(...pageProducts);
+
+                    totalPages = Number.isFinite(data?.pages) && data.pages > 0 ? data.pages : 1;
+                    page += 1;
+                }
+
+                setProducts(aggregated);
             } catch (err) {
                 if (err instanceof ApiError) {
                     setError(err.message || 'Failed to load this category. Please try again.');

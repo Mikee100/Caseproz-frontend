@@ -62,6 +62,8 @@ const ProductEdit = () => {
     const [uploading, setUploading] = useState(false);
     const [availableCategories, setAvailableCategories] = useState({});
     const [availableBrands, setAvailableBrands] = useState([]);
+    const [draggedImageIndex, setDraggedImageIndex] = useState(null);
+    const [dragOverImageIndex, setDragOverImageIndex] = useState(null);
     
     // UI State
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -295,6 +297,41 @@ const ProductEdit = () => {
             next[newIndex] = temp;
             return next;
         });
+    };
+
+    const reorderImages = (fromIndex, toIndex) => {
+        if (
+            fromIndex === toIndex ||
+            fromIndex === null ||
+            toIndex === null ||
+            fromIndex < 0 ||
+            toIndex < 0
+        ) {
+            return;
+        }
+
+        setImages((prev) => {
+            if (fromIndex >= prev.length || toIndex >= prev.length) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(fromIndex, 1);
+            next.splice(toIndex, 0, moved);
+            return next;
+        });
+    };
+
+    const handleImageDragStart = (index) => {
+        setDraggedImageIndex(index);
+    };
+
+    const handleImageDrop = (dropIndex) => {
+        reorderImages(draggedImageIndex, dropIndex);
+        setDraggedImageIndex(null);
+        setDragOverImageIndex(null);
+    };
+
+    const handleImageDragEnd = () => {
+        setDraggedImageIndex(null);
+        setDragOverImageIndex(null);
     };
 
     const execDescriptionCommand = (command, value = null) => {
@@ -632,11 +669,88 @@ const ProductEdit = () => {
                     {images.length > 0 && (
                         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                             {images.map((img, i) => (
-                                <div key={i} style={{ position: 'relative', width: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd', backgroundColor: '#fff' }}>
+                                <div
+                                    key={`${img}-${i}`}
+                                    draggable
+                                    onDragStart={() => handleImageDragStart(i)}
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        setDragOverImageIndex(i);
+                                    }}
+                                    onDragEnter={(e) => {
+                                        e.preventDefault();
+                                        setDragOverImageIndex(i);
+                                    }}
+                                    onDrop={() => handleImageDrop(i)}
+                                    onDragEnd={handleImageDragEnd}
+                                    style={{
+                                        position: 'relative',
+                                        width: '94px',
+                                        borderRadius: '8px',
+                                        overflow: 'hidden',
+                                        border: dragOverImageIndex === i ? '2px solid #E41E26' : '1px solid #ddd',
+                                        backgroundColor: '#fff',
+                                        cursor: 'grab',
+                                        boxShadow: draggedImageIndex === i ? '0 6px 18px rgba(0,0,0,0.18)' : 'none'
+                                    }}
+                                    title="Drag to reorder"
+                                >
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            top: 0,
+                                            zIndex: 2,
+                                            backgroundColor: 'rgba(0,0,0,0.65)',
+                                            color: '#fff',
+                                            fontSize: '10px',
+                                            padding: '2px 5px',
+                                            borderBottomRightRadius: '6px'
+                                        }}
+                                    >
+                                        {i === 0 ? 'Cover' : `#${i + 1}`}
+                                    </div>
                                     <img src={img} alt="" style={{ width: '100%', height: '60px', objectFit: 'cover' }} />
+                                    <div style={{ display: 'flex', borderTop: '1px solid #eee' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => moveImage(i, -1)}
+                                            disabled={i === 0}
+                                            style={{
+                                                flex: 1,
+                                                border: 'none',
+                                                background: i === 0 ? '#f8f8f8' : '#fafafa',
+                                                color: '#444',
+                                                fontSize: '11px',
+                                                padding: '4px 0',
+                                                cursor: i === 0 ? 'not-allowed' : 'pointer'
+                                            }}
+                                            title="Move left"
+                                        >
+                                            ←
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => moveImage(i, 1)}
+                                            disabled={i === images.length - 1}
+                                            style={{
+                                                flex: 1,
+                                                border: 'none',
+                                                borderLeft: '1px solid #eee',
+                                                background: i === images.length - 1 ? '#f8f8f8' : '#fafafa',
+                                                color: '#444',
+                                                fontSize: '11px',
+                                                padding: '4px 0',
+                                                cursor: i === images.length - 1 ? 'not-allowed' : 'pointer'
+                                            }}
+                                            title="Move right"
+                                        >
+                                            →
+                                        </button>
+                                    </div>
                                     <button
                                         type="button"
-                                        onClick={() => setImages(images.filter((_, idx) => idx !== i))}
+                                        onClick={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}
                                         style={{
                                             position: 'absolute',
                                             top: 0,
