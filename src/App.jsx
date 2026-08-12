@@ -11,6 +11,7 @@ import Register from './pages/Register'
 import Checkout from './pages/Checkout'
 import OrderDetails from './pages/OrderDetails'
 import Category from './pages/Category'
+import Brand from './pages/Brand'
 import Search from './pages/Search'
 import Profile from './pages/Profile'
 import MyOrders from './pages/MyOrders'
@@ -82,6 +83,7 @@ function App() {
             <Route path="/orders" element={<MyOrders />} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/category/:categoryName" element={<Category />} />
+            <Route path="/brand/:brandName" element={<Brand />} />
             <Route path="/search" element={<Search />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/delivery" element={<Delivery />} />

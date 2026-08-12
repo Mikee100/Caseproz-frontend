@@ -1,9 +1,81 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
+const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Store',
+    name: 'CaseProz',
+    image: 'https://www.caseproz.co.ke/og-contact.png',
+    url: 'https://www.caseproz.co.ke',
+    telephone: '+254700000000',
+    email: 'support@caseproz.co.ke',
+    priceRange: 'KSh',
+    description: 'Premium phone cases, Anker chargers, screen protectors and mobile accessories. Fast delivery across Kenya.',
+    address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Nairobi CBD',
+        addressLocality: 'Nairobi',
+        addressRegion: 'Nairobi County',
+        postalCode: '00100',
+        addressCountry: 'KE',
+    },
+    geo: {
+        '@type': 'GeoCoordinates',
+        latitude: -1.2864,
+        longitude: 36.8172,
+    },
+    openingHoursSpecification: [
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            opens: '09:00',
+            closes: '16:00',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Saturday'],
+            opens: '09:00',
+            closes: '12:00',
+        },
+    ],
+    currenciesAccepted: 'KES',
+    paymentAccepted: 'Cash, Mobile Money, Card, Pay on Delivery',
+    areaServed: {
+        '@type': 'Country',
+        name: 'Kenya',
+    },
+    contactPoint: [
+        {
+            '@type': 'ContactPoint',
+            telephone: '+254700000000',
+            contactType: 'customer support',
+            contactOption: 'TollFree',
+            areaServed: 'KE',
+            availableLanguage: 'English',
+        },
+        {
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            email: 'support@caseproz.co.ke',
+            areaServed: 'KE',
+            availableLanguage: 'English',
+        },
+    ],
+    sameAs: [
+        'https://www.facebook.com',
+        'https://www.instagram.com',
+    ],
+};
 
 const CustomerSupport = () => {
   return (
     <div className="support-page">
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(localBusinessSchema)}
+        </script>
+      </Helmet>
       <section className="support-hero">
         <div className="container">
           <p className="support-badge">CUSTOMER SUPPORT</p>

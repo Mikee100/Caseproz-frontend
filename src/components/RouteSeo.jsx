@@ -159,6 +159,7 @@ const RouteSeo = () => {
         location.pathname === '/' ||
         location.pathname === '/search' ||
         location.pathname.startsWith('/category/') ||
+        location.pathname.startsWith('/brand/') ||
         location.pathname.startsWith('/product/')
     ) {
         return null;
