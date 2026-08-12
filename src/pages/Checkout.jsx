@@ -205,7 +205,7 @@ const Checkout = () => {
     return (
         <div className="checkout-page container" style={{ padding: '60px 0' }}>
             {showMpesaInstructions && (
-                <div style={{
+                <div className="checkout-mpesa-banner" style={{
                     background: '#e6f7ee',
                     border: '1px solid #38a169',
                     borderRadius: 8,
@@ -221,12 +221,12 @@ const Checkout = () => {
                     <strong>Business Number:</strong> (your name as entered in the order)
                 </div>
             )}
-            <h1 style={{ marginBottom: '16px', fontSize: '32px', fontWeight: 'bold' }}>Checkout</h1>
+            <h1 className="checkout-title" style={{ marginBottom: '16px', fontSize: '32px', fontWeight: 'bold' }}>Checkout</h1>
             <ErrorBanner message={error} onClose={() => setError('')} />
 
             <div className="checkout-layout">
-                <form onSubmit={handlePlaceOrder}>
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
+                <form className="checkout-form" onSubmit={handlePlaceOrder}>
+                    <div className="checkout-card" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '20px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>Shipping Information</h2>
 
                         <div style={{ marginBottom: '20px' }}>
@@ -295,9 +295,9 @@ const Checkout = () => {
                         </div>
                     </div>
 
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
+                    <div className="checkout-card checkout-payment-card" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
                         <h2 style={{ fontSize: '20px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>Payment Method</h2>
-                        <div style={{ display: 'flex', gap: '20px' }}>
+                        <div className="checkout-payment-options" style={{ display: 'flex', gap: '20px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                                 <input type="radio" name="payment" value="M-Pesa" checked={paymentMethod === 'M-Pesa'} onChange={(e) => setPaymentMethod(e.target.value)} />
                                 M-Pesa
@@ -311,12 +311,12 @@ const Checkout = () => {
                 </form>
 
                 <div className="order-summary">
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', position: 'sticky', top: '120px' }}>
+                    <div className="checkout-summary-card" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', position: 'sticky', top: '120px' }}>
                         <h2 style={{ fontSize: '20px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>Order Summary</h2>
 
-                        <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px' }}>
+                        <div className="checkout-items-list" style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px' }}>
                             {cart.map(item => (
-                                <div key={`${item._id}-${item.variantSku || 'default'}`} style={{ display: 'flex', gap: '15px', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #f9f9f9' }}>
+                                <div className="checkout-summary-item" key={`${item._id}-${item.variantSku || 'default'}`} style={{ display: 'flex', gap: '15px', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #f9f9f9' }}>
                                     <img src={item.images[0]} alt={item.name} style={{ width: '50px', height: '50px', objectFit: 'contain' }} />
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontSize: '14px', margin: 0, fontWeight: 'bold' }}>{item.name}</p>
@@ -358,7 +358,7 @@ const Checkout = () => {
                             <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#374151' }}>
                                 Discount code
                             </label>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div className="checkout-discount-row" style={{ display: 'flex', gap: '8px' }}>
                                 <input
                                     type="text"
                                     value={discountCode}
@@ -423,7 +423,7 @@ const Checkout = () => {
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '14px', fontSize: '12px', color: '#374151' }}>
+                        <div className="checkout-terms" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '14px', fontSize: '12px', color: '#374151' }}>
                             <input
                                 type="checkbox"
                                 id="checkout-terms"
@@ -437,6 +437,7 @@ const Checkout = () => {
                         </div>
 
                         <button
+                            className="checkout-place-order-btn"
                             onClick={handlePlaceOrder}
                             disabled={loading}
                             style={{

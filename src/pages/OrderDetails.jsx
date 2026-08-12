@@ -121,6 +121,7 @@ const OrderDetails = () => {
     return (
         <div className="order-details-page container" style={{ padding: '60px 0' }}>
             <div
+                className="order-details-topbar"
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -129,7 +130,7 @@ const OrderDetails = () => {
                     marginBottom: '30px',
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="order-details-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Link to="/" style={{ color: '#4b5563', fontSize: '13px', textDecoration: 'none' }}>
                         Home
                     </Link>
@@ -143,6 +144,7 @@ const OrderDetails = () => {
                     </span>
                 </div>
                 <button
+                    className="order-details-print-btn"
                     type="button"
                     onClick={() => window.print()}
                     style={{
@@ -165,6 +167,7 @@ const OrderDetails = () => {
             </div>
 
             <div
+                className="order-hero"
                 style={{
                     background: 'linear-gradient(135deg,#111827,#1f2937)',
                     padding: '28px 30px',
@@ -174,7 +177,7 @@ const OrderDetails = () => {
                     boxShadow: '0 25px 60px rgba(15,23,42,0.55)',
                 }}
             >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+                <div className="order-hero-row" style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
                     <div>
                         <h1
                             style={{
@@ -218,6 +221,7 @@ const OrderDetails = () => {
                         )}
                     </div>
                     <div
+                        className="order-hero-total"
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -258,7 +262,7 @@ const OrderDetails = () => {
                 </div>
 
                 <div style={{ marginTop: '18px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '8px', color: '#6b7280' }}>
+                    <div className="order-timeline-meta" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '8px', color: '#6b7280' }}>
                         <span>Order timeline</span>
                         {order.trackingNumber && (
                             <span>
@@ -272,7 +276,7 @@ const OrderDetails = () => {
                             </span>
                         )}
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', paddingTop: '4px' }}>
+                    <div className="order-timeline-track" style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', paddingTop: '4px' }}>
                         {statusSteps.map((step, index) => {
                             const isCompleted = currentIndex === -1 ? index === 0 : index <= currentIndex;
                             const isActive = currentIndex === index || (currentIndex === -1 && index === 0);
@@ -338,9 +342,10 @@ const OrderDetails = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr)', gap: '32px' }}>
+            <div className="order-details-main" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr)', gap: '32px' }}>
                 <div className="order-info">
                     <div
+                        className="order-card"
                         style={{
                             backgroundColor: 'white',
                             padding: '24px 26px',
@@ -378,6 +383,7 @@ const OrderDetails = () => {
                     </div>
 
                     <div
+                        className="order-card"
                         style={{
                             backgroundColor: 'white',
                             padding: '24px 26px',
@@ -398,6 +404,7 @@ const OrderDetails = () => {
                         {order.orderItems.map((item, index) => (
                             <div
                                 key={index}
+                                className="order-item-row"
                                 style={{
                                     display: 'flex',
                                     gap: '16px',
@@ -407,7 +414,7 @@ const OrderDetails = () => {
                                         index === order.orderItems.length - 1 ? 'none' : '1px solid #f3f4f6',
                                 }}
                             >
-                                <img src={item.image} alt={item.name} style={{ width: '80px', height: '80px', objectFit: 'contain', backgroundColor: '#f9f9f9', borderRadius: '8px' }} />
+                                <img className="order-item-image" src={item.image} alt={item.name} style={{ width: '80px', height: '80px', objectFit: 'contain', backgroundColor: '#f9f9f9', borderRadius: '8px' }} />
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 600 }}>
                                         {item.name}
@@ -426,6 +433,7 @@ const OrderDetails = () => {
 
                 <div className="order-summary">
                     <div
+                        className="order-summary-card"
                         style={{
                             backgroundColor: 'white',
                             padding: '24px 26px',
