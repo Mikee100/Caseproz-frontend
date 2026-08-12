@@ -241,7 +241,8 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                                     type="button"
                                                     className="brand-pill"
                                                     onClick={() => {
-                                                        navigate(`/search?brand=${encodeURIComponent(brand)}`);
+                                                        const slug = brand.toLowerCase().replace(/\s+/g, '-');
+                                                        navigate(`/brand/${encodeURIComponent(slug)}`);
                                                     }}
                                                 >
                                                     {brand}
@@ -523,7 +524,8 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                         className="drawer-brand-link"
                                         onClick={() => {
                                             setIsMobileMenuOpen(false);
-                                            navigate(`/search?brand=${encodeURIComponent(brand)}`);
+                                            const slug = brand.toLowerCase().replace(/\s+/g, '-');
+                                            navigate(`/brand/${encodeURIComponent(slug)}`);
                                         }}
                                     >
                                         <i className="fas fa-tags"></i> {brand}

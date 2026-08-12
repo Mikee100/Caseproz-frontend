@@ -221,11 +221,63 @@ const Home = () => {
         url: 'https://www.caseproz.co.ke',
         logo: 'https://www.caseproz.co.ke/og-contact.png',
         description: 'Shop premium phone cases, covers, screen protectors, Anker chargers & tech accessories in Nairobi, Kenya.',
+        priceRange: 'KSh',
         address: {
             '@type': 'PostalAddress',
+            streetAddress: 'Nairobi CBD',
             addressLocality: 'Nairobi',
+            postalCode: '00100',
             addressCountry: 'KE',
         },
+    };
+
+    const localBusinessSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Store',
+        name: 'CaseProz',
+        image: 'https://www.caseproz.co.ke/og-contact.png',
+        url: 'https://www.caseproz.co.ke',
+        telephone: '+254794057030',
+        email: 'support@caseproz.co.ke',
+        priceRange: 'KSh',
+        description: 'Premium phone cases, Anker chargers, screen protectors and mobile accessories. Fast delivery across Kenya.',
+        address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Nairobi CBD',
+            addressLocality: 'Nairobi',
+            addressRegion: 'Nairobi County',
+            postalCode: '00100',
+            addressCountry: 'KE',
+        },
+        geo: {
+            '@type': 'GeoCoordinates',
+            latitude: -1.2864,
+            longitude: 36.8172,
+        },
+        openingHoursSpecification: [
+            {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                opens: '09:00',
+                closes: '16:00',
+            },
+            {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: ['Saturday'],
+                opens: '09:00',
+                closes: '12:00',
+            },
+        ],
+        currenciesAccepted: 'KES',
+        paymentAccepted: 'Cash, Mobile Money, Card, Pay on Delivery',
+        areaServed: {
+            '@type': 'Country',
+            name: 'Kenya',
+        },
+        sameAs: [
+            'https://www.facebook.com',
+            'https://www.instagram.com',
+        ],
     };
 
     return (
@@ -243,6 +295,9 @@ const Home = () => {
             <Helmet>
                 <script type="application/ld+json">
                     {JSON.stringify(onlineStoreSchema)}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(localBusinessSchema)}
                 </script>
             </Helmet>
 
