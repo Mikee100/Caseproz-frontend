@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import HomeSlider from '../components/HomeSlider';
 import CategoryShowcase from '../components/CategoryShowcase';
 import ProductCard from '../components/ProductCard';
@@ -213,15 +214,37 @@ const Home = () => {
 
     const productCount = products.length;
 
+    const onlineStoreSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'OnlineStore',
+        name: 'CaseProz',
+        url: 'https://www.caseproz.co.ke',
+        logo: 'https://www.caseproz.co.ke/og-contact.png',
+        description: 'Shop premium phone cases, covers, screen protectors, Anker chargers & tech accessories in Nairobi, Kenya.',
+        address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Nairobi',
+            addressCountry: 'KE',
+        },
+    };
+
     return (
         <div className="home-page">
+            <h1 className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+                CaseProz - Buy Phone Cases, Covers &amp; Accessories in Kenya
+            </h1>
             <SeoMeta
-                title="CaseProz | Premium Tech, Cases & Accessories in Kenya"
-                description="Shop premium phone cases, chargers, audio, power and accessories at CaseProz. Fast delivery across Kenya and curated picks from brands like Anker, Soundcore, Samsung and more."
-                keywords="CaseProz, phone cases Kenya, Anker Kenya, chargers, power banks, headphones, electronics accessories Nairobi"
+                title="Buy Phone Cases, Covers & Accessories in Kenya | CaseProz"
+                description="Shop premium phone cases, chargers, audio, power and accessories at CaseProz. Fast delivery across Kenya with curated picks from Anker, Soundcore, Samsung and Apple."
+                keywords="phone cases Kenya, iPhone cases Nairobi, Samsung covers Kenya, Anker Kenya, chargers, power banks, headphones, CaseProz"
                 canonicalPath="/"
                 noIndex={productCount <= 0}
             />
+            <Helmet>
+                <script type="application/ld+json">
+                    {JSON.stringify(onlineStoreSchema)}
+                </script>
+            </Helmet>
 
             <HomeSlider />
 
