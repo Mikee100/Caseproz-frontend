@@ -212,21 +212,21 @@ const ProductDetails = () => {
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Home',
-                item: 'https://caseproz.vercel.app/',
+                item: 'https://caseproz.co.ke/',
             },
             {
                 '@type': 'ListItem',
                 position: 2,
                 name: product.category || 'Category',
                 item: product.category
-                    ? `https://caseproz.vercel.app/search?category=${encodeURIComponent(product.category)}`
-                    : 'https://caseproz.vercel.app/search',
+                    ? `https://caseproz.co.ke/search?category=${encodeURIComponent(product.category)}`
+                    : 'https://caseproz.co.ke/search',
             },
             {
                 '@type': 'ListItem',
                 position: 3,
                 name: product.name,
-                item: `https://caseproz.vercel.app/product/${product.slug}`,
+                item: `https://caseproz.co.ke/product/${product.slug}`,
             },
         ],
     };

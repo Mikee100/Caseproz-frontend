@@ -277,7 +277,7 @@ const Search = () => {
         itemListElement: products.slice(0, 24).map((product, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: `https://caseproz.vercel.app/product/${product.slug}`,
+            url: `https://caseproz.co.ke/product/${product.slug}`,
             name: product.name,
         })),
     };

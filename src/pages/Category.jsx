@@ -74,7 +74,7 @@ const Category = () => {
         itemListElement: products.slice(0, 24).map((product, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: `https://caseproz.vercel.app/product/${product.slug}`,
+            url: `https://caseproz.co.ke/product/${product.slug}`,
             name: product.name,
         })),
     };
@@ -87,13 +87,13 @@ const Category = () => {
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Home',
-                item: 'https://caseproz.vercel.app/',
+                item: 'https://caseproz.co.ke/',
             },
             {
                 '@type': 'ListItem',
                 position: 2,
                 name: formattedTitle,
-                item: `https://caseproz.vercel.app/category/${categoryName}`,
+                item: `https://caseproz.co.ke/category/${categoryName}`,
             },
         ],
     };
