@@ -212,21 +212,21 @@ const ProductDetails = () => {
                 '@type': 'ListItem',
                 position: 1,
                 name: 'Home',
-                item: 'https://caseproz.co.ke/',
+                item: 'https://www.caseproz.co.ke/',
             },
             {
                 '@type': 'ListItem',
                 position: 2,
                 name: product.category || 'Category',
                 item: product.category
-                    ? `https://caseproz.co.ke/search?category=${encodeURIComponent(product.category)}`
-                    : 'https://caseproz.co.ke/search',
+                    ? `https://www.caseproz.co.ke/search?category=${encodeURIComponent(product.category)}`
+                    : 'https://www.caseproz.co.ke/search',
             },
             {
                 '@type': 'ListItem',
                 position: 3,
                 name: product.name,
-                item: `https://caseproz.co.ke/product/${product.slug}`,
+                item: `https://www.caseproz.co.ke/product/${product.slug}`,
             },
         ],
     };
@@ -258,7 +258,7 @@ const ProductDetails = () => {
                                 className={`pd-thumb ${mainImage === img ? 'active' : ''}`}
                                 onClick={() => setMainImage(img)}
                             >
-                                <img src={img} alt="" />
+                                <img src={img} alt={`${product.name} thumbnail ${index + 1}`} />
                             </div>
                         ))}
                     </div>

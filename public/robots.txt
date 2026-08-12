@@ -8,4 +8,4 @@ Disallow: /checkout
 Disallow: /profile
 Disallow: /orders
 
-Sitemap: https://caseproz.co.ke/sitemap.xml
+Sitemap: https://www.caseproz.co.ke/sitemap.xml

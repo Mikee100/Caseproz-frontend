@@ -2,8 +2,8 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const DEFAULT_SITE_NAME = 'CaseProz Kenya';
-const DEFAULT_BASE_URL = 'https://caseproz.co.ke';
-const DEFAULT_OG_IMAGE = `${DEFAULT_BASE_URL}/favicon.ico`;
+const DEFAULT_BASE_URL = 'https://www.caseproz.co.ke';
+const DEFAULT_OG_IMAGE = `${DEFAULT_BASE_URL}/og-contact.png`;
 
 const SeoMeta = ({
     title,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     const [email, setEmail] = useState('');
@@ -13,7 +14,6 @@ const Footer = () => {
         }
 
         // TODO: Replace this with an actual API call to subscribe the user.
-        // For now, just simulate a successful subscription.
         setStatus('success');
         setEmail('');
     };
@@ -24,30 +24,30 @@ const Footer = () => {
                 <div className="footer-grid">
                     <div className="footer-col">
                         <h2 className="logo-text">CASEPROZ</h2>
-                        <p>Kenya's coolest online shop for premium electronics, gadgets, and tech accessories. Experience same-day delivery and unbeatable service.</p>
+                        <p>Kenya's coolest online shop for premium phone cases, chargers, audio, and tech accessories. Experience fast delivery across Kenya and top-notch customer support.</p>
                         <div className="social-links">
-                            <a href="#"><i className="fab fa-facebook"></i></a>
-                            <a href="#"><i className="fab fa-instagram"></i></a>
-                            <a href="#"><i className="fab fa-twitter"></i></a>
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
                         </div>
                     </div>
                     <div className="footer-col">
                         <h3>Shop Categories</h3>
                         <ul>
-                            <li><a href="/category/smartphones">Smartphones</a></li>
-                            <li><a href="/category/laptops">Laptops</a></li>
-                            <li><a href="/category/audio">Audio & Headphones</a></li>
-                            <li><a href="/category/accessories">Accessories</a></li>
+                            <li><Link to="/category/iphone-17-pro-max-case">iPhone 17 Cases</Link></li>
+                            <li><Link to="/category/iphone-16-pro-max-case">iPhone 16 Cases</Link></li>
+                            <li><Link to="/search?q=anker">Anker Chargers &amp; Audio</Link></li>
+                            <li><Link to="/search?q=magsafe">MagSafe Accessories</Link></li>
                         </ul>
                     </div>
                     <div className="footer-col">
                         <h3>Customer Care</h3>
                         <ul>
-                            <li><a href="/customer-support">Customer Support</a></li>
-                            <li><a href="/contact">Contact Us</a></li>
-                            <li><a href="/delivery">Delivery Information</a></li>
-                            <li><a href="/returns">Returns & Refunds</a></li>
-                            <li><a href="/faq">FAQs</a></li>
+                            <li><Link to="/customer-support">Customer Support</Link></li>
+                            <li><Link to="/contact">Contact Us</Link></li>
+                            <li><Link to="/delivery">Delivery Information</Link></li>
+                            <li><Link to="/returns">Returns &amp; Refunds</Link></li>
+                            <li><Link to="/faq">FAQs</Link></li>
                         </ul>
                     </div>
                     <div className="footer-col">
