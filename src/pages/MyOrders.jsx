@@ -106,43 +106,43 @@ const MyOrders = () => {
     };
 
     return (
-        <div className="container" style={{ padding: '60px 0', maxWidth: '1100px' }}>
-            <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '16px' }}>
+        <div className="container my-orders-page">
+            <div className="my-orders-head">
                 <div>
-                    <p style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#9ca3af', marginBottom: '8px' }}>
+                    <p className="my-orders-eyebrow">
                         Orders
                     </p>
-                    <h1 style={{ fontSize: '28px', fontWeight: '800', margin: 0 }}>My Orders</h1>
-                    <p style={{ color: '#6b7280', marginTop: '8px', fontSize: '14px' }}>
+                    <h1 className="my-orders-title">My Orders</h1>
+                    <p className="my-orders-subtitle">
                         View a history of your purchases and track current orders.
                     </p>
                 </div>
-                <div style={{ fontSize: '13px', color: '#9ca3af' }}>
-                    Signed in as <span style={{ fontWeight: 600, color: '#4b5563' }}>{user.email}</span>
+                <div className="my-orders-signedin">
+                    Signed in as <span>{user.email}</span>
                 </div>
             </div>
 
             <ErrorBanner message={error} onClose={() => setError('')} />
 
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '80px 0', color: '#6b7280' }}>
+                <div className="my-orders-loading">
                     <div className="loading-spinner large"></div>
-                    <p style={{ marginTop: '16px' }}>Loading your orders...</p>
+                    <p>Loading your orders...</p>
                 </div>
             ) : orders.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '80px 0' }}>
-                    <div style={{ fontSize: '52px', color: '#e5e7eb', marginBottom: '16px' }}>
+                <div className="my-orders-empty">
+                    <div className="my-orders-empty-icon">
                         <i className="fas fa-box-open"></i>
                     </div>
-                    <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px', color: '#111827' }}>You haven&apos;t placed any orders yet</h3>
-                    <p style={{ color: '#6b7280', marginBottom: '24px', fontSize: '14px' }}>
+                    <h3 className="my-orders-empty-title">You haven&apos;t placed any orders yet</h3>
+                    <p className="my-orders-empty-note">
                         When you do, all your orders will appear here for easy tracking.
                     </p>
                     <Link to="/" className="btn-primary">START SHOPPING</Link>
                 </div>
             ) : (
-                <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
-                    <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 120px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af' }}>
+                <div className="my-orders-table">
+                    <div className="my-orders-columns">
                         <span>Order</span>
                         <span>Date</span>
                         <span>Total</span>
@@ -156,28 +156,21 @@ const MyOrders = () => {
                             .map((order) => (
                                 <div
                                     key={order._id}
-                                    style={{
-                                        padding: '18px 24px',
-                                        borderBottom: '1px solid #f3f4f6',
-                                        display: 'grid',
-                                        gridTemplateColumns: '2fr 1fr 1fr 1fr 120px',
-                                        alignItems: 'center',
-                                        fontSize: '14px',
-                                    }}
+                                    className="my-orders-row"
                                 >
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <span style={{ fontWeight: 600, color: '#111827' }}>#{order._id.slice(-8)}</span>
-                                        <span style={{ color: '#9ca3af', fontSize: '12px' }}>
+                                    <div className="my-orders-cell order-ref" data-label="Order">
+                                        <span className="order-id">#{order._id.slice(-8)}</span>
+                                        <span className="order-items-count">
                                             {order.orderItems.length} item{order.orderItems.length !== 1 ? 's' : ''}
                                         </span>
                                     </div>
-                                    <span style={{ color: '#4b5563' }}>
+                                    <span className="my-orders-cell order-date" data-label="Date">
                                         {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '-'}
                                     </span>
-                                    <span style={{ fontWeight: 600, color: '#111827' }}>
+                                    <span className="my-orders-cell order-total" data-label="Total">
                                         KSh {order.totalPrice.toLocaleString()}
                                     </span>
-                                    <span>
+                                    <span className="my-orders-cell order-status" data-label="Status">
                                         {(() => {
                                             const statusInfo = getStatusInfo(order);
                                             return (
@@ -206,16 +199,11 @@ const MyOrders = () => {
                                             );
                                         })()}
                                     </span>
-                                    <div style={{ textAlign: 'right' }}>
+                                    <div className="my-orders-cell order-action" data-label="">
                                         <Link
                                             to={`/order/${order._id}`}
                                             className="btn-primary"
-                                            style={{
-                                                padding: '8px 14px',
-                                                fontSize: '12px',
-                                                borderRadius: '999px',
-                                                textTransform: 'uppercase',
-                                            }}
+                                            style={{ padding: '8px 14px', fontSize: '12px', borderRadius: '999px', textTransform: 'uppercase' }}
                                         >
                                             View
                                         </Link>

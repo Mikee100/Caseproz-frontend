@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import CategoryModal from './CategoryModal';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
@@ -11,6 +10,12 @@ import { apiFetch } from '../utils/apiClient';
 let BRANDS = [];
 let SHOP_MEGA_SECTIONS = [];
 
+const toSlug = (value) =>
+    String(value || '')
+        .toLowerCase()
+        .replace(/ & /g, '-')
+        .replace(/ /g, '-');
+
 const Header = ({ isCartOpen, setIsCartOpen }) => {
     const { cartCount } = useCart();
     const { user, logout } = useAuth();
@@ -19,8 +24,10 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+    const [isDrawerCategoriesOpen, setIsDrawerCategoriesOpen] = useState(false);
+    const [activeDrawerCategory, setActiveDrawerCategory] = useState('');
     const [searchKeyword, setSearchKeyword] = useState('');
     const [drawerSearch, setDrawerSearch] = useState('');
     const [dynamicBrands, setDynamicBrands] = useState([]);
@@ -42,7 +49,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                     title: cat.name,
                     items: (cat.subCategories || []).map(sub => ({
                         label: sub.name,
-                        slug: sub.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')
+                        slug: toSlug(sub.name)
                     }))
                 }));
                 setDynamicCategories(mappedCats);
@@ -53,17 +60,36 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
         fetchNavData();
     }, []);
 
+    useEffect(() => {
+        if (!activeDrawerCategory && dynamicCategories.length > 0) {
+            setActiveDrawerCategory(dynamicCategories[0].title);
+        }
+    }, [dynamicCategories, activeDrawerCategory]);
+
     // Helper for easier access
     const BRANDS_LIST = dynamicBrands.map(b => typeof b === 'string' ? b : b.name);
     const mobileDrawerBrands = BRANDS_LIST.slice(0, 5);
 
     useEffect(() => {
-        if (isModalOpen || isMobileMenuOpen || isCartOpen) {
+        if (isMobileMenuOpen || isCartOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
         }
-    }, [isModalOpen, isMobileMenuOpen, isCartOpen]);
+    }, [isMobileMenuOpen, isCartOpen]);
+
+    useEffect(() => {
+        const className = 'mobile-search-expanded';
+        if (isMobileSearchOpen) {
+            document.body.classList.add(className);
+        } else {
+            document.body.classList.remove(className);
+        }
+
+        return () => {
+            document.body.classList.remove(className);
+        };
+    }, [isMobileSearchOpen]);
 
     // Keep header search in sync with the current URL query (?q=...)
     useEffect(() => {
@@ -120,6 +146,11 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
         navigate(targetPath, { replace });
     };
 
+    const handleMobileSearch = (e) => {
+        handleSearch(e);
+        setIsMobileSearchOpen(false);
+    };
+
     const handleDrawerSearch = (e) => {
         e.preventDefault();
         if (drawerSearch.trim()) {
@@ -129,9 +160,13 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
         }
     };
 
+    useEffect(() => {
+        setIsMobileSearchOpen(false);
+    }, [location.pathname, location.search]);
+
     return (
         <>
-            <header className="modern-header">
+            <header className={`modern-header ${isMobileSearchOpen ? 'mobile-search-open' : ''}`}>
                
 
                 <div className="main-nav-wrapper">
@@ -330,6 +365,23 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                             )}
 
                             <div
+                                className="mobile-search-btn"
+                                role="button"
+                                tabIndex={0}
+                                aria-label="Toggle search"
+                                aria-expanded={isMobileSearchOpen}
+                                onClick={() => setIsMobileSearchOpen((prev) => !prev)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        setIsMobileSearchOpen((prev) => !prev);
+                                    }
+                                }}
+                            >
+                                <i className={`fas ${isMobileSearchOpen ? 'fa-times' : 'fa-search'}`}></i>
+                            </div>
+
+                            <div
                                 className="mobile-menu-btn"
                                 role="button"
                                 tabIndex={0}
@@ -348,24 +400,33 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                     </div>
 
                     {/* Mobile Search Bar – shown below logo row on small screens */}
-                    <div className="mobile-search-bar">
-                        <form className="mobile-search-form" onSubmit={handleSearch}>
+                    <div className={`mobile-search-bar ${isMobileSearchOpen ? 'open' : ''}`} aria-hidden={!isMobileSearchOpen}>
+                        <form className="mobile-search-form" onSubmit={handleMobileSearch}>
                             <i className="fas fa-search"></i>
                             <input
                                 type="text"
                                 placeholder="Search products..."
                                 value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
+                                aria-label="Search products"
                             />
-                            <button type="submit" aria-label="Search">
+                            {searchKeyword.trim().length > 0 && (
+                                <button
+                                    type="button"
+                                    className="mobile-search-clear"
+                                    aria-label="Clear search"
+                                    onClick={() => setSearchKeyword('')}
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            )}
+                            <button type="submit" className="mobile-search-submit" aria-label="Search">
                                 <i className="fas fa-arrow-right"></i>
                             </button>
                         </form>
                     </div>
                 </div>
             </header>
-
-            <CategoryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
             {/* Mobile Sidebar / Drawer */}
             {isMobileMenuOpen && (
@@ -404,10 +465,53 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                             <li><Link to="/" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-home"></i> HOME</Link></li>
                             <li><Link to="/search" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-store"></i> SHOP ALL</Link></li>
                             <li>
-                                <button onClick={() => { setIsMobileMenuOpen(false); setIsModalOpen(true); }}>
-                                    <i className="fas fa-th-large"></i> CATEGORIES
+                                <button
+                                    className="drawer-categories-toggle"
+                                    onClick={() => setIsDrawerCategoriesOpen((prev) => !prev)}
+                                    aria-expanded={isDrawerCategoriesOpen}
+                                    aria-controls="drawer-categories-panel"
+                                >
+                                    <span>
+                                        <i className="fas fa-th-large"></i> CATEGORIES
+                                    </span>
+                                    <i className={`fas fa-chevron-${isDrawerCategoriesOpen ? 'up' : 'down'}`}></i>
                                 </button>
                             </li>
+                            {isDrawerCategoriesOpen && (
+                                <li className="drawer-categories-shell" id="drawer-categories-panel">
+                                    {dynamicCategories.length === 0 && (
+                                        <div className="drawer-categories-empty">No categories yet.</div>
+                                    )}
+                                    {dynamicCategories.map((section) => {
+                                        const isActive = activeDrawerCategory === section.title;
+                                        return (
+                                            <div key={section.title} className="drawer-category-group">
+                                                <button
+                                                    type="button"
+                                                    className={`drawer-category-title ${isActive ? 'active' : ''}`}
+                                                    onClick={() => setActiveDrawerCategory(section.title)}
+                                                >
+                                                    {section.title}
+                                                    <span>{section.items?.length || 0}</span>
+                                                </button>
+                                                {isActive && section.items?.length > 0 && (
+                                                    <div className="drawer-subcategory-list">
+                                                        {section.items.map((item) => (
+                                                            <Link
+                                                                key={`${section.title}-${item.slug}`}
+                                                                to={`/category/${item.slug}`}
+                                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                            >
+                                                                {item.label}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </li>
+                            )}
                             <li>
                                 <span className="drawer-section-label">
                                     Shop by brand

@@ -372,7 +372,7 @@ const Search = () => {
                                     <div className="results-count">
                                         Showing <span>{products.length}</span> of <span>{total}</span> products
                                         {isRefetching && (
-                                            <span style={{ marginLeft: 8, fontSize: 12, color: '#9ca3af' }}>
+                                            <span className="results-updating" style={{ marginLeft: 8, fontSize: 12, color: '#9ca3af' }}>
                                                 Updating results…
                                             </span>
                                         )}
@@ -390,7 +390,7 @@ const Search = () => {
                             )}
 
                             {isInitialLoading && hasAnyFilters ? (
-                                <div className="product-grid">
+                                <div className="product-grid search-product-grid">
                                     {[...Array(12)].map((_, i) => (
                                         <SkeletonProduct key={i} />
                                     ))}
@@ -447,7 +447,7 @@ const Search = () => {
                                     </button>
                                 </div>
                             ) : hasAnyFilters ? (
-                                <div className="product-grid">
+                                <div className="product-grid search-product-grid">
                                     {products.map((product, index) => (
                                         <div key={product._id} className={`animate-in stagger-${(index % 6) + 1}`}>
                                             <ProductCard
@@ -470,7 +470,7 @@ const Search = () => {
 
                             {hasAnyFilters && !loading && total > 0 && pages > 1 && (
                                 <nav
-                                    className="pagination"
+                                    className="pagination search-pagination"
                                     aria-label="Search results pages"
                                     style={{ marginTop: '32px', display: 'flex', justifyContent: 'center', gap: '12px', alignItems: 'center' }}
                                 >
