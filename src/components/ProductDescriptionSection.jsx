@@ -1,8 +1,49 @@
 import React from 'react';
 
+const decodeEntities = (value = '') =>
+    String(value)
+        .replace(/&amp;/g, '&')
+        .replace(/&#x27;|&#39;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&nbsp;/g, ' ');
+
+const stripTags = (value = '') => String(value).replace(/<[^>]*>/g, ' ');
+
+const normalizeDescriptionText = (value = '') => {
+    const cleaned = decodeEntities(stripTags(value))
+        .replace(/\b(search|home|log\s*in|manuals\s*&\s*downloads|warranty\s*registration|contact\s*us)\b/gi, ' ')
+        .replace(/\b(save\s*\$\d+(?:\.\d{1,2})?|coupon|discount|deal)\b/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const sentences = cleaned
+        .split(/(?<=[.!?])\s+/)
+        .map((part) => part.trim())
+        .filter((part) => part.length >= 24 && part.length <= 220)
+        .filter((part) => !/\.(jpg|jpeg|png|webp)\b|https?:\/\//i.test(part));
+
+    const selected = sentences.slice(0, 4).join(' ');
+    return selected || cleaned;
+};
+
+const shouldRenderAsHtml = (html = '') => {
+    if (!html) return false;
+    const hasRichHtml = /<\/?(p|ul|ol|li|h1|h2|h3|h4|h5|h6|br|strong|em)\b/i.test(html);
+    const suspicious = /\b(search\s+log\s*in\s+home|save\s*\$|manuals?\s*&\s*downloads)\b/i.test(html);
+    return hasRichHtml && !suspicious;
+};
+
 const ProductDescriptionSection = ({ html, specs, keyFeatures = [] }) => {
     const hasSpecs = specs && (Array.isArray(specs) ? specs.length > 0 : Object.keys(specs).length > 0);
     const hasFeatures = Array.isArray(keyFeatures) && keyFeatures.length > 0;
+    const cleanDescription = normalizeDescriptionText(html || '');
+    const cleanParagraphs = cleanDescription
+        .split(/(?<=[.!?])\s+/)
+        .filter(Boolean)
+        .slice(0, 4);
+    const renderHtml = shouldRenderAsHtml(html || '');
 
     if (!html && !hasSpecs && !hasFeatures) return null;
 
@@ -10,10 +51,18 @@ const ProductDescriptionSection = ({ html, specs, keyFeatures = [] }) => {
         <section className="pd-description-section">
             {html && <>
                 <h2 className="pd-description-heading">Product Description</h2>
-                <div
-                    className="pd-description"
-                    dangerouslySetInnerHTML={{ __html: html }}
-                />
+                {renderHtml ? (
+                    <div
+                        className="pd-description"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                ) : (
+                    <div className="pd-description pd-description-clean">
+                        {cleanParagraphs.map((line, idx) => (
+                            <p key={`desc-line-${idx}`}>{line}</p>
+                        ))}
+                    </div>
+                )}
             </>}
 
             {hasFeatures && (

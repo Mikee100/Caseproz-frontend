@@ -5998,6 +5998,14 @@ button {
   margin: 16px auto;
 }
 
+.pd-description-clean p {
+  margin: 0 0 10px;
+}
+
+.pd-description-clean p:last-child {
+  margin-bottom: 0;
+}
+
 .pd-actions {
   display: flex;
   gap: 12px;
