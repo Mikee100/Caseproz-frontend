@@ -7594,6 +7594,55 @@ body {
   color: var(--cp-signal-red);
 }
 
+.home-page .home-skeleton-grid .skeleton-card {
+  height: auto;
+  min-height: 320px;
+  gap: 10px;
+}
+
+.home-page .home-skeleton-grid .skeleton-img {
+  aspect-ratio: 4 / 5;
+  height: auto;
+}
+
+.home-page .home-skeleton-grid .skeleton-text {
+  height: 12px;
+}
+
+.home-page .home-skeleton-grid .skeleton-price {
+  height: 18px;
+  width: 45%;
+}
+
+.home-page .home-skeleton-grid .skeleton-btn {
+  height: 34px;
+}
+
+.home-anker-spotlight,
+.home-soundcore-spotlight {
+  padding: 56px 0 72px;
+  background: #ffffff;
+  border-top: 1px solid #e5edf6;
+}
+
+.home-anker-spotlight .section-header,
+.home-soundcore-spotlight .section-header {
+  margin-bottom: 20px;
+}
+
+.home-anker-copy {
+  margin: 6px 0 0;
+  color: #5b6470;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 620px;
+}
+
+.home-anker-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .home-brands {
   background: var(--cp-ink);
   color: var(--cp-white);
@@ -7855,6 +7904,15 @@ body {
   .home-page .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+
+  .home-anker-spotlight,
+  .home-soundcore-spotlight {
+    padding: 36px 0 44px;
+  }
+
+  .home-anker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .home-bundle-grid {
