@@ -317,7 +317,13 @@ const Checkout = () => {
                         <div className="checkout-items-list" style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px' }}>
                             {cart.map(item => (
                                 <div className="checkout-summary-item" key={`${item._id}-${item.variantSku || 'default'}`} style={{ display: 'flex', gap: '15px', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #f9f9f9' }}>
-                                    <img src={item.images[0]} alt={item.name} style={{ width: '50px', height: '50px', objectFit: 'contain' }} />
+                                    <img
+                                        src={item.images[0]}
+                                        alt={item.name}
+                                        loading="lazy"
+                                        decoding="async"
+                                        style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                                    />
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontSize: '14px', margin: 0, fontWeight: 'bold' }}>{item.name}</p>
                                         {(item.variantLabel || item.variantColor || item.variantStyle || item.variantSku) && (

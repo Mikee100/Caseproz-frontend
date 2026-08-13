@@ -1,46 +1,53 @@
-import React, { useState, useEffect } from 'react'
+import React, { lazy, Suspense, useState, useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import CartDrawer from './components/CartDrawer'
-import Home from './pages/Home'
-import Cart from './pages/Cart'
-import ProductDetails from './pages/ProductDetails'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Checkout from './pages/Checkout'
-import OrderDetails from './pages/OrderDetails'
-import Category from './pages/Category'
-import Brand from './pages/Brand'
-import Search from './pages/Search'
-import Profile from './pages/Profile'
-import MyOrders from './pages/MyOrders'
-import Favourites from './pages/Favourites'
-import Contact from './pages/Contact'
-import Delivery from './pages/Delivery'
-import Returns from './pages/Returns'
-import Faq from './pages/Faq'
-import CustomerSupport from './pages/CustomerSupport'
-import CompleteProfile from './pages/CompleteProfile'
-import VerifyEmail from './pages/VerifyEmail'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
 import ErrorBoundary from './components/ErrorBoundary'
 import AdminRoute from './components/AdminRoute'
-import AdminLayout from './components/AdminLayout'
-import ProductList from './pages/Admin/ProductList'
-import ProductEdit from './pages/Admin/ProductEdit'
-import Dashboard from './pages/Admin/Dashboard'
-import OrderList from './pages/Admin/OrderList'
-import UserList from './pages/Admin/UserList'
-import UserEdit from './pages/Admin/UserEdit'
-import SiteSettings from './pages/Admin/SiteSettings'
-import Discounts from './pages/Admin/Discounts'
-import OrderDetailsAdmin from './pages/Admin/OrderDetailsAdmin'
-import AdminCategoriesBrands from './pages/Admin/AdminCategoriesBrands'
-import HomeSections from './pages/Admin/HomeSections'
-import DeliveryRoutes from './pages/Admin/DeliveryRoutes'
 import RouteSeo from './components/RouteSeo'
+import LoadingState from './components/LoadingState'
+
+const Home = lazy(() => import('./pages/Home'));
+const Cart = lazy(() => import('./pages/Cart'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderDetails = lazy(() => import('./pages/OrderDetails'));
+const Category = lazy(() => import('./pages/Category'));
+const Brand = lazy(() => import('./pages/Brand'));
+const Search = lazy(() => import('./pages/Search'));
+const Profile = lazy(() => import('./pages/Profile'));
+const MyOrders = lazy(() => import('./pages/MyOrders'));
+const Favourites = lazy(() => import('./pages/Favourites'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Delivery = lazy(() => import('./pages/Delivery'));
+const Returns = lazy(() => import('./pages/Returns'));
+const Faq = lazy(() => import('./pages/Faq'));
+const CustomerSupport = lazy(() => import('./pages/CustomerSupport'));
+const CompleteProfile = lazy(() => import('./pages/CompleteProfile'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
+const ProductList = lazy(() => import('./pages/Admin/ProductList'));
+const ProductEdit = lazy(() => import('./pages/Admin/ProductEdit'));
+const Dashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const OrderList = lazy(() => import('./pages/Admin/OrderList'));
+const UserList = lazy(() => import('./pages/Admin/UserList'));
+const UserEdit = lazy(() => import('./pages/Admin/UserEdit'));
+const SiteSettings = lazy(() => import('./pages/Admin/SiteSettings'));
+const Discounts = lazy(() => import('./pages/Admin/Discounts'));
+const OrderDetailsAdmin = lazy(() => import('./pages/Admin/OrderDetailsAdmin'));
+const AdminCategoriesBrands = lazy(() => import('./pages/Admin/AdminCategoriesBrands'));
+const HomeSections = lazy(() => import('./pages/Admin/HomeSections'));
+const DeliveryRoutes = lazy(() => import('./pages/Admin/DeliveryRoutes'));
+
+function RouteFallback() {
+  return <LoadingState message="Loading page..." compact />;
+}
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -67,48 +74,50 @@ function App() {
           <Header isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
         )}
         <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/product/:slug" element={<ProductDetails />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/complete-profile" element={<CompleteProfile />} />
-            <Route path="/verify/:token" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order/:id" element={<OrderDetails />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<MyOrders />} />
-            <Route path="/favourites" element={<Favourites />} />
-            <Route path="/category/:categoryName" element={<Category />} />
-            <Route path="/brand/:brandName" element={<Brand />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/delivery" element={<Delivery />} />
-            <Route path="/returns" element={<Returns />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/customer-support" element={<CustomerSupport />} />
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/product/:slug" element={<ProductDetails />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/complete-profile" element={<CompleteProfile />} />
+              <Route path="/verify/:token" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order/:id" element={<OrderDetails />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/orders" element={<MyOrders />} />
+              <Route path="/favourites" element={<Favourites />} />
+              <Route path="/category/:categoryName" element={<Category />} />
+              <Route path="/brand/:brandName" element={<Brand />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/delivery" element={<Delivery />} />
+              <Route path="/returns" element={<Returns />} />
+              <Route path="/faq" element={<Faq />} />
+              <Route path="/customer-support" element={<CustomerSupport />} />
 
-            <Route path="/admin" element={<AdminRoute />}>
-              <Route element={<AdminLayout />}>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="orderlist" element={<OrderList />} />
-                <Route path="order/:id" element={<OrderDetailsAdmin />} />
-                <Route path="userlist" element={<UserList />} />
-                <Route path="user/:id/edit" element={<UserEdit />} />
-                <Route path="productlist" element={<ProductList />} />
-                <Route path="product/create" element={<ProductEdit />} />
-                <Route path="product/:id/edit" element={<ProductEdit />} />
-                <Route path="settings" element={<SiteSettings />} />
-                <Route path="discounts" element={<Discounts />} />
-                <Route path="categories-brands" element={<AdminCategoriesBrands />} />
-                <Route path="home-sections" element={<HomeSections />} />
-                <Route path="delivery-routes" element={<DeliveryRoutes />} />
+              <Route path="/admin" element={<AdminRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="orderlist" element={<OrderList />} />
+                  <Route path="order/:id" element={<OrderDetailsAdmin />} />
+                  <Route path="userlist" element={<UserList />} />
+                  <Route path="user/:id/edit" element={<UserEdit />} />
+                  <Route path="productlist" element={<ProductList />} />
+                  <Route path="product/create" element={<ProductEdit />} />
+                  <Route path="product/:id/edit" element={<ProductEdit />} />
+                  <Route path="settings" element={<SiteSettings />} />
+                  <Route path="discounts" element={<Discounts />} />
+                  <Route path="categories-brands" element={<AdminCategoriesBrands />} />
+                  <Route path="home-sections" element={<HomeSections />} />
+                  <Route path="delivery-routes" element={<DeliveryRoutes />} />
+                </Route>
               </Route>
-            </Route>
-          </Routes>
+            </Routes>
+          </Suspense>
         </main>
         {!isAdminRoute && !isAuthRoute && <Footer />}
         {!isAdminRoute && !isAuthRoute && (

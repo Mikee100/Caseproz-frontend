@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +24,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [isDrawerCategoriesOpen, setIsDrawerCategoriesOpen] = useState(false);
@@ -32,6 +33,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     const [drawerSearch, setDrawerSearch] = useState('');
     const [dynamicBrands, setDynamicBrands] = useState([]);
     const [dynamicCategories, setDynamicCategories] = useState([]);
+    const shopNavRef = useRef(null);
 
     useEffect(() => {
         const fetchNavData = async () => {
@@ -69,6 +71,8 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     // Helper for easier access
     const BRANDS_LIST = dynamicBrands.map(b => typeof b === 'string' ? b : b.name);
     const mobileDrawerBrands = BRANDS_LIST.slice(0, 5);
+    const canSubmitSearch = searchKeyword.trim().length > 0;
+    const canSubmitDrawerSearch = drawerSearch.trim().length > 0;
 
     useEffect(() => {
         if (isMobileMenuOpen || isCartOpen) {
@@ -133,14 +137,12 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
         e.preventDefault();
         const trimmed = searchKeyword.trim();
 
-        // If nothing typed and user is already on a clean search page, do nothing
-        if (!trimmed && location.pathname === '/search' && !location.search) {
+        // Do not allow empty submissions from button click or Enter.
+        if (!trimmed) {
             return;
         }
 
-        const targetPath = trimmed
-            ? `/search?q=${encodeURIComponent(trimmed)}`
-            : '/search';
+        const targetPath = `/search?q=${encodeURIComponent(trimmed)}`;
         const replace = location.pathname === '/search';
 
         navigate(targetPath, { replace });
@@ -153,16 +155,45 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
 
     const handleDrawerSearch = (e) => {
         e.preventDefault();
-        if (drawerSearch.trim()) {
-            navigate(`/search?q=${encodeURIComponent(drawerSearch.trim())}`);
-            setDrawerSearch('');
-            setIsMobileMenuOpen(false);
+        const trimmed = drawerSearch.trim();
+        if (!trimmed) {
+            return;
         }
+
+        navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+        setDrawerSearch('');
+        setIsMobileMenuOpen(false);
     };
 
     useEffect(() => {
         setIsMobileSearchOpen(false);
     }, [location.pathname, location.search]);
+
+    useEffect(() => {
+        const handlePointerDown = (event) => {
+            if (!shopNavRef.current) {
+                return;
+            }
+
+            if (!shopNavRef.current.contains(event.target)) {
+                setIsShopMenuOpen(false);
+            }
+        };
+
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                setIsShopMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, []);
 
     return (
         <>
@@ -181,6 +212,9 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                         src="/WhatsApp%20Image%202026-04-15%20at%204.49.39%20PM.jpeg"
                                         alt="CaseProz logo"
                                         className="header-logo-img"
+                                        loading="eager"
+                                        fetchPriority="high"
+                                        decoding="async"
                                     />
                                 </Link>
                                 <div className="brand-divider" aria-hidden="true"></div>
@@ -204,11 +238,28 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     </Link>
                                 </li>
 
-                                <li className="nav-li shop-nav">
-                                    <button type="button" className="nav-link">
-                                        SHOP <i className="fas fa-chevron-down small-caret" />
+                                <li
+                                    className={`nav-li shop-nav ${isShopMenuOpen ? 'open' : ''}`}
+                                    ref={shopNavRef}
+                                    onMouseEnter={() => setIsShopMenuOpen(true)}
+                                    onMouseLeave={() => setIsShopMenuOpen(false)}
+                                >
+                                    <button
+                                        type="button"
+                                        className="nav-link"
+                                        onClick={() => setIsShopMenuOpen((prev) => !prev)}
+                                        aria-expanded={isShopMenuOpen}
+                                        aria-haspopup="menu"
+                                    >
+                                        SHOP <i className={`fas fa-chevron-down small-caret ${isShopMenuOpen ? 'open' : ''}`} />
                                     </button>
                                     <div className="shop-mega">
+                                        <div className="shop-mega-head">
+                                            <p>Browse Categories</p>
+                                            <Link to="/search" className="shop-mega-all" onClick={() => setIsShopMenuOpen(false)}>
+                                                View all
+                                            </Link>
+                                        </div>
                                         <div className="shop-mega-inner">
                                             {dynamicCategories.map((section) => (
                                                 <div key={section.title} className="shop-mega-column">
@@ -218,7 +269,10 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                                             key={item.slug}
                                                             type="button"
                                                             className="shop-mega-link"
-                                                            onClick={() => navigate(`/category/${item.slug}`)}
+                                                            onClick={() => {
+                                                                setIsShopMenuOpen(false);
+                                                                navigate(`/category/${item.slug}`);
+                                                            }}
                                                         >
                                                             {item.label}
                                                         </button>
@@ -282,7 +336,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     value={searchKeyword}
                                     onChange={(e) => setSearchKeyword(e.target.value)}
                                 />
-                                <button type="submit" className="premium-search-btn">FIND</button>
+                                <button type="submit" className="premium-search-btn" disabled={!canSubmitSearch}>FIND</button>
                             </form>
                         </div>
 
@@ -421,7 +475,12 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     <i className="fas fa-times"></i>
                                 </button>
                             )}
-                            <button type="submit" className="mobile-search-submit" aria-label="Search">
+                            <button
+                                type="submit"
+                                className="mobile-search-submit"
+                                aria-label="Search"
+                                disabled={!canSubmitSearch}
+                            >
                                 <i className="fas fa-arrow-right"></i>
                             </button>
                         </form>
@@ -448,7 +507,16 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                 placeholder="Search..."
                                 value={drawerSearch}
                                 onChange={(e) => setDrawerSearch(e.target.value)}
+                                aria-label="Search products"
                             />
+                            <button
+                                type="submit"
+                                className="mobile-search-submit"
+                                aria-label="Search from menu"
+                                disabled={!canSubmitDrawerSearch}
+                            >
+                                <i className="fas fa-arrow-right"></i>
+                            </button>
                         </form>
 
                         {/* User greeting in drawer */}

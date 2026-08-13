@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import ErrorBanner from '../components/ErrorBanner';
+import LoadingState from '../components/LoadingState';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
 import {
@@ -396,7 +397,7 @@ const Home = () => {
                 </div>
 
                 {loadingNewest ? (
-                    <div className="loading-state">Loading products...</div>
+                    <LoadingState message="Loading products..." compact />
                 ) : (
                     <div className="product-grid">
                         {latest.map((product) => (

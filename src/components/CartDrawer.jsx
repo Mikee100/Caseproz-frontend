@@ -75,7 +75,13 @@ const CartDrawer = ({ isOpen, onClose }) => {
                                 paddingBottom: '15px',
                                 borderBottom: '1px solid #f9f9f9'
                             }}>
-                                <img src={item.images[0]} alt={item.name} style={{ width: '80px', height: '80px', objectFit: 'contain', backgroundColor: '#f9f9f9', borderRadius: '8px' }} />
+                                <img
+                                    src={item.images[0]}
+                                    alt={item.name}
+                                    loading="lazy"
+                                    decoding="async"
+                                    style={{ width: '80px', height: '80px', objectFit: 'contain', backgroundColor: '#f9f9f9', borderRadius: '8px' }}
+                                />
                                 <div>
                                     <h4 style={{ fontSize: '14px', margin: '0 0 5px 0', fontWeight: 'bold' }}>{item.name}</h4>
                                     <p style={{ fontSize: '14px', color: '#E41E26', fontWeight: 'bold', margin: '0 0 10px 0' }}>KSh {item.price.toLocaleString()}</p>

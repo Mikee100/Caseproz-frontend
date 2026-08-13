@@ -54,6 +54,8 @@ const ProductCard = ({ product, highlightQuery }) => {
                         src={imageSrc}
                         alt={product.name}
                         loading="lazy"
+                        decoding="async"
+                        sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 240px"
                         onError={(e) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = fallbackImage;
