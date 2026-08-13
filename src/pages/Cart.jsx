@@ -10,8 +10,7 @@ import ErrorBanner from '../components/ErrorBanner';
 const Cart = () => {
     const { cart, cartTotal, removeFromCart, updateQuantity } = useCart();
     const { config, loading: configLoading } = useSiteConfig();
-    
-    console.log('Site Config in Cart:', config);
+
     const [couponCode, setCouponCode] = useState('');
     const [couponError, setCouponError] = useState('');
     const [couponSuccess, setCouponSuccess] = useState('');
@@ -123,9 +122,10 @@ const Cart = () => {
 
     if (cart.length === 0) {
         return (
-            <div className="cart-page container" style={{ padding: '60px 0' }}>
-                <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px' }}>Cart</h1>
+            <div className="cart-page container" style={{ padding: '12px 0 40px' }}>
+                <h1 className="cart-title" style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px' }}>Cart</h1>
                 <div
+                    className="cart-empty-state"
                     style={{
                         backgroundColor: 'white',
                         padding: '40px',
@@ -162,8 +162,8 @@ const Cart = () => {
     }
 
     return (
-        <div className="cart-page container" style={{ padding: '30px 0 60px' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px' }}>Cart</h1>
+        <div className="cart-page container" style={{ padding: '8px 0 48px' }}>
+            <h1 className="cart-title" style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px' }}>Cart</h1>
 
             <div className="cart-layout">
                 {/* Left: Cart items + coupon + recommendations */}
@@ -171,6 +171,7 @@ const Cart = () => {
                     <ErrorBanner message={recommendationsError} onClose={() => setRecommendationsError('')} compact />
                     {/* Cart items table */}
                     <div
+                        className="cart-items-shell"
                         style={{
                             backgroundColor: 'white',
                             borderRadius: '12px',
@@ -180,6 +181,7 @@ const Cart = () => {
                         }}
                     >
                         <div
+                            className="cart-table-head"
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: '2fr 1fr 1fr auto',
@@ -202,6 +204,7 @@ const Cart = () => {
                         <div>
             {cart.map((item) => (
                                 <div
+                                    className="cart-item-row"
                                     key={`${item._id}-${item.variantSku || 'default'}`}
                                     style={{
                                         display: 'grid',
@@ -212,8 +215,9 @@ const Cart = () => {
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                    <div className="cart-product-cell" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                                         <button
+                                            className="cart-remove-btn"
                                             onClick={() => removeFromCart(item._id, item.variantSku)}
                                             style={{
                                                 border: 'none',
@@ -227,6 +231,7 @@ const Cart = () => {
                                             <i className="fas fa-times"></i>
                                         </button>
                                         <img
+                                            className="cart-item-image"
                                             src={item.images[0]}
                                             alt={item.name}
                                             style={{
@@ -237,8 +242,9 @@ const Cart = () => {
                                                 borderRadius: '8px',
                                             }}
                                         />
-                                        <div>
+                                        <div className="cart-item-copy">
                                             <p
+                                                className="cart-item-name"
                                                 style={{
                                                     margin: 0,
                                                     fontSize: '14px',
@@ -248,12 +254,13 @@ const Cart = () => {
                                                 {item.name}
                                             </p>
                                             {(item.variantLabel || item.variantColor || item.variantStyle || item.variantSku) && (
-                                                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#444' }}>
+                                                <p className="cart-item-variant" style={{ margin: '4px 0 0', fontSize: '12px', color: '#444' }}>
                                                     {item.variantLabel || item.variantColor || item.variantStyle || item.variantSku}
                                                 </p>
                                             )}
                                             {item.slug && (
                                                 <p
+                                                    className="cart-item-slug"
                                                     style={{
                                                         margin: '4px 0 0',
                                                         fontSize: '12px',
@@ -267,17 +274,21 @@ const Cart = () => {
                                     </div>
 
                                     <div
+                                        className="cart-price-cell"
                                         style={{
                                             fontSize: '14px',
                                             fontWeight: 600,
                                             color: '#E41E26',
                                         }}
                                     >
+                                        <span className="cart-mobile-label">Price</span>
                                         KSh {item.price.toLocaleString()}
                                     </div>
 
-                                    <div>
+                                    <div className="cart-qty-cell">
+                                        <span className="cart-mobile-label">Quantity</span>
                                         <div
+                                            className="cart-qty-control"
                                             style={{
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
@@ -326,12 +337,14 @@ const Cart = () => {
                                     </div>
 
                                     <div
+                                        className="cart-subtotal-cell"
                                         style={{
                                             textAlign: 'right',
                                             fontSize: '14px',
                                             fontWeight: 600,
                                         }}
                                     >
+                                        <span className="cart-mobile-label">Subtotal</span>
                                         KSh {(item.price * item.quantity).toLocaleString()}
                                     </div>
                                 </div>
@@ -341,6 +354,7 @@ const Cart = () => {
 
                     {/* Coupon section */}
                     <div
+                        className="cart-coupon-card"
                         style={{
                             backgroundColor: 'white',
                             borderRadius: '12px',
@@ -362,6 +376,7 @@ const Cart = () => {
                             Enter your coupon code if you have one.
                         </p>
                         <div
+                            className="cart-coupon-row"
                             style={{
                                 display: 'flex',
                                 gap: '10px',
@@ -369,6 +384,7 @@ const Cart = () => {
                             }}
                         >
                             <input
+                                className="cart-coupon-input"
                                 type="text"
                                 placeholder="Coupon code"
                                 value={couponCode}
@@ -383,6 +399,7 @@ const Cart = () => {
                                 }}
                             />
                             <button
+                                className="cart-coupon-btn"
                                 onClick={handleApplyCoupon}
                                 style={{
                                     padding: '10px 20px',
@@ -434,6 +451,7 @@ const Cart = () => {
                     {/* You may be interested in... */}
                     {recommendations.length > 0 && (
                         <section
+                            className="cart-recommendations-card"
                             style={{
                                 backgroundColor: 'white',
                                 borderRadius: '12px',
@@ -469,6 +487,7 @@ const Cart = () => {
                 {/* Right: Cart summary + shipping options (Sweech-style) */}
                 <aside className="cart-summary-column">
                     <div
+                        className="cart-summary-card"
                         style={{
                             backgroundColor: 'white',
                             borderRadius: '12px',
@@ -478,6 +497,7 @@ const Cart = () => {
                         }}
                     >
                         <h2
+                            className="cart-summary-title"
                             style={{
                                 fontSize: '18px',
                                 margin: '0 0 16px',
@@ -534,6 +554,7 @@ const Cart = () => {
                         </div>
 
                         <div
+                            className="cart-delivery-panel"
                             style={{
                                 borderTop: '1px solid #f3f4f6',
                                 paddingTop: '14px',
@@ -627,6 +648,7 @@ const Cart = () => {
 
                         <Link to="/checkout" style={{ textDecoration: 'none' }}>
                             <button
+                                className="cart-checkout-btn"
                                 style={{
                                     width: '100%',
                                     padding: '14px 18px',
@@ -647,6 +669,7 @@ const Cart = () => {
                         </Link>
 
                         <Link
+                            className="cart-continue-link"
                             to="/"
                             style={{
                                 display: 'inline-block',

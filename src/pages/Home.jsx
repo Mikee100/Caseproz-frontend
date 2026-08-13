@@ -27,11 +27,21 @@ const CASE_STYLE_DEFINITIONS = [
     { key: 'leather', label: 'Leather', searchQuery: 'leather', terms: ['leather'] },
 ];
 
-const PHONE_MODEL_LINKS = [
-    { label: 'iPhone 17 Pro Max', path: '/category/iphone-17-pro-max-case' },
-    { label: 'iPhone 17 Pro', path: '/category/iphone-17-pro-case' },
-    { label: 'iPhone 16 Pro Max', path: '/category/iphone-16-pro-max-case' },
-    { label: 'Galaxy S26', path: '/category/galaxy-s26-case' },
+const BUNDLE_SAVE_ITEMS = [
+    {
+        key: 'case-screen-protector',
+        title: 'Case + Screen Protector',
+        description: 'Protect both screen and body in one go with a practical everyday combo.',
+        path: '/search?q=case%20screen%20protector',
+        badge: 'Popular Bundle',
+    },
+    {
+        key: 'charger-cable',
+        title: 'Charger + Cable',
+        description: 'Get a reliable charging setup for home, office, or travel at a better combined value.',
+        path: '/search?q=charger%20cable',
+        badge: 'Power Bundle',
+    },
 ];
 
 const isCaseProduct = (product) => {
@@ -342,32 +352,33 @@ const Home = () => {
                 </section>
             )}
 
-            <section className="home-model-fit container">
+            <CategoryShowcase products={products} />
+
+            <section className="home-bundles container">
                 <div className="section-header">
                     <div className="title-area">
-                        <span className="subtitle">SHOP BY PHONE MODEL</span>
-                        <h2 className="main-title">Find Your Exact Fit</h2>
-                        <p className="home-model-fit-note">Jump directly into cases made for your exact device.</p>
+                        <span className="subtitle">BUNDLE &amp; SAVE</span>
+                        <h2 className="main-title">Shop Smart Combos</h2>
                     </div>
                 </div>
-                <div className="home-model-fit-row">
-                    {PHONE_MODEL_LINKS.map((item) => (
+                <div className="home-bundle-grid">
+                    {BUNDLE_SAVE_ITEMS.map((bundle) => (
                         <Link
-                            key={item.label}
-                            to={item.path}
-                            className="home-model-fit-pill"
+                            key={bundle.key}
+                            to={bundle.path}
+                            className="home-bundle-card"
                             onClick={() =>
-                                trackHomeClick('home_model_fit_click', 'model_fit', item.label)
+                                trackHomeClick('home_bundle_click', 'bundle_save', bundle.key)
                             }
                         >
-                            <span className="home-model-fit-pill-title">{item.label}</span>
-                            <span className="home-model-fit-pill-cta">Shop fit</span>
+                            <span className="home-bundle-badge">{bundle.badge}</span>
+                            <h3>{bundle.title}</h3>
+                            <p>{bundle.description}</p>
+                            <span className="home-bundle-cta">View bundle</span>
                         </Link>
                     ))}
                 </div>
             </section>
-
-            <CategoryShowcase products={products} />
 
             <section className="featured-section container">
                 <div className="section-header">

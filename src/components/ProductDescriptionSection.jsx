@@ -1,20 +1,33 @@
 import React from 'react';
 
+const ProductDescriptionSection = ({ html, specs, keyFeatures = [] }) => {
+    const hasSpecs = specs && (Array.isArray(specs) ? specs.length > 0 : Object.keys(specs).length > 0);
+    const hasFeatures = Array.isArray(keyFeatures) && keyFeatures.length > 0;
 
-const ProductDescriptionSection = ({ html, specs }) => {
-    if (!html && (!specs || (Array.isArray(specs) ? specs.length === 0 : Object.keys(specs).length === 0))) return null;
+    if (!html && !hasSpecs && !hasFeatures) return null;
 
     return (
         <section className="pd-description-section">
             {html && <>
-                <h2 className="pd-description-heading">Description</h2>
+                <h2 className="pd-description-heading">Product Description</h2>
                 <div
                     className="pd-description"
                     dangerouslySetInnerHTML={{ __html: html }}
                 />
             </>}
 
-            {specs && (Array.isArray(specs) ? specs.length > 0 : Object.keys(specs).length > 0) && (
+            {hasFeatures && (
+                <div className="pd-features-summary">
+                    <h3 className="pd-features-summary-title">Features</h3>
+                    <ul>
+                        {keyFeatures.map((feature, idx) => (
+                            <li key={`${feature}-${idx}`}>{feature}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {hasSpecs && (
                 <div className="pd-specs-section-inside">
                     <h3 className="pd-specs-title">Specifications</h3>
                     <div className="pd-specs-table-wrapper">

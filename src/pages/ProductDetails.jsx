@@ -15,6 +15,20 @@ const buildVariantDisplayName = (variant) => {
     return variant.label || variant.color || variant.style || variant.sku || 'Option';
 };
 
+const getVariantSelectorLabel = (product) => {
+    const nameBlob = `${product?.name || ''} ${product?.category || ''} ${product?.subCategory || ''}`.toLowerCase();
+    if (nameBlob.includes('iphone') || nameBlob.includes('samsung') || nameBlob.includes('phone')) {
+        return 'Select your phone model';
+    }
+    return 'Choose style';
+};
+
+const renderRatingStars = (ratingValue) => {
+    const safeRating = Math.max(0, Math.min(5, Number(ratingValue || 0)));
+    const rounded = Math.round(safeRating);
+    return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+};
+
 const ProductDetails = () => {
     const { slug } = useParams();
     const { addToCart } = useCart();
@@ -33,7 +47,9 @@ const ProductDetails = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [isImageLoading, setIsImageLoading] = useState(true);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false);
     const touchStartXRef = useRef(null);
+    const addToCartRef = useRef(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -111,6 +127,28 @@ const ProductDetails = () => {
             setIsImageLoading(true);
         }
     }, [effectiveImage]);
+
+    useEffect(() => {
+        const onScrollOrResize = () => {
+            if (!addToCartRef.current || window.innerWidth > 900) {
+                setShowStickyPurchaseBar(false);
+                return;
+            }
+
+            const rect = addToCartRef.current.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+            setShowStickyPurchaseBar(!isVisible);
+        };
+
+        onScrollOrResize();
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize);
+
+        return () => {
+            window.removeEventListener('scroll', onScrollOrResize);
+            window.removeEventListener('resize', onScrollOrResize);
+        };
+    }, [product, selectedVariantSku]);
 
     const handleQuantityChange = (type) => {
         if (type === 'inc') {
@@ -255,6 +293,10 @@ const ProductDetails = () => {
     const productSeo = buildProductSeo(product, slug);
 
     const categoryParam = product.category ? encodeURIComponent(product.category) : '';
+    const ratingValue = Number(product.ratingAverage || product.rating || 0);
+    const reviewsCount = Number(product.reviewsCount || product.numReviews || 0);
+    const hasReviews = ratingValue > 0 && reviewsCount > 0;
+    const variantSelectorLabel = getVariantSelectorLabel(product);
     const metaCategories = Array.from(
         new Map(
             [
@@ -364,7 +406,18 @@ const ProductDetails = () => {
                     </nav>
 
                     <h1 className="pd-name">{product.name}</h1>
-             
+
+                    <div className="pd-reviews-row" aria-label="Product rating summary">
+                        <span className="pd-rating-stars">{renderRatingStars(ratingValue)}</span>
+                        {hasReviews ? (
+                            <>
+                                <span className="pd-rating-value">{ratingValue.toFixed(1)}</span>
+                                <span className="pd-rating-count">({reviewsCount} reviews)</span>
+                            </>
+                        ) : (
+                            <span className="pd-rating-empty">No reviews yet</span>
+                        )}
+                    </div>
 
                     <div className="pd-price-row">
                         <span className="pd-price-dot"></span>
@@ -384,6 +437,57 @@ const ProductDetails = () => {
                         )}
                     </div>
 
+                    <p className="pd-price-tax-note">Inclusive of applicable taxes.</p>
+
+                    <div className="pd-stock-row" role="status" aria-live="polite">
+                        <span className={`pd-stock-pill ${effectiveStock > 0 ? 'in-stock' : 'out-stock'}`}>
+                            {effectiveStock > 0 ? '✓ In stock' : 'Out of stock'}
+                        </span>
+                    </div>
+
+                    {Array.isArray(product.variants) && product.variants.length > 0 && (
+                        <section className="pd-variants-gallery pd-variants-gallery--inline">
+                            <div className="pd-variants-gallery-header">
+                                <span className="pd-variants-label">{variantSelectorLabel}</span>
+                            </div>
+                            <div className="pd-variants-thumbnails">
+                                {product.variants.map((variant) => {
+                                    const thumbSrc = variant.image || product.images?.[0] || '';
+                                    return (
+                                        <button
+                                            key={variant.sku}
+                                            type="button"
+                                            className={`pd-variant-thumb-card ${variant.sku === selectedVariantSku ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedVariantSku(variant.sku);
+                                                if (variant.image) handleSelectMainImage(variant.image);
+                                            }}
+                                            aria-pressed={variant.sku === selectedVariantSku}
+                                        >
+                                            <div className="pd-variant-thumb-image-wrap">
+                                                {thumbSrc ? (
+                                                    <img
+                                                        src={thumbSrc}
+                                                        alt={buildVariantDisplayName(variant)}
+                                                        className="pd-variant-thumb-image"
+                                                    />
+                                                ) : (
+                                                    <div className="pd-variant-thumb-placeholder">No image</div>
+                                                )}
+                                            </div>
+                                            <div className="pd-variant-thumb-meta">
+                                                <span className="pd-variant-thumb-label">{buildVariantDisplayName(variant)}</span>
+                                                <span className="pd-variant-thumb-stock">
+                                                    {variant.stock > 0 ? 'In stock' : 'Out of stock'}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+
                     {product.keyFeatures && product.keyFeatures.length > 0 && (
                         <div className="pd-features">
                             <ul>
@@ -400,6 +504,7 @@ const ProductDetails = () => {
                             <button type="button" onClick={() => handleQuantityChange('inc')} aria-label="Increase quantity">+</button>
                         </div>
                         <button
+                            ref={addToCartRef}
                             className="pd-add-to-cart"
                             onClick={handleAddToCart}
                             disabled={effectiveStock <= 0}
@@ -424,6 +529,30 @@ const ProductDetails = () => {
                         <i className={isFavourite(product._id) ? 'fas fa-heart' : 'far fa-heart'}></i>
                         <span>ADD TO WISHLIST</span>
                     </button>
+
+                    <div className="pd-assurance">
+                        <div className="pd-assurance-item">
+                            <span className="pd-assurance-icon">🚚</span>
+                            <div>
+                                <strong>Delivery</strong>
+                                <p>Nairobi: same/next day. Outside Nairobi: 1-3 business days.</p>
+                            </div>
+                        </div>
+                        <div className="pd-assurance-item">
+                            <span className="pd-assurance-icon">💳</span>
+                            <div>
+                                <strong>Secure payment</strong>
+                                <p>M-Pesa, card, and other available checkout methods.</p>
+                            </div>
+                        </div>
+                        <div className="pd-assurance-item">
+                            <span className="pd-assurance-icon">↩</span>
+                            <div>
+                                <strong>Returns</strong>
+                                <p>Easy return process for eligible products.</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="pd-meta">
                         {product.sku && (
@@ -455,56 +584,36 @@ const ProductDetails = () => {
                 </div>
             </div>
 
-            {Array.isArray(product.variants) && product.variants.length > 0 && (
-                <section className="pd-variants-gallery">
-                    <div className="pd-variants-gallery-header">
-                        <span className="pd-variants-label">Choose Option</span>
-                    </div>
-                    <div className="pd-variants-thumbnails">
-                        {product.variants.map((variant) => {
-                            const thumbSrc = variant.image || product.images?.[0] || '';
-                            return (
-                                <button
-                                    key={variant.sku}
-                                    type="button"
-                                    className={`pd-variant-thumb-card ${variant.sku === selectedVariantSku ? 'active' : ''}`}
-                                    onClick={() => {
-                                        setSelectedVariantSku(variant.sku);
-                                        if (variant.image) handleSelectMainImage(variant.image);
-                                    }}
-                                >
-                                    <div className="pd-variant-thumb-image-wrap">
-                                        {thumbSrc ? (
-                                            <img
-                                                src={thumbSrc}
-                                                alt={buildVariantDisplayName(variant)}
-                                                className="pd-variant-thumb-image"
-                                            />
-                                        ) : (
-                                            <div className="pd-variant-thumb-placeholder">No image</div>
-                                        )}
-                                    </div>
-                                    <div className="pd-variant-thumb-meta">
-                                        <span className="pd-variant-thumb-label">{buildVariantDisplayName(variant)}</span>
-                                        <span className="pd-variant-thumb-stock">
-                                            {variant.stock > 0 ? 'In stock' : 'Out of stock'}
-                                        </span>
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </section>
-            )}
+            <ProductDescriptionSection html={product.description} specs={product.specs} keyFeatures={product.keyFeatures} />
 
-            <ProductDescriptionSection html={product.description} specs={product.specs} />
+            <section className="pd-faq" aria-label="Frequently asked questions">
+                <h2 className="pd-faq-title">Frequently Asked Questions</h2>
+                <div className="pd-faq-list">
+                    <details>
+                        <summary>Will this case fit my iPhone model?</summary>
+                        <p>Select your exact model from the option list before adding to cart.</p>
+                    </details>
+                    <details>
+                        <summary>How long does delivery take in Kenya?</summary>
+                        <p>Nairobi orders are usually same or next day, and upcountry orders take 1-3 business days.</p>
+                    </details>
+                    <details>
+                        <summary>Which payment methods are available?</summary>
+                        <p>You can pay using the methods shown at checkout, including M-Pesa and card where available.</p>
+                    </details>
+                    <details>
+                        <summary>Can I return an item?</summary>
+                        <p>Eligible products can be returned through our simple returns process.</p>
+                    </details>
+                </div>
+            </section>
 
             {relatedProducts.length > 0 && (
                 <section className="pd-related">
                     <div className="pd-related-header">
                         <div>
-                            <h2 className="pd-related-title">Related products</h2>
-                            <p className="pd-related-subtitle">Customers also viewed these</p>
+                            <h2 className="pd-related-title">You may also like</h2>
+                            <p className="pd-related-subtitle">Customers also viewed these products</p>
                         </div>
                     </div>
                     <div
@@ -627,6 +736,21 @@ const ProductDetails = () => {
                             View cart
                         </Link>
                     </span>
+                </div>
+            )}
+            {showStickyPurchaseBar && (
+                <div className="pd-sticky-purchase" role="region" aria-label="Quick add to cart">
+                    <div className="pd-sticky-product">
+                        <strong>{product.name}</strong>
+                        <span>KSh {effectivePrice.toLocaleString()}</span>
+                    </div>
+                    <button
+                        className="pd-sticky-add"
+                        onClick={handleAddToCart}
+                        disabled={effectiveStock <= 0}
+                    >
+                        {effectiveStock <= 0 ? 'Out of stock' : 'Add to cart'}
+                    </button>
                 </div>
             )}
         </div>
