@@ -24,16 +24,16 @@ const Footer = () => {
                 <div className="footer-grid">
                     <div className="footer-col">
                         <h2 className="logo-text">CASEPROZ</h2>
-                        <p>Kenya's coolest online shop for premium phone cases, chargers, audio, and tech accessories. Experience fast delivery across Kenya and top-notch customer support.</p>
+                        <p className="footer-tagline">Kenya's coolest online shop for premium phone cases, chargers, audio, and tech accessories. Experience fast delivery across Kenya and top-notch customer support.</p>
                         <div className="social-links">
-                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
-                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+                            <a className="footer-social-link" href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
+                            <a className="footer-social-link" href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+                            <a className="footer-social-link" href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
                         </div>
                     </div>
                     <div className="footer-col">
                         <h3>Shop Categories</h3>
-                        <ul>
+                        <ul className="footer-link-list">
                             <li><Link to="/category/iphone-17-pro-max-case">iPhone 17 Cases</Link></li>
                             <li><Link to="/category/iphone-16-pro-max-case">iPhone 16 Cases</Link></li>
                             <li><Link to="/search?q=anker">Anker Chargers &amp; Audio</Link></li>
@@ -42,7 +42,7 @@ const Footer = () => {
                     </div>
                     <div className="footer-col">
                         <h3>Customer Care</h3>
-                        <ul>
+                        <ul className="footer-link-list">
                             <li><Link to="/customer-support">Customer Support</Link></li>
                             <li><Link to="/contact">Contact Us</Link></li>
                             <li><Link to="/delivery">Delivery Information</Link></li>
@@ -52,7 +52,7 @@ const Footer = () => {
                     </div>
                     <div className="footer-col">
                         <h3>Newsletter</h3>
-                        <p>Subscribe to get the latest tech deals and updates.</p>
+                        <p className="footer-newsletter-copy">Subscribe to get the latest tech deals and updates.</p>
                         <form className="newsletter-form" onSubmit={handleSubmit}>
                             <input
                                 type="email"

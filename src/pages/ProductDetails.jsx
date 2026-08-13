@@ -50,6 +50,7 @@ const ProductDetails = () => {
     const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false);
     const touchStartXRef = useRef(null);
     const addToCartRef = useRef(null);
+    const mainImageRef = useRef(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -123,9 +124,30 @@ const ProductDetails = () => {
     const visibleImageIndex = activeImageIndex >= 0 ? activeImageIndex : 0;
 
     useEffect(() => {
-        if (effectiveImage) {
-            setIsImageLoading(true);
+        if (!effectiveImage) {
+            setIsImageLoading(false);
+            return undefined;
         }
+
+        setIsImageLoading(true);
+
+        // Fallback guard: if the browser already has this image cached, onLoad may not fire again.
+        const rafId = window.requestAnimationFrame(() => {
+            const img = mainImageRef.current;
+            if (img && img.complete && img.naturalWidth > 0) {
+                setIsImageLoading(false);
+            }
+        });
+
+        // Hard timeout so UI never gets stuck in loading state for slow/broken image responses.
+        const timeoutId = window.setTimeout(() => {
+            setIsImageLoading(false);
+        }, 7000);
+
+        return () => {
+            window.cancelAnimationFrame(rafId);
+            window.clearTimeout(timeoutId);
+        };
     }, [effectiveImage]);
 
     useEffect(() => {
@@ -376,6 +398,7 @@ const ProductDetails = () => {
                             )}
                             {isImageLoading && <div className="pd-main-image-loader" aria-hidden="true"></div>}
                             <img
+                                ref={mainImageRef}
                                 src={effectiveImage}
                                 alt={product.name}
                                 className={isImageLoading ? 'is-loading' : 'is-loaded'}
@@ -586,28 +609,6 @@ const ProductDetails = () => {
 
             <ProductDescriptionSection html={product.description} specs={product.specs} keyFeatures={product.keyFeatures} />
 
-            <section className="pd-faq" aria-label="Frequently asked questions">
-                <h2 className="pd-faq-title">Frequently Asked Questions</h2>
-                <div className="pd-faq-list">
-                    <details>
-                        <summary>Will this case fit my iPhone model?</summary>
-                        <p>Select your exact model from the option list before adding to cart.</p>
-                    </details>
-                    <details>
-                        <summary>How long does delivery take in Kenya?</summary>
-                        <p>Nairobi orders are usually same or next day, and upcountry orders take 1-3 business days.</p>
-                    </details>
-                    <details>
-                        <summary>Which payment methods are available?</summary>
-                        <p>You can pay using the methods shown at checkout, including M-Pesa and card where available.</p>
-                    </details>
-                    <details>
-                        <summary>Can I return an item?</summary>
-                        <p>Eligible products can be returned through our simple returns process.</p>
-                    </details>
-                </div>
-            </section>
-
             {relatedProducts.length > 0 && (
                 <section className="pd-related">
                     <div className="pd-related-header">
@@ -640,6 +641,41 @@ const ProductDetails = () => {
                     </div>
                 </section>
             )}
+
+            <section className="pd-faq" aria-label="Frequently asked questions">
+                <h2 className="pd-faq-title">Frequently Asked Questions</h2>
+                <p className="pd-faq-subtitle">Quick answers to common questions before checkout.</p>
+                <div className="pd-faq-list">
+                    <details className="pd-faq-item">
+                        <summary>
+                            <span>Will this case fit my iPhone model?</span>
+                            <span className="pd-faq-icon" aria-hidden="true">+</span>
+                        </summary>
+                        <p>Select your exact model from the option list before adding to cart.</p>
+                    </details>
+                    <details className="pd-faq-item">
+                        <summary>
+                            <span>How long does delivery take in Kenya?</span>
+                            <span className="pd-faq-icon" aria-hidden="true">+</span>
+                        </summary>
+                        <p>Nairobi orders are usually same or next day, and upcountry orders take 1-3 business days.</p>
+                    </details>
+                    <details className="pd-faq-item">
+                        <summary>
+                            <span>Which payment methods are available?</span>
+                            <span className="pd-faq-icon" aria-hidden="true">+</span>
+                        </summary>
+                        <p>You can pay using the methods shown at checkout, including M-Pesa and card where available.</p>
+                    </details>
+                    <details className="pd-faq-item">
+                        <summary>
+                            <span>Can I return an item?</span>
+                            <span className="pd-faq-icon" aria-hidden="true">+</span>
+                        </summary>
+                        <p>Eligible products can be returned through our simple returns process.</p>
+                    </details>
+                </div>
+            </section>
             {isLightboxOpen && (
                 <div
                     className="pd-lightbox"
