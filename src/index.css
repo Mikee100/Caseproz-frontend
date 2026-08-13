@@ -6882,7 +6882,21 @@ body {
 }
 
 .home-page .category-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+}
+
+.home-page .category-showcase .section-header {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.home-page .category-showcase .title-area {
+  text-align: left;
+}
+
+.home-page .category-showcase .view-all {
+  margin-left: auto;
 }
 
 .home-page .cat-image-wrapper {
@@ -7232,7 +7246,7 @@ body {
 
 @media (max-width: 768px) {
   .home-page .category-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
   }
 
