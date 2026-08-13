@@ -1,15 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import {
+    DEFAULT_OG_IMAGE,
+    SITE_URL,
+    SOCIAL_PROFILES,
+    SUPPORT_EMAIL,
+    SUPPORT_PHONE,
+} from '../utils/seo';
 
 const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'Store',
     name: 'CaseProz',
-    image: 'https://www.caseproz.co.ke/og-contact.png',
-    url: 'https://www.caseproz.co.ke',
-    telephone: '+254700000000',
-    email: 'support@caseproz.co.ke',
+    image: DEFAULT_OG_IMAGE,
+    url: SITE_URL,
+    telephone: SUPPORT_PHONE,
+    email: SUPPORT_EMAIL,
     priceRange: 'KSh',
     description: 'Premium phone cases, Anker chargers, screen protectors and mobile accessories. Fast delivery across Kenya.',
     address: {
@@ -48,7 +55,7 @@ const localBusinessSchema = {
     contactPoint: [
         {
             '@type': 'ContactPoint',
-            telephone: '+254700000000',
+            telephone: SUPPORT_PHONE,
             contactType: 'customer support',
             contactOption: 'TollFree',
             areaServed: 'KE',
@@ -62,10 +69,7 @@ const localBusinessSchema = {
             availableLanguage: 'English',
         },
     ],
-    sameAs: [
-        'https://www.facebook.com',
-        'https://www.instagram.com',
-    ],
+    sameAs: SOCIAL_PROFILES,
 };
 
 const CustomerSupport = () => {
@@ -110,8 +114,8 @@ const CustomerSupport = () => {
             <p>Talk directly to our team during business hours for quick help with your order or delivery.</p>
             <p style={{ marginTop: 10 }}>
               Phone:{' '}
-              <a href="tel:+254700000000" style={{ color: '#E1261C', fontWeight: 600 }}>
-                +254 700 000 000
+              <a href={`tel:${SUPPORT_PHONE}`} style={{ color: '#E1261C', fontWeight: 600 }}>
+                +254 794 057 030
               </a>
             </p>
             <div className="support-hours">
@@ -134,7 +138,7 @@ const CustomerSupport = () => {
             </p>
             <p style={{ marginTop: 10 }}>
               WhatsApp:{' '}
-              <a href="https://wa.me/254700000000" target="_blank" rel="noreferrer" style={{ color: '#E1261C', fontWeight: 600 }}>
+              <a href={`https://wa.me/${SUPPORT_PHONE.replace('+', '')}`} target="_blank" rel="noreferrer" style={{ color: '#E1261C', fontWeight: 600 }}>
                 +254 700 000 000
               </a>
             </p>

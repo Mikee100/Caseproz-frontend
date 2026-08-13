@@ -1,8 +1,37 @@
-{
-  "rewrites": [
-    {
-      "source": "/((?!.*\\.).*)",
-      "destination": "/index.html"
-    }
-  ]
-}
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "caseproz.co.ke" }],
+      "destination": "https://www.caseproz.co.ke/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
+      "source": "/product/:slug",
+      "destination": "/api/render?route=product&slug=:slug"
+    },
+    {
+      "source": "/category/:name",
+      "destination": "/api/render?route=category&name=:name"
+    },
+    {
+      "source": "/brand/:name",
+      "destination": "/api/render?route=brand&name=:name"
+    },
+    {
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+

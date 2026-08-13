@@ -1,9 +1,11 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-
-const DEFAULT_SITE_NAME = 'CaseProz Kenya';
-const DEFAULT_BASE_URL = 'https://www.caseproz.co.ke';
-const DEFAULT_OG_IMAGE = `${DEFAULT_BASE_URL}/og-contact.png`;
+import {
+    DEFAULT_OG_IMAGE,
+    SITE_NAME,
+    absoluteUrl,
+    resolveOgImage,
+} from '../utils/seo';
 
 const SeoMeta = ({
     title,
@@ -14,20 +16,16 @@ const SeoMeta = ({
     image,
     type = 'website',
     noIndex = false,
-    siteName = DEFAULT_SITE_NAME,
+    siteName = SITE_NAME,
     twitterCard = 'summary_large_image',
 }) => {
     const resolvedCanonical =
         canonicalUrl ||
         (typeof window !== 'undefined'
             ? `${window.location.origin}${canonicalPath || window.location.pathname}`
-            : `${DEFAULT_BASE_URL}${canonicalPath || '/'}`);
+            : absoluteUrl(canonicalPath || '/'));
 
-    const resolvedImage = image
-        ? image.startsWith('http')
-            ? image
-            : `${DEFAULT_BASE_URL}${image.startsWith('/') ? image : `/${image}`}`
-        : DEFAULT_OG_IMAGE;
+    const resolvedImage = resolveOgImage(image);
 
     return (
         <Helmet>

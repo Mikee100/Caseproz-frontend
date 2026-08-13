@@ -5,7 +5,10 @@ Disallow: /admin
 Disallow: /login
 Disallow: /register
 Disallow: /checkout
+Disallow: /cart
 Disallow: /profile
 Disallow: /orders
+Disallow: /favourites
+Disallow: /search
 
 Sitemap: https://www.caseproz.co.ke/sitemap.xml

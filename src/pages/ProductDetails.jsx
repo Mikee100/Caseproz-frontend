@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -8,6 +8,7 @@ import { apiFetch } from '../utils/apiClient';
 import ProductDescriptionSection from '../components/ProductDescriptionSection';
 import ProductCard from '../components/ProductCard';
 import SeoMeta from '../components/SeoMeta';
+import { buildProductSeo } from '../utils/seo';
 
 const buildVariantDisplayName = (variant) => {
     if (!variant) return 'Option';
@@ -30,6 +31,9 @@ const ProductDetails = () => {
     const [zoomTransform, setZoomTransform] = useState(null);
     const [selectedVariantSku, setSelectedVariantSku] = useState('');
     const [relatedProducts, setRelatedProducts] = useState([]);
+    const [isImageLoading, setIsImageLoading] = useState(true);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const touchStartXRef = useRef(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -85,7 +89,28 @@ const ProductDetails = () => {
     const selectedVariant = (product?.variants || []).find((variant) => variant.sku === selectedVariantSku) || null;
     const effectivePrice = selectedVariant?.price ?? product?.price ?? 0;
     const effectiveStock = selectedVariant?.stock ?? product?.stock ?? 0;
-    const effectiveImage = selectedVariant?.image || mainImage;
+
+    const galleryImages = useMemo(() => {
+        if (!product) return [];
+        return Array.from(
+            new Set([
+                ...(Array.isArray(product.images) ? product.images : []),
+                ...(Array.isArray(product.variants)
+                    ? product.variants.map((variant) => variant.image).filter(Boolean)
+                    : []),
+            ])
+        );
+    }, [product]);
+
+    const effectiveImage = mainImage || selectedVariant?.image || product?.images?.[0] || '';
+    const activeImageIndex = galleryImages.indexOf(effectiveImage);
+    const visibleImageIndex = activeImageIndex >= 0 ? activeImageIndex : 0;
+
+    useEffect(() => {
+        if (effectiveImage) {
+            setIsImageLoading(true);
+        }
+    }, [effectiveImage]);
 
     const handleQuantityChange = (type) => {
         if (type === 'inc') {
@@ -134,12 +159,88 @@ const ProductDetails = () => {
         });
     };
 
+    const handleSelectMainImage = (imageUrl) => {
+        if (!imageUrl) return;
+        setMainImage(imageUrl);
+        setIsZoomActive(false);
+        setZoomTransform(null);
+    };
+
+    const handleCycleImage = useCallback((direction) => {
+        if (galleryImages.length <= 1) return;
+        const currentIndex = galleryImages.indexOf(effectiveImage);
+        const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
+        const nextIndex = (safeCurrentIndex + direction + galleryImages.length) % galleryImages.length;
+        handleSelectMainImage(galleryImages[nextIndex]);
+    }, [galleryImages, effectiveImage]);
+
+    useEffect(() => {
+        if (!isLightboxOpen) return undefined;
+
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsLightboxOpen(false);
+            }
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                handleCycleImage(1);
+            }
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                handleCycleImage(-1);
+            }
+        };
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        window.addEventListener('keydown', onKeyDown);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, [isLightboxOpen, handleCycleImage]);
+
+    const handleMainImageClick = () => {
+        if (window.innerWidth < 768 && effectiveImage) {
+            setIsLightboxOpen(true);
+        }
+    };
+
+    const handleLightboxTouchStart = (event) => {
+        touchStartXRef.current = event.touches?.[0]?.clientX ?? null;
+    };
+
+    const handleLightboxTouchEnd = (event) => {
+        if (touchStartXRef.current === null) return;
+        const touchEndX = event.changedTouches?.[0]?.clientX;
+        if (typeof touchEndX !== 'number') {
+            touchStartXRef.current = null;
+            return;
+        }
+
+        const deltaX = touchStartXRef.current - touchEndX;
+        touchStartXRef.current = null;
+
+        if (Math.abs(deltaX) < 40) return;
+        handleCycleImage(deltaX > 0 ? 1 : -1);
+    };
+
+    const loadingSeo = buildProductSeo(null, slug);
+
     if (loading)
         return (
-            <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-                <div className="loading-spinner large"></div>
-                <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading product...</p>
-            </div>
+            <>
+                <SeoMeta
+                    title={loadingSeo.title}
+                    description={loadingSeo.description}
+                    canonicalPath={loadingSeo.canonicalPath}
+                />
+                <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
+                    <div className="loading-spinner large"></div>
+                    <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading product...</p>
+                </div>
+            </>
         );
     if (error) return <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>{error}</div>;
     if (!product) return null;
@@ -150,6 +251,8 @@ const ProductDetails = () => {
     const discountPercent = hasDiscount
         ? Math.round(((product.originalPrice - effectivePrice) / product.originalPrice) * 100)
         : null;
+
+    const productSeo = buildProductSeo(product, slug);
 
     const categoryParam = product.category ? encodeURIComponent(product.category) : '';
     const metaCategories = Array.from(
@@ -164,102 +267,37 @@ const ProductDetails = () => {
         ).values()
     );
 
-    const pageTitle =
-        product.metaTitle && product.metaTitle.trim().length > 0
-            ? product.metaTitle
-            : `${product.name} | CaseProz Kenya`;
-
-    const metaDescription =
-        product.metaDescription && product.metaDescription.trim().length > 0
-            ? product.metaDescription
-            : `Buy ${product.name} online at CaseProz Kenya. ${hasDiscount ? `Save ${discountPercent}% off the original price. ` : ''}Fast delivery and genuine accessories.`;
-
-    const mainImageUrl =
-        Array.isArray(product.images) && product.images.length > 0
-            ? product.images[0]
-            : undefined;
-
-    const structuredData = {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: product.name,
-        image: product.images || [],
-        description: metaDescription,
-        sku: product.sku || undefined,
-        brand: product.brand
-            ? {
-                  '@type': 'Brand',
-                  name: product.brand,
-              }
-            : undefined,
-        offers: {
-            '@type': 'Offer',
-            priceCurrency: 'KES',
-            price: effectivePrice,
-            availability:
-                effectiveStock > 0
-                    ? 'https://schema.org/InStock'
-                    : 'https://schema.org/OutOfStock',
-            url: typeof window !== 'undefined' ? window.location.href : undefined,
-        },
-    };
-
-    const breadcrumbSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-            {
-                '@type': 'ListItem',
-                position: 1,
-                name: 'Home',
-                item: 'https://www.caseproz.co.ke/',
-            },
-            {
-                '@type': 'ListItem',
-                position: 2,
-                name: product.category || 'Category',
-                item: product.category
-                    ? `https://www.caseproz.co.ke/search?category=${encodeURIComponent(product.category)}`
-                    : 'https://www.caseproz.co.ke/search',
-            },
-            {
-                '@type': 'ListItem',
-                position: 3,
-                name: product.name,
-                item: `https://www.caseproz.co.ke/product/${product.slug}`,
-            },
-        ],
-    };
-
     return (
         <div className="product-details-page container">
             <SeoMeta
-                title={pageTitle}
-                description={metaDescription}
-                canonicalPath={`/product/${product.slug}`}
-                image={mainImageUrl}
+                title={productSeo.title}
+                description={productSeo.description}
+                canonicalPath={productSeo.canonicalPath}
+                image={productSeo.image}
                 type="product"
             />
             <Helmet>
-                <script type="application/ld+json">
-                    {JSON.stringify(structuredData)}
-                </script>
-                <script type="application/ld+json">
-                    {JSON.stringify(breadcrumbSchema)}
-                </script>
+                {productSeo.jsonLd.map((schema, index) => (
+                    <script key={index} type="application/ld+json">
+                        {JSON.stringify(schema)}
+                    </script>
+                ))}
             </Helmet>
             <div className="pd-layout">
                 {/* Left: Thumbnails + Main image area (feature headline, image, notes) */}
                 <div className="pd-images">
                     <div className="pd-thumbnails-col">
-                        {product.images?.length > 0 && product.images.map((img, index) => (
-                            <div
+                        {galleryImages.length > 0 && galleryImages.map((img, index) => (
+                            <button
                                 key={index}
-                                className={`pd-thumb ${mainImage === img ? 'active' : ''}`}
-                                onClick={() => setMainImage(img)}
+                                type="button"
+                                className={`pd-thumb ${effectiveImage === img ? 'active' : ''}`}
+                                onClick={() => handleSelectMainImage(img)}
+                                aria-label={`Show image ${index + 1} of ${galleryImages.length}`}
+                                aria-pressed={effectiveImage === img}
                             >
                                 <img src={img} alt={`${product.name} thumbnail ${index + 1}`} />
-                            </div>
+                            </button>
                         ))}
                     </div>
                     <div className="pd-main-col">
@@ -274,15 +312,34 @@ const ProductDetails = () => {
                             </div>
                         )}
                         <div
-                            className={`pd-main-image ${isZoomActive ? 'pd-main-image--zoom' : ''}`}
+                            className={`pd-main-image ${isZoomActive ? 'pd-main-image--zoom' : ''} ${isImageLoading ? 'is-loading' : ''}`}
                             onMouseEnter={handleImageMouseEnter}
                             onMouseLeave={handleImageMouseLeave}
                             onMouseMove={handleImageMouseMove}
+                            onClick={handleMainImageClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Open full screen image view"
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault();
+                                    handleMainImageClick();
+                                }
+                            }}
                         >
+                            {galleryImages.length > 1 && (
+                                <div className="pd-image-index" aria-live="polite">
+                                    {visibleImageIndex + 1}/{galleryImages.length}
+                                </div>
+                            )}
+                            {isImageLoading && <div className="pd-main-image-loader" aria-hidden="true"></div>}
                             <img
                                 src={effectiveImage}
                                 alt={product.name}
+                                className={isImageLoading ? 'is-loading' : 'is-loaded'}
                                 style={zoomTransform || undefined}
+                                onLoad={() => setIsImageLoading(false)}
+                                onError={() => setIsImageLoading(false)}
                             />
                         </div>
                         {product.notes && product.notes.length > 0 && (
@@ -413,7 +470,7 @@ const ProductDetails = () => {
                                     className={`pd-variant-thumb-card ${variant.sku === selectedVariantSku ? 'active' : ''}`}
                                     onClick={() => {
                                         setSelectedVariantSku(variant.sku);
-                                        if (variant.image) setMainImage(variant.image);
+                                        if (variant.image) handleSelectMainImage(variant.image);
                                     }}
                                 >
                                     <div className="pd-variant-thumb-image-wrap">
@@ -473,6 +530,58 @@ const ProductDetails = () => {
                         ))}
                     </div>
                 </section>
+            )}
+            {isLightboxOpen && (
+                <div
+                    className="pd-lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Product image preview"
+                    onClick={() => setIsLightboxOpen(false)}
+                >
+                    <button
+                        type="button"
+                        className="pd-lightbox-close"
+                        aria-label="Close image preview"
+                        onClick={() => setIsLightboxOpen(false)}
+                    >
+                        ×
+                    </button>
+                    <div className="pd-lightbox-image-wrap" onClick={(event) => event.stopPropagation()}>
+                        {galleryImages.length > 1 && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="pd-lightbox-nav pd-lightbox-nav--prev"
+                                    aria-label="Previous image"
+                                    onClick={() => handleCycleImage(-1)}
+                                >
+                                    ‹
+                                </button>
+                                <button
+                                    type="button"
+                                    className="pd-lightbox-nav pd-lightbox-nav--next"
+                                    aria-label="Next image"
+                                    onClick={() => handleCycleImage(1)}
+                                >
+                                    ›
+                                </button>
+                            </>
+                        )}
+                        <img src={effectiveImage} alt={`${product.name} preview`} className="pd-lightbox-image" />
+                        {galleryImages.length > 1 && (
+                            <div className="pd-lightbox-index" aria-live="polite">
+                                {visibleImageIndex + 1}/{galleryImages.length}
+                            </div>
+                        )}
+                        <div
+                            className="pd-lightbox-swipe-layer"
+                            onTouchStart={handleLightboxTouchStart}
+                            onTouchEnd={handleLightboxTouchEnd}
+                            aria-hidden="true"
+                        ></div>
+                    </div>
+                </div>
             )}
             {/* Lightweight add-to-cart toast */}
             {addedToCart && (

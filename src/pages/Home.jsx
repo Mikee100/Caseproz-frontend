@@ -9,6 +9,13 @@ import { Link } from 'react-router-dom';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
+import {
+    DEFAULT_OG_IMAGE,
+    SITE_URL,
+    SOCIAL_PROFILES,
+    SUPPORT_EMAIL,
+    SUPPORT_PHONE,
+} from '../utils/seo';
 import { trackEvent } from '../utils/analytics';
 
 const CASE_STYLE_DEFINITIONS = [
@@ -218,8 +225,8 @@ const Home = () => {
         '@context': 'https://schema.org',
         '@type': 'OnlineStore',
         name: 'CaseProz',
-        url: 'https://www.caseproz.co.ke',
-        logo: 'https://www.caseproz.co.ke/og-contact.png',
+        url: SITE_URL,
+        logo: DEFAULT_OG_IMAGE,
         description: 'Shop premium phone cases, covers, screen protectors, Anker chargers & tech accessories in Nairobi, Kenya.',
         priceRange: 'KSh',
         address: {
@@ -235,10 +242,10 @@ const Home = () => {
         '@context': 'https://schema.org',
         '@type': 'Store',
         name: 'CaseProz',
-        image: 'https://www.caseproz.co.ke/og-contact.png',
-        url: 'https://www.caseproz.co.ke',
-        telephone: '+254794057030',
-        email: 'support@caseproz.co.ke',
+        image: DEFAULT_OG_IMAGE,
+        url: SITE_URL,
+        telephone: SUPPORT_PHONE,
+        email: SUPPORT_EMAIL,
         priceRange: 'KSh',
         description: 'Premium phone cases, Anker chargers, screen protectors and mobile accessories. Fast delivery across Kenya.',
         address: {
@@ -274,10 +281,7 @@ const Home = () => {
             '@type': 'Country',
             name: 'Kenya',
         },
-        sameAs: [
-            'https://www.facebook.com',
-            'https://www.instagram.com',
-        ],
+        sameAs: SOCIAL_PROFILES,
     };
 
     return (

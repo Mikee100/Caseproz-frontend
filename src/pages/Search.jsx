@@ -8,6 +8,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
+import { absoluteUrl } from '../utils/seo';
 
 const POPULAR_BRANDS = ['Apple', 'Samsung', 'Sony', 'Dell', 'ASUS', 'HP', 'Lenovo'];
 const POPULAR_CATEGORY_QUERIES = [
@@ -277,7 +278,7 @@ const Search = () => {
         itemListElement: products.slice(0, 24).map((product, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: `https://caseproz.co.ke/product/${product.slug}`,
+            url: absoluteUrl(`/product/${product.slug}`),
             name: product.name,
         })),
     };
