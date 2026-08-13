@@ -4,16 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
+import { absoluteUrl, buildBrandSeo, formatBrandName } from '../utils/seo';
 import ProductCard from '../components/ProductCard';
-
-const formatBrandName = (slug) => {
-    if (!slug) return 'Brand';
-    const decoded = decodeURIComponent(slug).replace(/-/g, ' ');
-    return decoded
-        .split(' ')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-};
 
 const Brand = () => {
     const { brandName } = useParams();
@@ -21,6 +13,7 @@ const Brand = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const brandSeo = buildBrandSeo(brandName || '');
     const formattedTitle = formatBrandName(brandName);
 
     useEffect(() => {
@@ -65,15 +58,18 @@ const Brand = () => {
 
     if (loading)
         return (
-            <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-                <div className="loading-spinner large"></div>
-                <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading {formattedTitle} products...</p>
-            </div>
+            <>
+                <SeoMeta
+                    title={brandSeo.title}
+                    description={brandSeo.description}
+                    canonicalPath={brandSeo.canonicalPath}
+                />
+                <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
+                    <div className="loading-spinner large"></div>
+                    <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading {formattedTitle} products...</p>
+                </div>
+            </>
         );
-
-    const pageTitle = `Buy ${formattedTitle} Products in Kenya | CaseProz`;
-    const metaDescription = `Shop genuine ${formattedTitle} phone cases, chargers, audio and mobile accessories in Nairobi, Kenya. Fast delivery across Kenya & pay on delivery available at CaseProz.`;
-    const canonicalPath = `/brand/${brandName.toLowerCase()}`;
 
     const brandListSchema = {
         '@context': 'https://schema.org',
@@ -82,37 +78,21 @@ const Brand = () => {
         itemListElement: products.slice(0, 24).map((product, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: `https://www.caseproz.co.ke/product/${product.slug}`,
+            url: absoluteUrl(`/product/${product.slug}`),
             name: product.name,
         })),
-    };
-
-    const breadcrumbSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-            {
-                '@type': 'ListItem',
-                position: 1,
-                name: 'Home',
-                item: 'https://www.caseproz.co.ke/',
-            },
-            {
-                '@type': 'ListItem',
-                position: 2,
-                name: formattedTitle,
-                item: `https://www.caseproz.co.ke/brand/${brandName.toLowerCase()}`,
-            },
-        ],
     };
 
     return (
         <div className="brand-page container" style={{ padding: '40px 0' }}>
             <SeoMeta
-                title={pageTitle}
-                description={metaDescription}
-                keywords={`${formattedTitle} Kenya, buy ${formattedTitle} Nairobi, ${formattedTitle} accessories, ${formattedTitle} cases, CaseProz`}
-                canonicalPath={canonicalPath}
+                title={brandSeo.title}
+                description={brandSeo.description}
+                keywords={brandSeo.keywords}
+                canonicalPath={brandSeo.canonicalPath}
+                image={brandSeo.image}
+                type={brandSeo.type}
+                noIndex={brandSeo.noIndex}
             />
             <Helmet>
                 {products.length > 0 && (
@@ -120,9 +100,11 @@ const Brand = () => {
                         {JSON.stringify(brandListSchema)}
                     </script>
                 )}
-                <script type="application/ld+json">
-                    {JSON.stringify(breadcrumbSchema)}
-                </script>
+                {brandSeo.jsonLd.map((schema, index) => (
+                    <script key={index} type="application/ld+json">
+                        {JSON.stringify(schema)}
+                    </script>
+                ))}
             </Helmet>
 
             <div className="breadcrumb" style={{ marginBottom: '18px', color: '#666', fontSize: '14px' }}>

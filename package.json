@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate:og": "node scripts/generate-og-images.mjs",
+    "generate:sitemap": "node scripts/generate-sitemap.mjs",
+    "prebuild": "npm run generate:og && npm run generate:sitemap",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -28,6 +31,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "sharp": "^0.34.5",
     "vite": "^7.3.1"
   }
 }

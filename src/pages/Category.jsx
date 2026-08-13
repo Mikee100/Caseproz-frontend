@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
+import { absoluteUrl, buildCategorySeo } from '../utils/seo';
 import ProductCard from '../components/ProductCard';
 
 const Category = () => {
@@ -52,20 +53,23 @@ const Category = () => {
         fetchProducts();
     }, [categoryName]);
 
+    const categorySeo = buildCategorySeo(categoryName || '');
+    const formattedTitle = categorySeo.title.replace(/\s*\|\s*CaseProz Kenya\s*$/i, '');
+
     if (loading)
         return (
-            <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-                <div className="loading-spinner large"></div>
-                <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading category...</p>
-            </div>
+            <>
+                <SeoMeta
+                    title={categorySeo.title}
+                    description={categorySeo.description}
+                    canonicalPath={categorySeo.canonicalPath}
+                />
+                <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
+                    <div className="loading-spinner large"></div>
+                    <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading category...</p>
+                </div>
+            </>
         );
-
-    const formattedTitle =
-        categoryName.charAt(0).toUpperCase() +
-        categoryName.slice(1).replace(/-/g, ' ');
-
-    const pageTitle = `${formattedTitle} | CaseProz Kenya`;
-    const metaDescription = `Browse ${formattedTitle} at CaseProz – curated tech, accessories and gadgets in Kenya.`;
 
     const categoryListSchema = {
         '@context': 'https://schema.org',
@@ -74,35 +78,20 @@ const Category = () => {
         itemListElement: products.slice(0, 24).map((product, index) => ({
             '@type': 'ListItem',
             position: index + 1,
-            url: `https://www.caseproz.co.ke/product/${product.slug}`,
+            url: absoluteUrl(`/product/${product.slug}`),
             name: product.name,
         })),
     };
 
-    const breadcrumbSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-            {
-                '@type': 'ListItem',
-                position: 1,
-                name: 'Home',
-                item: 'https://www.caseproz.co.ke/',
-            },
-            {
-                '@type': 'ListItem',
-                position: 2,
-                name: formattedTitle,
-                item: `https://www.caseproz.co.ke/category/${categoryName}`,
-            },
-        ],
-    };
     return (
         <div className="category-page container" style={{ padding: '40px 0' }}>
             <SeoMeta
-                title={pageTitle}
-                description={metaDescription}
-                canonicalPath={`/category/${categoryName}`}
+                title={categorySeo.title}
+                description={categorySeo.description}
+                canonicalPath={categorySeo.canonicalPath}
+                image={categorySeo.image}
+                type={categorySeo.type}
+                noIndex={categorySeo.noIndex}
             />
             <Helmet>
                 {products.length > 0 && (
@@ -110,9 +99,11 @@ const Category = () => {
                         {JSON.stringify(categoryListSchema)}
                     </script>
                 )}
-                <script type="application/ld+json">
-                    {JSON.stringify(breadcrumbSchema)}
-                </script>
+                {categorySeo.jsonLd.map((schema, index) => (
+                    <script key={index} type="application/ld+json">
+                        {JSON.stringify(schema)}
+                    </script>
+                ))}
             </Helmet>
             <div className="breadcrumb" style={{ marginBottom: '18px', color: '#666', fontSize: '14px' }}>
                 <Link to="/" style={{ color: '#E41E26', textDecoration: 'none' }}>Home</Link> /
