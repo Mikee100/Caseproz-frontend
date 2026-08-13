@@ -51,12 +51,13 @@ export const prerenderDevPlugin = () => ({
             }
 
             try {
-                const html = await renderPrerenderedPage({
+                const rawHtml = await renderPrerenderedPage({
                     ...routeInfo,
                     fs,
                     path,
                     cwd: frontendRoot,
                 });
+                const html = await server.transformIndexHtml(req.url || urlPath, rawHtml);
 
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'text/html; charset=utf-8');
