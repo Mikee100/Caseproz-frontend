@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LoadingState from './LoadingState';
 
 const AdminRoute = () => {
     const { user, initializing } = useAuth();
@@ -8,8 +9,8 @@ const AdminRoute = () => {
     // Wait until auth state is resolved before deciding to redirect
     if (initializing) {
         return (
-            <div style={{ padding: '80px 0', textAlign: 'center', color: '#6b7280' }}>
-                <div className="loading-spinner large"></div>
+            <div style={{ padding: '80px 0' }}>
+                <LoadingState message="Checking access..." />
             </div>
         );
     }

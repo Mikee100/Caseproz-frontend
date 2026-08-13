@@ -8,6 +8,7 @@ import { apiFetch } from '../utils/apiClient';
 import ProductDescriptionSection from '../components/ProductDescriptionSection';
 import ProductCard from '../components/ProductCard';
 import SeoMeta from '../components/SeoMeta';
+import LoadingState from '../components/LoadingState';
 import { buildProductSeo } from '../utils/seo';
 
 const buildVariantDisplayName = (variant) => {
@@ -296,9 +297,8 @@ const ProductDetails = () => {
                     description={loadingSeo.description}
                     canonicalPath={loadingSeo.canonicalPath}
                 />
-                <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-                    <div className="loading-spinner large"></div>
-                    <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading product...</p>
+                <div className="container" style={{ padding: '100px 0' }}>
+                    <LoadingState message="Loading product..." />
                 </div>
             </>
         );
@@ -360,7 +360,12 @@ const ProductDetails = () => {
                                 aria-label={`Show image ${index + 1} of ${galleryImages.length}`}
                                 aria-pressed={effectiveImage === img}
                             >
-                                <img src={img} alt={`${product.name} thumbnail ${index + 1}`} />
+                                <img
+                                    src={img}
+                                    alt={`${product.name} thumbnail ${index + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                             </button>
                         ))}
                     </div>
@@ -401,6 +406,9 @@ const ProductDetails = () => {
                                 ref={mainImageRef}
                                 src={effectiveImage}
                                 alt={product.name}
+                                loading="eager"
+                                fetchPriority="high"
+                                decoding="async"
                                 className={isImageLoading ? 'is-loading' : 'is-loaded'}
                                 style={zoomTransform || undefined}
                                 onLoad={() => setIsImageLoading(false)}
@@ -492,6 +500,8 @@ const ProductDetails = () => {
                                                     <img
                                                         src={thumbSrc}
                                                         alt={buildVariantDisplayName(variant)}
+                                                        loading="lazy"
+                                                        decoding="async"
                                                         className="pd-variant-thumb-image"
                                                     />
                                                 ) : (
@@ -713,7 +723,13 @@ const ProductDetails = () => {
                                 </button>
                             </>
                         )}
-                        <img src={effectiveImage} alt={`${product.name} preview`} className="pd-lightbox-image" />
+                        <img
+                            src={effectiveImage}
+                            alt={`${product.name} preview`}
+                            className="pd-lightbox-image"
+                            loading="eager"
+                            decoding="async"
+                        />
                         {galleryImages.length > 1 && (
                             <div className="pd-lightbox-index" aria-live="polite">
                                 {visibleImageIndex + 1}/{galleryImages.length}

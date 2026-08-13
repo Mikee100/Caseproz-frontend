@@ -234,6 +234,8 @@ const Cart = () => {
                                             className="cart-item-image"
                                             src={item.images[0]}
                                             alt={item.name}
+                                            loading="lazy"
+                                            decoding="async"
                                             style={{
                                                 width: '70px',
                                                 height: '70px',

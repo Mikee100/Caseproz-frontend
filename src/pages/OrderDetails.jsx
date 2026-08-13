@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import LoadingState from '../components/LoadingState';
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -74,9 +75,8 @@ const OrderDetails = () => {
 
     if (loading)
         return (
-            <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-                <div className="loading-spinner large"></div>
-                <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading order...</p>
+            <div className="container" style={{ padding: '100px 0' }}>
+                <LoadingState message="Loading order..." />
             </div>
         );
     if (error)

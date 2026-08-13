@@ -170,6 +170,8 @@ const CategoryShowcase = ({ products = null }) => {
                                 <img
                                     src={cat.image}
                                     alt={cat.name}
+                                    loading="lazy"
+                                    decoding="async"
                                     onError={(e) => {
                                         e.currentTarget.src = '/placeholder-product.svg';
                                     }}
@@ -187,6 +189,8 @@ const CategoryShowcase = ({ products = null }) => {
                                                     <img
                                                         src={preview.image}
                                                         alt={preview.name}
+                                                        loading="lazy"
+                                                        decoding="async"
                                                         onError={(e) => {
                                                             e.currentTarget.src = '/placeholder-product.svg';
                                                         }}

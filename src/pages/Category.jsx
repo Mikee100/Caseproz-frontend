@@ -6,6 +6,7 @@ import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
 import { absoluteUrl, buildCategorySeo } from '../utils/seo';
 import ProductCard from '../components/ProductCard';
+import LoadingState from '../components/LoadingState';
 
 const Category = () => {
     const { categoryName } = useParams();
@@ -64,9 +65,8 @@ const Category = () => {
                     description={categorySeo.description}
                     canonicalPath={categorySeo.canonicalPath}
                 />
-                <div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-                    <div className="loading-spinner large"></div>
-                    <p style={{ marginTop: '16px', color: '#6b7280', fontSize: '14px' }}>Loading category...</p>
+                <div className="container" style={{ padding: '100px 0' }}>
+                    <LoadingState message="Loading category..." />
                 </div>
             </>
         );
