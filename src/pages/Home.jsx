@@ -3,11 +3,11 @@ import { Helmet } from 'react-helmet-async';
 import HomeSlider from '../components/HomeSlider';
 import CategoryShowcase from '../components/CategoryShowcase';
 import ProductCard from '../components/ProductCard';
+import SkeletonProduct from '../components/SkeletonProduct';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import ErrorBanner from '../components/ErrorBanner';
-import LoadingState from '../components/LoadingState';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
 import {
@@ -59,6 +59,18 @@ const isCaseProduct = (product) => {
         name.includes(' case') ||
         tags.some((tag) => tag.includes('case'))
     );
+};
+
+const isAnkerProduct = (product) => {
+    const brand = String(product?.brand || '').toLowerCase();
+    const name = String(product?.name || '').toLowerCase();
+    return brand.includes('anker') || name.includes('anker');
+};
+
+const isSoundcoreProduct = (product) => {
+    const brand = String(product?.brand || '').toLowerCase();
+    const name = String(product?.name || '').toLowerCase();
+    return brand.includes('soundcore') || name.includes('soundcore');
 };
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -132,6 +144,14 @@ const pickBalancedProducts = (list, options = {}) => {
 
     return selected.slice(0, total);
 };
+
+const renderHomeSkeletonGrid = (count = 8) => (
+    <div className="product-grid home-skeleton-grid" aria-busy="true" aria-live="polite">
+        {Array.from({ length: count }).map((_, idx) => (
+            <SkeletonProduct key={`home-skeleton-${idx}`} />
+        ))}
+    </div>
+);
 
 const Home = () => {
     const [products, setProducts] = useState([]);
@@ -228,6 +248,14 @@ const Home = () => {
 
     const nonCaseSpotlight = sortedNewest
         .filter((p) => !isCaseProduct(p))
+        .slice(0, 8);
+
+    const ankerSpotlight = sortedNewest
+        .filter((p) => isAnkerProduct(p))
+        .slice(0, 8);
+
+    const soundcoreSpotlight = sortedNewest
+        .filter((p) => isSoundcoreProduct(p))
         .slice(0, 8);
 
     const productCount = products.length;
@@ -397,7 +425,7 @@ const Home = () => {
                 </div>
 
                 {loadingNewest ? (
-                    <LoadingState message="Loading products..." compact />
+                    renderHomeSkeletonGrid(8)
                 ) : (
                     <div className="product-grid">
                         {latest.map((product) => (
@@ -449,6 +477,64 @@ const Home = () => {
                         {nonCaseSpotlight.map((product) => (
                             <ProductCard key={product._id} product={product} />
                         ))}
+                    </div>
+                </section>
+            )}
+
+            {!loadingNewest && ankerSpotlight.length > 0 && (
+                <section className="home-anker-spotlight">
+                    <div className="container">
+                        <div className="section-header">
+                            <div className="title-area">
+                                <span className="subtitle">POWERED BY ANKER</span>
+                                <h2 className="main-title">Only Anker Picks</h2>
+                                <p className="home-anker-copy">
+                                    Premium charging, audio and everyday essentials from Anker, curated for reliability.
+                                </p>
+                            </div>
+                            <Link
+                                to="/search?q=anker"
+                                className="view-all"
+                                onClick={() => trackHomeClick('home_section_cta_click', 'anker_spotlight', 'shop_anker')}
+                            >
+                                Shop Anker <ChevronRight size={16} />
+                            </Link>
+                        </div>
+
+                        <div className="product-grid home-anker-grid">
+                            {ankerSpotlight.map((product) => (
+                                <ProductCard key={product._id} product={product} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {!loadingNewest && soundcoreSpotlight.length > 0 && (
+                <section className="home-soundcore-spotlight">
+                    <div className="container">
+                        <div className="section-header">
+                            <div className="title-area">
+                                <span className="subtitle">AUDIO BY SOUNDCORE</span>
+                                <h2 className="main-title">Only Soundcore Picks</h2>
+                                <p className="home-anker-copy">
+                                    Signature sound, daily comfort and dependable battery life in one focused collection.
+                                </p>
+                            </div>
+                            <Link
+                                to="/search?q=soundcore"
+                                className="view-all"
+                                onClick={() => trackHomeClick('home_section_cta_click', 'soundcore_spotlight', 'shop_soundcore')}
+                            >
+                                Shop Soundcore <ChevronRight size={16} />
+                            </Link>
+                        </div>
+
+                        <div className="product-grid home-anker-grid">
+                            {soundcoreSpotlight.map((product) => (
+                                <ProductCard key={product._id} product={product} />
+                            ))}
+                        </div>
                     </div>
                 </section>
             )}
