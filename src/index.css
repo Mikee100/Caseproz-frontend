@@ -182,19 +182,19 @@ body {
 }
 
 .app {
-  padding-top: 96px;
+  padding-top: 0;
 }
 
 @media (max-width: 768px) {
   .mobile-search-expanded .app {
-    padding-top: 138px;
+    padding-top: 0;
     transition: padding-top 0.22s ease;
   }
 }
 
 @media (max-width: 420px) {
   .mobile-search-expanded .app {
-    padding-top: 132px;
+    padding-top: 0;
   }
 }
 
@@ -426,7 +426,7 @@ button {
 
 /* --- MODERN PREMIUM HEADER --- */
 .modern-header {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;
@@ -1813,7 +1813,43 @@ button {
 
 @media (max-width: 576px) {
   .footer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 14px;
+  }
+
+  .footer-col {
+    text-align: left;
+  }
+
+  .footer-col h3,
+  .footer-col p,
+  .footer-col ul {
+    text-align: left;
+  }
+
+  .footer-col:first-child,
+  .footer-col:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .footer .logo-text {
+    text-align: left;
+  }
+
+  .footer-col:first-child p {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .social-links {
+    justify-content: flex-start;
+  }
+
+  .newsletter-form {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
   }
   
   .footer {

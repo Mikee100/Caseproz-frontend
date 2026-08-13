@@ -543,6 +543,18 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     </Link>
                                 </li>
                             )}
+                            <li>
+                                <span className="drawer-section-label">
+                                    Help center
+                                </span>
+                            </li>
+                            <li><Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-shopping-cart"></i> SHOPPING CART</Link></li>
+                            <li><Link to="/checkout" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-credit-card"></i> CHECKOUT</Link></li>
+                            <li><Link to="/delivery" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-truck"></i> SHIPPING &amp; DELIVERY</Link></li>
+                            <li><Link to="/returns" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-undo"></i> RETURNS &amp; REFUNDS</Link></li>
+                            <li><Link to="/faq" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-question-circle"></i> WARRANTY &amp; FAQS</Link></li>
+                            <li><Link to="/customer-support" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-headset"></i> CUSTOMER SUPPORT</Link></li>
+                            <li><Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}><i className="fas fa-envelope"></i> CONTACT</Link></li>
                             <li><Link to="/favourites" onClick={() => setIsMobileMenuOpen(false)}><i className="far fa-heart"></i> WISHLIST {favourites.length > 0 && <span className="drawer-badge">{favourites.length}</span>}</Link></li>
                             {user ? (
                                 <>
