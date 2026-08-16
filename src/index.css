@@ -2193,7 +2193,7 @@ button {
 }
 
 .search-product-grid.single-result {
-  max-width: 280px;
+  max-width: none;
 }
 
 .search-product-grid .product-card {
@@ -8351,6 +8351,43 @@ body {
   margin: 0;
 }
 
+.caseproz-premium-home .home-hero-loading {
+  border: 1px solid #e3e9f1;
+  border-radius: 12px;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  background: #ffffff;
+  width: 100%;
+  max-width: 560px;
+}
+
+.caseproz-premium-home .home-hero-loading-line {
+  width: 88%;
+  height: 16px;
+  border-radius: 6px;
+}
+
+.caseproz-premium-home .home-hero-loading-line.lg {
+  height: 32px;
+  width: 70%;
+}
+
+.caseproz-premium-home .home-hero-loading-line.md {
+  width: 86%;
+}
+
+.caseproz-premium-home .home-hero-loading-line.sm {
+  width: 58%;
+}
+
+.caseproz-premium-home .home-hero-loading-btn {
+  width: 160px;
+  height: 42px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
 .caseproz-premium-home .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -8426,21 +8463,8 @@ body {
 }
 
 .caseproz-premium-home .home-hero-floating-tag {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #0f172a;
-  background: #ffffff;
-  border: 1px solid #dbe4ef;
-  border-radius: 999px;
-  padding: 5px 9px;
-}
-
-.caseproz-premium-home .home-hero-primary img {
+    max-width: 100%;
+    padding: 16px;
   width: 100%;
   height: clamp(360px, 56vh, 620px);
   object-fit: contain;
@@ -9399,6 +9423,24 @@ body {
     max-width: 100%;
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .caseproz-premium-home .home-hero-loading {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .caseproz-premium-home .home-hero-loading-copy {
+    order: 2;
+  }
+
+  .caseproz-premium-home .home-hero-loading-stage {
+    order: 1;
+    min-height: 430px;
+  }
+
+  .caseproz-premium-home .home-hero-loading-title {
+    height: 32px;
   }
 
   .caseproz-premium-home .home-premium-hero-copy {
