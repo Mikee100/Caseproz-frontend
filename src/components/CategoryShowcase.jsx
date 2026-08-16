@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { apiFetch } from '../utils/apiClient';
 import { useSiteConfig } from '../context/SiteConfigContext';
 
-const DEFAULT_TOP_CATEGORIES = ['iPhone Cases', 'Anker'];
+const DEFAULT_TOP_CATEGORIES = ['Anker', 'Soundcore', 'Power Banks', 'Audio & Headphones'];
 
 const PRESET_CATEGORY_DEFINITIONS = {
     iphonecases: {
@@ -32,6 +32,14 @@ const PRESET_CATEGORY_DEFINITIONS = {
         path: '/search?q=anker',
         terms: ['anker'],
     },
+    chargerscables: {
+        path: '/search?q=charger%20cable',
+        terms: ['charger', 'cable', 'adapter', 'power bank'],
+    },
+    powerbanks: {
+        path: '/search?q=power%20bank',
+        terms: ['power bank', 'powerbank', 'battery pack'],
+    },
 };
 
 const normalizeCategoryToken = (value = '') =>
@@ -40,7 +48,13 @@ const normalizeCategoryToken = (value = '') =>
         .replace(/&/g, 'and')
         .replace(/[^a-z0-9]+/g, '');
 
-const EXCLUDED_TOP_CATEGORY_TOKENS = new Set(['soundcore']);
+const EXCLUDED_TOP_CATEGORY_TOKENS = new Set([
+    'iphonecases',
+    'samsungcases',
+    'phonesandtablets',
+]);
+
+const CASE_CATEGORY_TERMS = ['case', 'cases', 'iphone', 'samsung', 'phone cover'];
 
 const buildConfiguredCards = (configuredNames = []) =>
     configuredNames.map((rawName) => {
@@ -60,7 +74,11 @@ const buildConfiguredCards = (configuredNames = []) =>
                     .split(/\s+/)
                     .filter(Boolean),
         };
-    }).filter((card) => !EXCLUDED_TOP_CATEGORY_TOKENS.has(card.key));
+    }).filter((card) => {
+        if (EXCLUDED_TOP_CATEGORY_TOKENS.has(card.key)) return false;
+        const normalizedName = String(card.name || '').toLowerCase();
+        return !CASE_CATEGORY_TERMS.some((term) => normalizedName.includes(term));
+    });
 
 const buildProductHaystack = (product) => {
     const name = String(product?.name || '').toLowerCase();
@@ -95,6 +113,8 @@ const CategoryShowcase = ({ products = null }) => {
                         ? configuredTopCategories
                         : DEFAULT_TOP_CATEGORIES;
                 const curatedCards = buildConfiguredCards(topCategories);
+                const fallbackCards = buildConfiguredCards(DEFAULT_TOP_CATEGORIES);
+                const resolvedCards = curatedCards.length > 0 ? curatedCards : fallbackCards;
 
                 let allProducts = Array.isArray(products) ? products : [];
 
@@ -105,7 +125,7 @@ const CategoryShowcase = ({ products = null }) => {
                         : [];
                 }
 
-                const nextCards = curatedCards.map((card) => {
+                const nextCards = resolvedCards.map((card) => {
                     const matchingProducts = allProducts.filter((p) => productMatchesTerms(p, card.terms));
                     const coverImage = matchingProducts.find(
                         (p) => Array.isArray(p.images) && p.images.length > 0 && p.images[0]

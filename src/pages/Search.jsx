@@ -10,11 +10,12 @@ import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
 import { absoluteUrl } from '../utils/seo';
 
-const POPULAR_BRANDS = ['Apple', 'Samsung', 'Sony', 'Dell', 'ASUS', 'HP', 'Lenovo'];
+const POPULAR_BRANDS = ['Anker', 'Soundcore', 'Ugreen', 'Baseus', 'JBL', 'Oraimo'];
 const POPULAR_CATEGORY_QUERIES = [
-    { label: 'Phones & Tablets', query: 'phone' },
-    { label: 'Laptops & Computers', query: 'laptop' },
-    { label: 'Accessories', query: 'accessories' },
+    { label: 'Headphones', query: 'headphones' },
+    { label: 'Earbuds', query: 'earbuds' },
+    { label: 'Power Banks', query: 'power bank' },
+    { label: 'Chargers', query: 'charger' },
 ];
 const RECENT_SEARCHES_KEY = 'caseproz_recent_searches';
 const SEARCH_POPULARITY_KEY = 'caseproz_search_popularity';

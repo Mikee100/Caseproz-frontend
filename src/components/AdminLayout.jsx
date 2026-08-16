@@ -4,12 +4,14 @@ import { useAuth } from '../context/AuthContext';
 
 const adminLinks = [
     { to: '/admin/dashboard', icon: 'fas fa-chart-line', label: 'Dashboard' },
+    { to: '/admin/health', icon: 'fas fa-heartbeat', label: 'System Health' },
     { to: '/admin/productlist', icon: 'fas fa-box', label: 'Products' },
     { to: '/admin/orderlist', icon: 'fas fa-shopping-cart', label: 'Orders' },
     { to: '/admin/userlist', icon: 'fas fa-users', label: 'Users' },
     { to: '/admin/discounts', icon: 'fas fa-tags', label: 'Discounts' },
     { to: '/admin/categories-brands', icon: 'fas fa-layer-group', label: 'Categories & Brands' },
     { to: '/admin/home-sections', icon: 'fas fa-th-large', label: 'Home Sections' },
+    { to: '/admin/merchandising-diagnostics', icon: 'fas fa-magnifying-glass-chart', label: 'Merchandising Diagnostics' },
     { to: '/admin/delivery-routes', icon: 'fas fa-route', label: 'Delivery Routes' },
     { to: '/admin/settings', icon: 'fas fa-cog', label: 'Site Settings' },
 ];
