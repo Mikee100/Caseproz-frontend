@@ -91,6 +91,11 @@ const isProductMarkedNew = (product) => (
 
 const hasRealDiscount = (product) => Number(product?.originalPrice || 0) > Number(product?.price || 0);
 
+const getHeroOrder = (product) => {
+    const value = Number(product?.heroOrder);
+    return Number.isFinite(value) ? value : 100;
+};
+
 const getDiscountPercent = (product) => {
     const original = Number(product?.originalPrice || 0);
     const current = Number(product?.price || 0);
@@ -227,7 +232,7 @@ const Home = () => {
             }
 
             const [featuredResult, onSaleResult] = await Promise.allSettled([
-                apiFetch(`${baseUrl}?page=1&pageSize=30&sort=newest&isActive=true&isFeatured=true`),
+                apiFetch(`${baseUrl}?page=1&pageSize=120&sort=hero&isActive=true&isFeatured=true`),
                 apiFetch(`${baseUrl}?page=1&pageSize=120&sort=newest&isActive=true&onSale=true`),
             ]);
 
@@ -293,18 +298,17 @@ const Home = () => {
             return isAnkerProduct(p) || isSoundcoreProduct(p);
         });
 
-        const merged = [...featuredFocus, ...focusPool];
-        const deduped = [];
-        const seen = new Set();
-
-        for (const item of merged) {
-            if (!item?._id || seen.has(item._id)) continue;
-            seen.add(item._id);
-            deduped.push(item);
-            if (deduped.length >= 5) break;
+        if (featuredFocus.length > 0) {
+            return [...featuredFocus]
+                .sort((a, b) => {
+                    const orderDelta = getHeroOrder(a) - getHeroOrder(b);
+                    if (orderDelta !== 0) return orderDelta;
+                    return getProductTimestamp(b) - getProductTimestamp(a);
+                })
+                .slice(0, 5);
         }
 
-        return deduped;
+        return focusPool.slice(0, 5);
     }, [featuredProducts, focusPool]);
 
     const activeHeroProduct = heroCarouselProducts[heroIndex] || null;
