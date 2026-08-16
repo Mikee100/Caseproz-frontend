@@ -1,35 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const defaultSlides = [
     {
         id: 1,
-        title: "The Future of Gaming",
-        subtitle: "Experience ultra-fast performance with the new PS5 and Xbox Series X.",
-        image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=80&w=2070&auto=format&fit=crop",
-        cta: "Explore Gaming",
-        link: "/category/Gaming",
-        color: "#E1261C"
+        eyebrow: 'ANKER POWER',
+        title: 'Charge Faster, Go Further',
+        subtitle: 'Discover trusted Anker chargers, cables and power banks for work, travel and daily use.',
+        cta: 'Shop Anker',
+        link: '/search?q=anker',
     },
     {
         id: 2,
-        title: "Elegance in Every Pixel",
-        subtitle: "Discover the stunning Retina display on the latest MacBook Pro.",
-        image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1926&auto=format&fit=crop",
-        cta: "Shop Laptops",
-        link: "/category/Computers & Laptops",
-        color: "#1a1a1a"
+        eyebrow: 'SOUNDCORE AUDIO',
+        title: 'Sound That Moves With You',
+        subtitle: 'Explore Soundcore earbuds and headphones with premium comfort and long battery life.',
+        cta: 'Shop Soundcore',
+        link: '/search?q=soundcore',
     },
     {
         id: 3,
-        title: "Sound Without Limits",
-        subtitle: "Immerse yourself in crystal clear audio with noise-canceling technology.",
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop",
-        cta: "View Collection",
-        link: "/category/Audio & Headphones",
-        color: "#4a90e2"
-    }
+        eyebrow: 'TECH ESSENTIALS',
+        title: 'Premium Electronics, Delivered Fast',
+        subtitle: 'From audio to charging gear, shop curated electronics with dependable support across Kenya.',
+        cta: 'Shop Tech',
+        link: '/search',
+    },
 ];
 
 const HOME_SLIDE_IMAGES = [
@@ -101,7 +99,16 @@ const HomeSlider = () => {
                     style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), url(${slides[current].image})` }}
                 >
                     <div className="container slide-content-wrapper">
-                        <div className="slide-content" />
+                        <div className="slide-content">
+                            <span className="slide-badge">{slides[current].eyebrow}</span>
+                            <h1>{slides[current].title}</h1>
+                            <p>{slides[current].subtitle}</p>
+                            <div className="slide-actions">
+                                <Link to={slides[current].link} className="btn btn-primary slider-btn">
+                                    {slides[current].cta}
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
             </AnimatePresence>

@@ -1,80 +1,68 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { SOCIAL_PROFILES } from '../utils/seo';
+
+const socialIconByHost = (url) => {
+    const safe = String(url || '').toLowerCase();
+    if (safe.includes('instagram')) return 'fab fa-instagram';
+    if (safe.includes('facebook')) return 'fab fa-facebook';
+    if (safe.includes('twitter') || safe.includes('x.com')) return 'fab fa-twitter';
+    if (safe.includes('tiktok')) return 'fab fa-tiktok';
+    return 'fas fa-globe';
+};
 
 const Footer = () => {
-    const [email, setEmail] = useState('');
-    const [status, setStatus] = useState(null); // 'success' | 'error' | null
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setStatus('error');
-            return;
-        }
-
-        // TODO: Replace this with an actual API call to subscribe the user.
-        setStatus('success');
-        setEmail('');
-    };
-
     return (
         <footer className="footer">
             <div className="container">
                 <div className="footer-grid">
                     <div className="footer-col">
                         <h2 className="logo-text">CASEPROZ</h2>
-                        <p className="footer-tagline">Kenya's coolest online shop for premium phone cases, chargers, audio, and tech accessories. Experience fast delivery across Kenya and top-notch customer support.</p>
+                        <p className="footer-tagline">Your trusted Kenyan destination for premium Anker, Soundcore and everyday electronics essentials.</p>
                         <div className="social-links">
-                            <a className="footer-social-link" href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
-                            <a className="footer-social-link" href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-                            <a className="footer-social-link" href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+                            {SOCIAL_PROFILES.map((socialUrl) => (
+                                <a
+                                    key={socialUrl}
+                                    className="footer-social-link"
+                                    href={socialUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="CaseProz social profile"
+                                >
+                                    <i className={socialIconByHost(socialUrl)}></i>
+                                </a>
+                            ))}
                         </div>
                     </div>
                     <div className="footer-col">
-                        <h3>Shop Categories</h3>
+                        <h3>Shop</h3>
                         <ul className="footer-link-list">
-                            <li><Link to="/category/iphone-17-pro-max-case">iPhone 17 Cases</Link></li>
-                            <li><Link to="/category/iphone-16-pro-max-case">iPhone 16 Cases</Link></li>
-                            <li><Link to="/search?q=anker">Anker Chargers &amp; Audio</Link></li>
-                            <li><Link to="/search?q=magsafe">MagSafe Accessories</Link></li>
+                            <li><Link to="/search">All Products</Link></li>
+                            <li><Link to="/search?q=anker">Anker</Link></li>
+                            <li><Link to="/search?q=soundcore">Soundcore</Link></li>
+                            <li><Link to="/search?q=audio">Audio</Link></li>
+                            <li><Link to="/search?q=power%20bank">Power</Link></li>
+                            <li><Link to="/search?q=accessories">Accessories</Link></li>
                         </ul>
                     </div>
                     <div className="footer-col">
-                        <h3>Customer Care</h3>
+                        <h3>Customer Service</h3>
                         <ul className="footer-link-list">
-                            <li><Link to="/customer-support">Customer Support</Link></li>
                             <li><Link to="/contact">Contact Us</Link></li>
                             <li><Link to="/delivery">Delivery Information</Link></li>
                             <li><Link to="/returns">Returns &amp; Refunds</Link></li>
-                            <li><Link to="/faq">FAQs</Link></li>
+                            <li><Link to="/faq">Warranty &amp; FAQs</Link></li>
+                            <li><Link to="/customer-support">Customer Support</Link></li>
                         </ul>
                     </div>
                     <div className="footer-col">
-                        <h3>Newsletter</h3>
-                        <p className="footer-newsletter-copy">Subscribe to get the latest tech deals and updates.</p>
-                        <form className="newsletter-form" onSubmit={handleSubmit}>
-                            <input
-                                type="email"
-                                placeholder="Email Address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <button type="submit" className="btn-primary footer-subscribe-btn">
-                                SUBSCRIBE
-                            </button>
-                            {status === 'success' && (
-                                <p className="newsletter-status success">
-                                    You&apos;re subscribed! Check your inbox.
-                                </p>
-                            )}
-                            {status === 'error' && (
-                                <p className="newsletter-status error">
-                                    Please enter a valid email address.
-                                </p>
-                            )}
-                        </form>
+                        <h3>Company</h3>
+                        <ul className="footer-link-list">
+                            <li><Link to="/contact">About CaseProz</Link></li>
+                            <li><Link to="/contact">Contact</Link></li>
+                            <li><Link to="/profile">My Account</Link></li>
+                            <li><Link to="/favourites">Wishlist</Link></li>
+                        </ul>
                     </div>
                 </div>
                 <div className="footer-bottom">

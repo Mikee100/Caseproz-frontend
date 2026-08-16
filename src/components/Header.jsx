@@ -6,15 +6,97 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { apiFetch } from '../utils/apiClient';
 
-// Dynamic constants initialized as empty arrays
-let BRANDS = [];
-let SHOP_MEGA_SECTIONS = [];
-
-const toSlug = (value) =>
-    String(value || '')
-        .toLowerCase()
-        .replace(/ & /g, '-')
-        .replace(/ /g, '-');
+const SHOP_MEGA_SECTIONS = [
+    {
+        title: 'Phones & Tablets',
+        items: [
+            { label: 'Smartphones', path: '/search?q=smartphones' },
+            { label: 'Tablets', path: '/search?q=tablets' },
+            { label: 'iPhones', path: '/search?q=iphone' },
+            { label: 'iPads', path: '/search?q=ipad' },
+            { label: 'Phone Accessories', path: '/search?q=phone%20accessories' },
+        ],
+    },
+    {
+        title: 'Audio & Headphones',
+        items: [
+            { label: 'Bluetooth Speakers', path: '/search?q=bluetooth%20speakers' },
+            { label: 'Earbuds & In-ear', path: '/search?q=earbuds' },
+            { label: 'Over-ear Headphones', path: '/search?q=over%20ear%20headphones' },
+            { label: 'Home Audio Systems', path: '/search?q=home%20audio' },
+        ],
+    },
+    {
+        title: 'Power & Solar',
+        items: [
+            { label: 'Portable Power Stations', path: '/search?q=portable%20power%20station' },
+            { label: 'Power Banks', path: '/search?q=power%20bank' },
+        ],
+    },
+    {
+        title: 'Accessories',
+        items: [
+            { label: 'Cables & Adapters', path: '/search?q=cables%20adapters' },
+            { label: 'Cases & Covers', path: '/search?q=cases%20covers' },
+            { label: 'Keyboard & Mouse', path: '/search?q=keyboard%20mouse' },
+            { label: 'Laptop Bags', path: '/search?q=laptop%20bags' },
+        ],
+    },
+    {
+        title: 'Most searched',
+        items: [
+            { label: 'iPhone 17 Pro Case', path: '/search?q=iPhone%2017%20Pro%20Case' },
+            { label: 'iPhone 17 Pro Max Case', path: '/search?q=iPhone%2017%20Pro%20Max%20Case' },
+            { label: 'iPhone Air Case', path: '/search?q=iPhone%20Air%20Case' },
+            { label: 'iPhone 16 Pro Case', path: '/search?q=iPhone%2016%20Pro%20Case' },
+            { label: 'iPhone 16 Pro Max Case', path: '/search?q=iPhone%2016%20Pro%20Max%20Case' },
+            { label: 'iPhone 15 Pro Max Case', path: '/search?q=iPhone%2015%20Pro%20Max%20Case' },
+            { label: 'Silicone case', path: '/search?q=silicone%20case' },
+            { label: 'iPhone Case', path: '/search?q=iPhone%20Case' },
+            { label: 'Samsung galaxy Case', path: '/search?q=Samsung%20galaxy%20Case' },
+            { label: 'galaxy S26 Case', path: '/search?q=galaxy%20S26%20Case' },
+        ],
+    },
+    {
+        title: 'iPhone Cases',
+        items: [
+            { label: 'iPhone 17 Pro Case', path: '/search?q=iPhone%2017%20Pro%20Case' },
+            { label: 'iPhone 17 Pro Max Case', path: '/search?q=iPhone%2017%20Pro%20Max%20Case' },
+            { label: 'iPhone 16 Pro Case', path: '/search?q=iPhone%2016%20Pro%20Case' },
+            { label: 'iPhone 16 Pro Max Case', path: '/search?q=iPhone%2016%20Pro%20Max%20Case' },
+            { label: 'iPhone 15 Pro Case', path: '/search?q=iPhone%2015%20Pro%20Case' },
+            { label: 'iPhone 15 Pro Max Case', path: '/search?q=iPhone%2015%20Pro%20Max%20Case' },
+            { label: 'iPhone 14 Pro Case', path: '/search?q=iPhone%2014%20Pro%20Case' },
+            { label: 'iPhone 14 Pro Max Case', path: '/search?q=iPhone%2014%20Pro%20Max%20Case' },
+            { label: 'iPhone Air Case', path: '/search?q=iPhone%20Air%20Case' },
+            { label: 'iPhone Case', path: '/search?q=iPhone%20Case' },
+        ],
+    },
+    {
+        title: 'Case Styles',
+        items: [
+            { label: 'Silicone case', path: '/search?q=silicone%20case' },
+            { label: 'Leopard case', path: '/search?q=leopard%20case' },
+            { label: 'Clear case', path: '/search?q=clear%20case' },
+            { label: 'Matte case', path: '/search?q=matte%20case' },
+            { label: 'MagSafe case', path: '/search?q=magsafe%20case' },
+            { label: 'Shockproof case', path: '/search?q=shockproof%20case' },
+            { label: 'Leather case', path: '/search?q=leather%20case' },
+            { label: 'Wallet case', path: '/search?q=wallet%20case' },
+        ],
+    },
+    {
+        title: 'Samsung Cases',
+        items: [
+            { label: 'Samsung galaxy Case', path: '/search?q=Samsung%20galaxy%20Case' },
+            { label: 'galaxy S26 Case', path: '/search?q=galaxy%20S26%20Case' },
+            { label: 'Galaxy S25 Case', path: '/search?q=Galaxy%20S25%20Case' },
+            { label: 'Galaxy S24 Case', path: '/search?q=Galaxy%20S24%20Case' },
+            { label: 'Galaxy Z Fold Case', path: '/search?q=Galaxy%20Z%20Fold%20Case' },
+            { label: 'Galaxy Z Flip Case', path: '/search?q=Galaxy%20Z%20Flip%20Case' },
+        ],
+    },
+];
 
 const Header = ({ isCartOpen, setIsCartOpen }) => {
     const { cartCount } = useCart();
@@ -28,45 +110,23 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [isDrawerCategoriesOpen, setIsDrawerCategoriesOpen] = useState(false);
-    const [activeDrawerCategory, setActiveDrawerCategory] = useState('');
     const [searchKeyword, setSearchKeyword] = useState('');
     const [drawerSearch, setDrawerSearch] = useState('');
     const [dynamicBrands, setDynamicBrands] = useState([]);
-    const [dynamicCategories, setDynamicCategories] = useState([]);
     const shopNavRef = useRef(null);
 
     useEffect(() => {
         const fetchNavData = async () => {
             try {
-                const [brandsRes, catRes] = await Promise.all([
-                    apiFetch(`${import.meta.env.VITE_API_URL}/api/brands`),
-                    apiFetch(`${import.meta.env.VITE_API_URL}/api/categories`),
-                ]);
-                
-                // Set brands (limit or slice if needed, but here we take all)
+                const brandsRes = await apiFetch(`${import.meta.env.VITE_API_URL}/api/brands`);
+
                 setDynamicBrands(Array.isArray(brandsRes.data) ? brandsRes.data : brandsRes);
-                
-                // Map categories to SHOP_MEGA_SECTIONS structure
-                const mappedCats = (Array.isArray(catRes.data) ? catRes.data : catRes).map(cat => ({
-                    title: cat.name,
-                    items: (cat.subCategories || []).map(sub => ({
-                        label: sub.name,
-                        slug: toSlug(sub.name)
-                    }))
-                }));
-                setDynamicCategories(mappedCats);
             } catch (err) {
                 console.error('Failed to fetch navigation data:', err);
             }
         };
         fetchNavData();
     }, []);
-
-    useEffect(() => {
-        if (!activeDrawerCategory && dynamicCategories.length > 0) {
-            setActiveDrawerCategory(dynamicCategories[0].title);
-        }
-    }, [dynamicCategories, activeDrawerCategory]);
 
     // Helper for easier access
     const BRANDS_LIST = dynamicBrands.map(b => typeof b === 'string' ? b : b.name);
@@ -171,10 +231,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
 
     useEffect(() => {
         const handlePointerDown = (event) => {
-            if (!shopNavRef.current) {
-                return;
-            }
-
+            if (!shopNavRef.current) return;
             if (!shopNavRef.current.contains(event.target)) {
                 setIsShopMenuOpen(false);
             }
@@ -188,7 +245,6 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
 
         document.addEventListener('mousedown', handlePointerDown);
         document.addEventListener('keydown', handleEscape);
-
         return () => {
             document.removeEventListener('mousedown', handlePointerDown);
             document.removeEventListener('keydown', handleEscape);
@@ -198,7 +254,9 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
     return (
         <>
             <header className={`modern-header ${isMobileSearchOpen ? 'mobile-search-open' : ''}`}>
-               
+                <div className="top-banner" role="status" aria-live="polite">
+                    Premium Anker &amp; Soundcore products in Kenya • Fast delivery • Secure payments
+                </div>
 
                 <div className="main-nav-wrapper">
                     <div className="container header-grid">
@@ -253,6 +311,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     >
                                         SHOP <i className={`fas fa-chevron-down small-caret ${isShopMenuOpen ? 'open' : ''}`} />
                                     </button>
+
                                     <div className="shop-mega">
                                         <div className="shop-mega-head">
                                             <p>Browse Categories</p>
@@ -261,21 +320,18 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                             </Link>
                                         </div>
                                         <div className="shop-mega-inner">
-                                            {dynamicCategories.map((section) => (
+                                            {SHOP_MEGA_SECTIONS.map((section) => (
                                                 <div key={section.title} className="shop-mega-column">
                                                     <h4 className="shop-mega-title">{section.title}</h4>
                                                     {section.items.map((item) => (
-                                                        <button
-                                                            key={item.slug}
-                                                            type="button"
+                                                        <Link
+                                                            key={`${section.title}-${item.label}`}
+                                                            to={item.path}
                                                             className="shop-mega-link"
-                                                            onClick={() => {
-                                                                setIsShopMenuOpen(false);
-                                                                navigate(`/category/${item.slug}`);
-                                                            }}
+                                                            onClick={() => setIsShopMenuOpen(false)}
                                                         >
                                                             {item.label}
-                                                        </button>
+                                                        </Link>
                                                     ))}
                                                 </div>
                                             ))}
@@ -305,7 +361,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                         </div>
                                     </div>
                                 </li>
-                                
+
                                 <li className="nav-li help-nav">
                                     <button type="button" className="nav-link">
                                         HELP CENTER <i className="fas fa-chevron-down small-caret" />
@@ -332,7 +388,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                 <i className="fas fa-search search-icon"></i>
                                 <input
                                     type="text"
-                                    placeholder="What are you looking for?"
+                                    placeholder="Search Anker, Soundcore, headphones, power banks..."
                                     value={searchKeyword}
                                     onChange={(e) => setSearchKeyword(e.target.value)}
                                 />
@@ -460,7 +516,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                             <i className="fas fa-search"></i>
                             <input
                                 type="text"
-                                placeholder="Search products..."
+                                placeholder="Search Anker, Soundcore, headphones, power banks..."
                                 value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
                                 aria-label="Search products"
@@ -504,7 +560,7 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                             <i className="fas fa-search"></i>
                             <input
                                 type="text"
-                                placeholder="Search..."
+                                placeholder="Search Anker, Soundcore, earbuds..."
                                 value={drawerSearch}
                                 onChange={(e) => setDrawerSearch(e.target.value)}
                                 aria-label="Search products"
@@ -541,44 +597,34 @@ const Header = ({ isCartOpen, setIsCartOpen }) => {
                                     aria-controls="drawer-categories-panel"
                                 >
                                     <span>
-                                        <i className="fas fa-th-large"></i> CATEGORIES
+                                        <i className="fas fa-th-large"></i> SHOP CATEGORIES
                                     </span>
                                     <i className={`fas fa-chevron-${isDrawerCategoriesOpen ? 'up' : 'down'}`}></i>
                                 </button>
                             </li>
                             {isDrawerCategoriesOpen && (
                                 <li className="drawer-categories-shell" id="drawer-categories-panel">
-                                    {dynamicCategories.length === 0 && (
-                                        <div className="drawer-categories-empty">No categories yet.</div>
-                                    )}
-                                    {dynamicCategories.map((section) => {
-                                        const isActive = activeDrawerCategory === section.title;
-                                        return (
-                                            <div key={section.title} className="drawer-category-group">
-                                                <button
-                                                    type="button"
-                                                    className={`drawer-category-title ${isActive ? 'active' : ''}`}
-                                                    onClick={() => setActiveDrawerCategory(section.title)}
-                                                >
-                                                    {section.title}
-                                                    <span>{section.items?.length || 0}</span>
-                                                </button>
-                                                {isActive && section.items?.length > 0 && (
-                                                    <div className="drawer-subcategory-list">
-                                                        {section.items.map((item) => (
-                                                            <Link
-                                                                key={`${section.title}-${item.slug}`}
-                                                                to={`/category/${item.slug}`}
-                                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                            >
-                                                                {item.label}
-                                                            </Link>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                    {SHOP_MEGA_SECTIONS.map((section) => (
+                                        <div key={section.title} className="drawer-category-group">
+                                            <div className="drawer-category-title active">
+                                                {section.title}
+                                                <span>{section.items?.length || 0}</span>
                                             </div>
-                                        );
-                                    })}
+                                            {section.items?.length > 0 && (
+                                                <div className="drawer-subcategory-list">
+                                                    {section.items.map((item) => (
+                                                        <Link
+                                                            key={`${section.title}-${item.label}`}
+                                                            to={item.path}
+                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                        >
+                                                            {item.label}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </li>
                             )}
                             <li>

@@ -35,6 +35,7 @@ const AdminLayout = lazy(() => import('./components/AdminLayout'));
 const ProductList = lazy(() => import('./pages/Admin/ProductList'));
 const ProductEdit = lazy(() => import('./pages/Admin/ProductEdit'));
 const Dashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const Health = lazy(() => import('./pages/Admin/Health'));
 const OrderList = lazy(() => import('./pages/Admin/OrderList'));
 const UserList = lazy(() => import('./pages/Admin/UserList'));
 const UserEdit = lazy(() => import('./pages/Admin/UserEdit'));
@@ -44,6 +45,7 @@ const OrderDetailsAdmin = lazy(() => import('./pages/Admin/OrderDetailsAdmin'));
 const AdminCategoriesBrands = lazy(() => import('./pages/Admin/AdminCategoriesBrands'));
 const HomeSections = lazy(() => import('./pages/Admin/HomeSections'));
 const DeliveryRoutes = lazy(() => import('./pages/Admin/DeliveryRoutes'));
+const MerchandisingDiagnostics = lazy(() => import('./pages/Admin/MerchandisingDiagnostics'));
 
 function RouteFallback() {
   return <LoadingState message="Loading page..." compact />;
@@ -102,6 +104,7 @@ function App() {
               <Route path="/admin" element={<AdminRoute />}>
                 <Route element={<AdminLayout />}>
                   <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="health" element={<Health />} />
                   <Route path="orderlist" element={<OrderList />} />
                   <Route path="order/:id" element={<OrderDetailsAdmin />} />
                   <Route path="userlist" element={<UserList />} />
@@ -113,6 +116,7 @@ function App() {
                   <Route path="discounts" element={<Discounts />} />
                   <Route path="categories-brands" element={<AdminCategoriesBrands />} />
                   <Route path="home-sections" element={<HomeSections />} />
+                  <Route path="merchandising-diagnostics" element={<MerchandisingDiagnostics />} />
                   <Route path="delivery-routes" element={<DeliveryRoutes />} />
                 </Route>
               </Route>

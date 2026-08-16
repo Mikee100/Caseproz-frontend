@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../utils/apiClient';
 import './Dashboard.css';
@@ -31,116 +32,126 @@ const Dashboard = () => {
 
     if (loading)
         return (
-            <div className="dashboard-container" style={{ textAlign: 'center', color: '#6b7280' }}>
+            <div className="dashboard-container dashboard-state">
                 <div className="loading-spinner large"></div>
-                <p style={{ marginTop: '16px', fontSize: '14px' }}>Loading dashboard...</p>
+                <p className="dashboard-state-text">Loading dashboard...</p>
             </div>
         );
-    if (error) return <div className="dashboard-container" style={{ color: 'red' }}>{error}</div>;
+    if (error) return <div className="dashboard-container dashboard-error">{error}</div>;
     if (!analytics) return null;
+
+    const stats = [
+        { label: 'Users', value: analytics.totalUsers, tone: 'users' },
+        { label: 'Orders', value: analytics.totalOrders, tone: 'orders' },
+        { label: 'Products', value: analytics.products, tone: 'products' },
+        { label: 'Sales', value: `KSh ${analytics.totalSales.toLocaleString()}`, tone: 'sales' },
+    ];
 
     return (
         <div className="dashboard-container">
-            <h1 className="dashboard-title">Dashboard</h1>
+            <div className="dashboard-header">
+                <div>
+                    <h1 className="dashboard-title">Dashboard</h1>
+                    <p className="dashboard-subtitle">Live admin snapshot for orders, revenue, and inventory risk.</p>
+                </div>
+                <div className="dashboard-shortcuts">
+                    <Link to="/admin/orderlist" className="dashboard-shortcut-link">View orders</Link>
+                    <Link to="/admin/productlist" className="dashboard-shortcut-link">Manage products</Link>
+                </div>
+            </div>
 
-            {/* Low-stock notification (always visible) */}
-            <div className="low-stock-alert">
-                {lowStockProducts.length > 0 ? (
-                    <>
-                        <div>
-                            Attention: {lowStockProducts.length} product{lowStockProducts.length > 1 ? 's are' : ' is'} low on stock!
+            <div className="dashboard-stats-grid">
+                {stats.map((stat) => (
+                    <div key={stat.label} className={`dashboard-stat dashboard-stat-${stat.tone}`}>
+                        <p className="dashboard-stat-label">{stat.label}</p>
+                        <p className="dashboard-stat-value">{stat.value}</p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="dashboard-sections-grid">
+                <section className="dashboard-panel dashboard-low-stock">
+                    <div className="dashboard-panel-head">
+                        <h2 className="dashboard-panel-title">Low stock watch</h2>
+                        <span className={`dashboard-chip ${lowStockProducts.length > 0 ? 'warning' : 'ok'}`}>
+                            {lowStockProducts.length} item{lowStockProducts.length === 1 ? '' : 's'}
+                        </span>
+                    </div>
+                    {lowStockProducts.length > 0 ? (
+                        <div className="dashboard-low-stock-list-wrap">
+                            <ul className="dashboard-low-stock-list">
+                                {lowStockProducts.map((p) => (
+                                    <li key={p._id + (p.variantSku || '')} className="dashboard-low-stock-item">
+                                        <div className="dashboard-low-stock-main">
+                                            <Link
+                                                to={`/admin/product/${p._id}/edit${p.isVariant ? `?variant=${encodeURIComponent(p.variantSku || '')}` : ''}`}
+                                                className="dashboard-product-link"
+                                            >
+                                                {p.name}
+                                            </Link>
+                                            {p.isVariant && (
+                                                <span className="dashboard-variant-meta">
+                                                    {p.variantColor && `Color: ${p.variantColor} `}
+                                                    {p.variantStyle && `Style: ${p.variantStyle} `}
+                                                    {p.variantLabel && `Label: ${p.variantLabel} `}
+                                                    {p.variantSku && `SKU: ${p.variantSku}`}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className="dashboard-stock-pill">Stock {p.stock}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                        <ul className="low-stock-list">
-                            {lowStockProducts.map((p, idx) => (
-                                <li key={p._id + (p.variantSku || '')} className="low-stock-item">
-                                    <a
-                                        href={p.isVariant
-                                            ? `/admin/products/${p.slug}/edit?variant=${encodeURIComponent(p.variantSku || '')}`
-                                            : `/admin/products/${p.slug}/edit`}
-                                        className="low-stock-link"
-                                        style={{ textDecoration: 'underline', color: '#2563eb', fontWeight: 500 }}
-                                    >
-                                        {p.name}
-                                    </a>
-                                    {p.isVariant && (
-                                        <span style={{ marginLeft: 6, color: '#555', fontSize: 13 }}>
-                                            {p.variantColor && <span>Color: {p.variantColor} </span>}
-                                            {p.variantStyle && <span>Style: {p.variantStyle} </span>}
-                                            {p.variantLabel && <span>Label: {p.variantLabel} </span>}
-                                            {p.variantSku && <span>SKU: {p.variantSku}</span>}
-                                        </span>
-                                    )}
-                                    <span style={{ marginLeft: 10, color: '#b91c1c', fontWeight: 500 }}>
-                                        (Stock: {p.stock})
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                ) : (
-                    <div>No products are currently low on stock.</div>
-                )}
-            </div>
+                    ) : (
+                        <p className="dashboard-muted">No products are currently low on stock.</p>
+                    )}
+                </section>
 
-            <div className="dashboard-stats">
-                <div className="dashboard-stat users">
-                    <h3 className="dashboard-stat-title">Total Users</h3>
-                    <p className="dashboard-stat-value">{analytics.totalUsers}</p>
-                </div>
-                <div className="dashboard-stat orders">
-                    <h3 className="dashboard-stat-title">Total Orders</h3>
-                    <p className="dashboard-stat-value">{analytics.totalOrders}</p>
-                </div>
-                <div className="dashboard-stat products">
-                    <h3 className="dashboard-stat-title">Total Products</h3>
-                    <p className="dashboard-stat-value">{analytics.products}</p>
-                </div>
-                <div className="dashboard-stat sales">
-                    <h3 className="dashboard-stat-title">Total Sales</h3>
-                    <p className="dashboard-stat-value">KSh {analytics.totalSales.toLocaleString()}</p>
-                </div>
-            </div>
-
-            <div className="dashboard-orders">
-                <h2 className="dashboard-orders-title">Recent Orders</h2>
-                <div style={{ overflowX: 'auto' }}>
-                    <table className="dashboard-orders-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>USER</th>
-                                <th>DATE</th>
-                                <th>TOTAL</th>
-                                <th>PAID</th>
-                                <th>DELIVERED</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {analytics.recentOrders.map((order) => (
-                                <tr key={order._id}>
-                                    <td>{order._id.substring(0, 10)}...</td>
-                                    <td>{order.user && order.user.name}</td>
-                                    <td>{order.createdAt.substring(0, 10)}</td>
-                                    <td>KSh {order.totalPrice.toLocaleString()}</td>
-                                    <td>
-                                        {order.isPaid ? (
-                                            <span className="dashboard-badge paid">Yes</span>
-                                        ) : (
-                                            <span className="dashboard-badge unpaid">No</span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        {order.isDelivered ? (
-                                            <span className="dashboard-badge delivered">Yes</span>
-                                        ) : (
-                                            <span className="dashboard-badge undelivered">No</span>
-                                        )}
-                                    </td>
+                <section className="dashboard-panel">
+                    <div className="dashboard-panel-head">
+                        <h2 className="dashboard-panel-title">Recent orders</h2>
+                        <Link to="/admin/orderlist" className="dashboard-inline-link">Open all</Link>
+                    </div>
+                    <div className="dashboard-table-wrap">
+                        <table className="dashboard-orders-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Paid</th>
+                                    <th>Delivered</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {analytics.recentOrders.map((order) => (
+                                    <tr key={order._id}>
+                                        <td>
+                                            <Link className="dashboard-id-link" to={`/admin/order/${order._id}`}>
+                                                {order._id.substring(0, 10)}...
+                                            </Link>
+                                        </td>
+                                        <td>{order.user && order.user.name}</td>
+                                        <td>{order.createdAt.substring(0, 10)}</td>
+                                        <td>KSh {order.totalPrice.toLocaleString()}</td>
+                                        <td>
+                                            <span className={`dashboard-badge ${order.isPaid ? 'paid' : 'unpaid'}`}>
+                                                {order.isPaid ? 'Paid' : 'Unpaid'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`dashboard-badge ${order.isDelivered ? 'delivered' : 'undelivered'}`}>
+                                                {order.isDelivered ? 'Delivered' : 'Pending'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
         </div>
     );
