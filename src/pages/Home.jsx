@@ -560,7 +560,14 @@ const Home = () => {
                 }}
             >
                 <div className="container home-premium-hero-grid" tabIndex={0}>
-                    {!activeHeroProduct ? (
+                    {loadingNewest ? (
+                        <div className="home-hero-loading" aria-live="polite" aria-busy="true" aria-label="Loading featured products">
+                            <span className="home-hero-loading-line lg shimmer" aria-hidden="true"></span>
+                            <span className="home-hero-loading-line md shimmer" aria-hidden="true"></span>
+                            <span className="home-hero-loading-line sm shimmer" aria-hidden="true"></span>
+                            <span className="home-hero-loading-btn shimmer" aria-hidden="true"></span>
+                        </div>
+                    ) : !activeHeroProduct ? (
                         <div className="home-hero-empty-state">
                             <h2 id="hero-title">Premium Electronics for Everyday Power</h2>
                             <p>Explore our latest Anker and Soundcore products.</p>
