@@ -51,6 +51,7 @@ const ProductEdit = () => {
     const [description, setDescription] = useState('');
     const [onSale, setOnSale] = useState(false);
     const [isFeatured, setIsFeatured] = useState(false);
+    const [heroOrder, setHeroOrder] = useState(100);
     const [isActive, setIsActive] = useState(true);
     const [keyFeatures, setKeyFeatures] = useState([]);
     const [specs, setSpecs] = useState([]);
@@ -140,6 +141,11 @@ const ProductEdit = () => {
                 setDescription(product.description || '');
                 setOnSale(Boolean(product.onSale));
                 setIsFeatured(Boolean(product.isFeatured));
+                setHeroOrder(
+                    product.heroOrder !== undefined && product.heroOrder !== null
+                        ? Number(product.heroOrder)
+                        : 100
+                );
                 setKeyFeatures(product.keyFeatures || []);
                 setSpecs(product.specs || []);
                 setIsActive(
@@ -436,6 +442,7 @@ const ProductEdit = () => {
             description,
             onSale,
             isFeatured,
+            heroOrder,
             isActive,
             keyFeatures,
             specs,
@@ -621,6 +628,48 @@ const ProductEdit = () => {
                                     Warning: Stock is at or below the low-stock threshold!
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '6px', padding: '14px', border: '1px solid #e5e7eb', borderRadius: '10px', background: '#fafafa' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'end' }}>
+                            <div>
+                                <label style={{ ...styles.label, marginBottom: '8px' }}>Homepage Visibility</label>
+                                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#334155' }}>
+                                        <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} />
+                                        Show in Hero Carousel
+                                    </label>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#334155' }}>
+                                        <input type="checkbox" checked={onSale} onChange={(e) => setOnSale(e.target.checked)} />
+                                        Mark as On Sale
+                                    </label>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#334155' }}>
+                                        <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+                                        Active Product
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={styles.label}>Hero Order (lower shows first)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={heroOrder}
+                                    onChange={(e) => setHeroOrder(Number(e.target.value))}
+                                    disabled={!isFeatured}
+                                    style={{
+                                        ...styles.input,
+                                        backgroundColor: isFeatured ? '#fff' : '#f3f4f6',
+                                        color: isFeatured ? '#111827' : '#9ca3af'
+                                    }}
+                                />
+                                <p style={{ marginTop: '6px', fontSize: '12px', color: '#6b7280' }}>
+                                    Example: 1 appears before 5 in the homepage hero.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

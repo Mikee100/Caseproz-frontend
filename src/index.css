@@ -2187,8 +2187,8 @@ button {
 }
 
 .search-product-grid {
-  grid-template-columns: repeat(auto-fill, minmax(210px, 250px));
-  justify-content: flex-start;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: stretch;
   gap: 16px;
 }
 
@@ -2197,7 +2197,7 @@ button {
 }
 
 .search-product-grid .product-card {
-  max-width: 250px;
+  max-width: none;
 }
 
 @media (max-width: 992px) {
