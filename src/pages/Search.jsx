@@ -796,8 +796,8 @@ const Search = () => {
         return '';
     }, [hasQuery, q, products.length]);
 
-    let pageTitle = 'Search products | CaseProz Kenya';
-    let metaDescription = 'Search CaseProz for premium tech, cases, chargers, audio and accessories in Kenya.';
+    let pageTitle = 'Shop Phone Cases & Tech Accessories | CaseProz Kenya';
+    let metaDescription = 'Shop phone cases, chargers, power banks, audio products and everyday tech accessories in Kenya from CaseProz.';
 
     if (hasQuery) {
         pageTitle = `Search "${q}" | CaseProz Kenya`;
@@ -827,8 +827,8 @@ const Search = () => {
             <SeoMeta
                 title={pageTitle}
                 description={metaDescription}
-                canonicalPath={`/search${location.search}`}
-                noIndex={!hasAnyFilters}
+                canonicalPath="/search"
+                noIndex={hasAnyFilters}
             />
             {hasAnyFilters && products.length > 0 && (
                 <Helmet>

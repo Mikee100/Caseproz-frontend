@@ -3,6 +3,14 @@ import { useLocation } from 'react-router-dom';
 import SeoMeta from './SeoMeta';
 
 const routeMeta = (pathname) => {
+    if (pathname.startsWith('/admin')) {
+        return {
+            title: 'Admin | CaseProz Kenya',
+            description: 'CaseProz administration area.',
+            noIndex: true,
+        };
+    }
+
     if (pathname === '/cart') {
         return {
             title: 'Your Cart | CaseProz Kenya',
@@ -144,7 +152,7 @@ const routeMeta = (pathname) => {
     }
 
     return {
-        title: 'CaseProz | Premium Tech, Cases & Accessories in Kenya',
+        title: 'CaseProz Kenya | Phone Cases, Accessories & Tech',
         description:
             'Shop premium phone cases, chargers, audio, power and accessories at CaseProz with fast delivery across Kenya.',
         noIndex: false,

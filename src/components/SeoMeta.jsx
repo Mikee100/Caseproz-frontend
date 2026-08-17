@@ -19,11 +19,7 @@ const SeoMeta = ({
     siteName = SITE_NAME,
     twitterCard = 'summary_large_image',
 }) => {
-    const resolvedCanonical =
-        canonicalUrl ||
-        (typeof window !== 'undefined'
-            ? `${window.location.origin}${canonicalPath || window.location.pathname}`
-            : absoluteUrl(canonicalPath || '/'));
+    const resolvedCanonical = canonicalUrl || absoluteUrl(canonicalPath || '/');
 
     const resolvedImage = resolveOgImage(image);
 
