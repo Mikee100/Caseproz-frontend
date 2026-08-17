@@ -476,22 +476,36 @@ const Home = () => {
 
     const onlineStoreSchema = {
         '@context': 'https://schema.org',
-        '@type': 'OnlineStore',
+        '@type': 'Organization',
         name: 'CaseProz',
         url: SITE_URL,
         logo: DEFAULT_OG_IMAGE,
-        description: 'Shop premium Anker, Soundcore, chargers, audio and everyday tech accessories in Nairobi, Kenya.',
-        priceRange: 'KSh',
-        address: {
-            '@type': 'PostalAddress',
-            streetAddress: 'Nairobi CBD',
-            addressLocality: 'Nairobi',
-            postalCode: '00100',
-            addressCountry: 'KE',
-        },
+        description: 'CaseProz is a Kenyan ecommerce store for premium phone cases, chargers, power banks, audio products and tech accessories.',
+        sameAs: SOCIAL_PROFILES,
     };
 
     const localBusinessSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'CaseProz',
+        url: SITE_URL,
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: `${SITE_URL}/search?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+        },
+    };
+
+    const homepageSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'CaseProz Kenya | Phone Cases, Accessories & Tech',
+        description: 'Shop premium phone cases, chargers, power banks, audio products and tech accessories in Kenya. Quality products and convenient delivery from CaseProz.',
+        url: SITE_URL,
+        isPartOf: SITE_URL,
+    };
+
+    const storeSchema = {
         '@context': 'https://schema.org',
         '@type': 'Store',
         name: 'CaseProz',
@@ -500,17 +514,13 @@ const Home = () => {
         telephone: SUPPORT_PHONE,
         email: SUPPORT_EMAIL,
         priceRange: 'KSh',
-        description: 'Premium Anker and Soundcore audio, charging and electronics accessories with fast delivery across Kenya.',
+        description: 'Premium phone cases, charging and audio accessories with delivery across Kenya.',
         address: {
             '@type': 'PostalAddress',
-            streetAddress: 'Nairobi CBD',
-            addressLocality: 'Nairobi',
-            addressRegion: 'Nairobi County',
-            postalCode: '00100',
             addressCountry: 'KE',
         },
         currenciesAccepted: 'KES',
-        paymentAccepted: 'Cash, Mobile Money, Card, Pay on Delivery',
+        paymentAccepted: 'Cash, Mobile Money, Card',
         areaServed: {
             '@type': 'Country',
             name: 'Kenya',
@@ -521,12 +531,12 @@ const Home = () => {
     return (
         <div className="home-page caseproz-premium-home">
             <h1 className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
-                CaseProz - Premium Anker, Soundcore and tech accessories in Kenya
+                Premium Phone Cases and Tech Accessories in Kenya
             </h1>
             <SeoMeta
-                title="Buy Anker & Soundcore Products in Kenya | CaseProz"
-                description="Discover premium Anker and Soundcore headphones, earbuds, speakers, power banks, chargers and accessories with fast delivery across Kenya."
-                keywords="Anker Kenya, Soundcore Kenya, headphones, earbuds, speakers, chargers, power banks, premium electronics CaseProz"
+                title="CaseProz Kenya | Phone Cases, Accessories & Tech"
+                description="Shop premium phone cases, chargers, power banks, audio products and tech accessories in Kenya. Quality products and convenient delivery from CaseProz."
+                keywords="phone cases Kenya, chargers Kenya, power banks Kenya, audio accessories Kenya, tech accessories Kenya, CaseProz"
                 canonicalPath="/"
                 noIndex={productCount <= 0}
             />
@@ -536,6 +546,12 @@ const Home = () => {
                 </script>
                 <script type="application/ld+json">
                     {JSON.stringify(localBusinessSchema)}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(homepageSchema)}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(storeSchema)}
                 </script>
             </Helmet>
 

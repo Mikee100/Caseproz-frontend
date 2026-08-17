@@ -71,7 +71,7 @@ function App() {
   return (
     <ErrorBoundary>
       <div className={`app ${isAuthRoute ? 'auth-layout' : ''} ${isAdminRoute ? 'admin-layout' : ''}`}>
-        {!isAdminRoute && <RouteSeo />}
+        <RouteSeo />
         {!isAdminRoute && !isAuthRoute && (
           <Header isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
         )}
