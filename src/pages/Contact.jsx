@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { apiFetch } from '../utils/apiClient';
+import {
+    buildLocalBusinessSchema,
+    BUSINESS_HOURS,
+    BUSINESS_LOCATION,
+    BUSINESS_PHONE_DISPLAY,
+    BUSINESS_WHATSAPP_NUMBER,
+    SITE_URL,
+    SUPPORT_EMAIL,
+} from '../utils/seo';
 
 const Contact = () => {
     const [form, setForm] = useState({
@@ -10,6 +20,22 @@ const Contact = () => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });
+
+    const localBusinessSchema = buildLocalBusinessSchema({
+        type: 'ElectronicsStore',
+        url: SITE_URL,
+    });
+
+    const contactPageSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'ContactPage',
+        name: 'Contact CaseProz',
+        url: `${SITE_URL}/contact`,
+        about: {
+            '@type': 'Organization',
+            name: 'CaseProz',
+        },
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -47,6 +73,14 @@ const Contact = () => {
 
     return (
         <div className="contact-page">
+            <Helmet>
+                <script type="application/ld+json">
+                    {JSON.stringify(localBusinessSchema)}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(contactPageSchema)}
+                </script>
+            </Helmet>
             <section className="contact-hero">
                 <div className="container">
                     <p className="contact-badge">CONTACT CASEPROZ</p>
@@ -138,15 +172,26 @@ const Contact = () => {
                         <ul className="contact-info-list">
                             <li>
                                 <h3>Call or WhatsApp</h3>
-                                <p>+254 700 000 000</p>
+                                <p>{BUSINESS_PHONE_DISPLAY}</p>
+                                <p>
+                                    <a href={`https://wa.me/${BUSINESS_WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">
+                                        WhatsApp Chat
+                                    </a>
+                                </p>
                             </li>
                             <li>
                                 <h3>Email</h3>
-                                <p>support@caseproz.co.ke</p>
+                                <p>{SUPPORT_EMAIL}</p>
                             </li>
                             <li>
                                 <h3>Business hours</h3>
-                                <p>Mon – Sat, 9:00am – 6:00pm (EAT)</p>
+                                <p>{BUSINESS_HOURS.weekdaysAndSaturday}</p>
+                                <p>{BUSINESS_HOURS.sunday}</p>
+                            </li>
+                            <li>
+                                <h3>Location</h3>
+                                <p>{BUSINESS_LOCATION.city}</p>
+                                <p>{BUSINESS_LOCATION.streetAddress}</p>
                             </li>
                         </ul>
                         <p className="contact-note">

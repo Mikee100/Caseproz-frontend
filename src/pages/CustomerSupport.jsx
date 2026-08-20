@@ -2,75 +2,24 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
+    buildLocalBusinessSchema,
+    BUSINESS_HOURS,
+    BUSINESS_LOCATION,
+    BUSINESS_PHONE_DISPLAY,
+    BUSINESS_WHATSAPP_NUMBER,
     DEFAULT_OG_IMAGE,
     SITE_URL,
     SOCIAL_PROFILES,
     SUPPORT_EMAIL,
-    SUPPORT_PHONE,
 } from '../utils/seo';
 
-const localBusinessSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Store',
-    name: 'CaseProz',
+const localBusinessSchema = buildLocalBusinessSchema({
+    type: 'ElectronicsStore',
     image: DEFAULT_OG_IMAGE,
     url: SITE_URL,
-    telephone: SUPPORT_PHONE,
-    email: SUPPORT_EMAIL,
-    priceRange: 'KSh',
-    description: 'Premium phone cases, Anker chargers, screen protectors and mobile accessories. Fast delivery across Kenya.',
-    address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'Nairobi CBD',
-        addressLocality: 'Nairobi',
-        addressRegion: 'Nairobi County',
-        postalCode: '00100',
-        addressCountry: 'KE',
-    },
-    geo: {
-        '@type': 'GeoCoordinates',
-        latitude: -1.2864,
-        longitude: 36.8172,
-    },
-    openingHoursSpecification: [
-        {
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-            opens: '09:00',
-            closes: '16:00',
-        },
-        {
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: ['Saturday'],
-            opens: '09:00',
-            closes: '12:00',
-        },
-    ],
-    currenciesAccepted: 'KES',
-    paymentAccepted: 'Cash, Mobile Money, Card, Pay on Delivery',
-    areaServed: {
-        '@type': 'Country',
-        name: 'Kenya',
-    },
-    contactPoint: [
-        {
-            '@type': 'ContactPoint',
-            telephone: SUPPORT_PHONE,
-            contactType: 'customer support',
-            contactOption: 'TollFree',
-            areaServed: 'KE',
-            availableLanguage: 'English',
-        },
-        {
-            '@type': 'ContactPoint',
-            contactType: 'customer support',
-            email: 'support@caseproz.co.ke',
-            areaServed: 'KE',
-            availableLanguage: 'English',
-        },
-    ],
     sameAs: SOCIAL_PROFILES,
-};
+    description: 'Customer support and in-store assistance at CaseProz, Simara Mall Nairobi.',
+});
 
 const CustomerSupport = () => {
   return (
@@ -103,8 +52,8 @@ const CustomerSupport = () => {
             </p>
             <p style={{ marginTop: 12 }}>
               Email:{' '}
-              <a href="mailto:support@caseproz.co.ke" style={{ color: '#E1261C', fontWeight: 600 }}>
-                support@caseproz.co.ke
+              <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: '#E1261C', fontWeight: 600 }}>
+                {SUPPORT_EMAIL}
               </a>
             </p>
           </div>
@@ -114,21 +63,26 @@ const CustomerSupport = () => {
             <p>Talk directly to our team during business hours for quick help with your order or delivery.</p>
             <p style={{ marginTop: 10 }}>
               Phone:{' '}
-              <a href={`tel:${SUPPORT_PHONE}`} style={{ color: '#E1261C', fontWeight: 600 }}>
-                +254 794 057 030
+              <a href={`tel:${BUSINESS_PHONE_DISPLAY.replace(/\s+/g, '')}`} style={{ color: '#E1261C', fontWeight: 600 }}>
+                {BUSINESS_PHONE_DISPLAY}
               </a>
             </p>
             <div className="support-hours">
               <p><strong>Hours (EAT):</strong></p>
               <ul>
-                <li>Monday – Friday: 9:00am – 1:00pm &amp; 2:00pm – 4:00pm</li>
-                <li>Saturday: 9:00am – 12:00pm</li>
-                <li>Sundays &amp; Public Holidays: Offline</li>
+                <li>{BUSINESS_HOURS.weekdaysAndSaturday}</li>
+                <li>{BUSINESS_HOURS.sunday}</li>
               </ul>
             </div>
             <p style={{ fontSize: 12, color: '#6b7280', marginTop: 6 }}>
               *Standard local and national call rates apply.
             </p>
+          </div>
+
+          <div className="support-card">
+            <h2>Store location</h2>
+            <p>{BUSINESS_LOCATION.city}</p>
+            <p>{BUSINESS_LOCATION.streetAddress}</p>
           </div>
 
           <div className="support-card">
@@ -138,16 +92,15 @@ const CustomerSupport = () => {
             </p>
             <p style={{ marginTop: 10 }}>
               WhatsApp:{' '}
-              <a href={`https://wa.me/${SUPPORT_PHONE.replace('+', '')}`} target="_blank" rel="noreferrer" style={{ color: '#E1261C', fontWeight: 600 }}>
-                +254 700 000 000
+              <a href={`https://wa.me/${BUSINESS_WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{ color: '#E1261C', fontWeight: 600 }}>
+                {BUSINESS_PHONE_DISPLAY}
               </a>
             </p>
             <div className="support-hours">
               <p><strong>Chat hours (EAT):</strong></p>
               <ul>
-                <li>Monday – Friday: 9:00am – 1:00pm &amp; 2:00pm – 4:00pm</li>
-                <li>Saturday: 9:00am – 12:00pm</li>
-                <li>Sundays &amp; Public Holidays: Offline</li>
+                <li>{BUSINESS_HOURS.weekdaysAndSaturday}</li>
+                <li>{BUSINESS_HOURS.sunday}</li>
               </ul>
             </div>
           </div>

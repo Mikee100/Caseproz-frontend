@@ -25,6 +25,13 @@ const Checkout = () => {
     const [success, setSuccess] = useState('');
     const [termsAccepted, setTermsAccepted] = useState(false);
 
+    const [fulfillmentMethod, setFulfillmentMethod] = useState(() => {
+        const saved = localStorage.getItem('fulfillmentMethod');
+        if (saved === 'pickup' || saved === 'delivery') return saved;
+        const cartZoneId = localStorage.getItem('shippingZoneId');
+        return cartZoneId === 'pickup-sweech-westlands' ? 'pickup' : 'delivery';
+    });
+
 
     const [selectedRegion, setSelectedRegion] = useState(() => localStorage.getItem('deliveryRegion') || '');
     const [selectedLocation, setSelectedLocation] = useState(() => localStorage.getItem('deliveryLocation') || '');
@@ -37,8 +44,9 @@ const Checkout = () => {
     const deliveryGroups = config?.deliveryRouteGroups || [];
     const currentGroup = deliveryGroups.find(g => g.road === selectedRegion);
     const currentLocation = currentGroup?.items.find(i => i.location === selectedLocation);
+    const isPickup = fulfillmentMethod === 'pickup';
 
-    const shippingPrice = currentLocation?.price || 0;
+    const shippingPrice = isPickup ? 0 : (currentLocation?.price || 0);
     const subtotalBeforeDiscount = cartTotal;
     const totalPrice = Math.max(0, subtotalBeforeDiscount + shippingPrice - discountAmount);
 
@@ -47,6 +55,10 @@ const Checkout = () => {
         localStorage.setItem('deliveryRegion', selectedRegion);
         localStorage.setItem('deliveryLocation', selectedLocation);
     }, [selectedRegion, selectedLocation]);
+
+    useEffect(() => {
+        localStorage.setItem('fulfillmentMethod', fulfillmentMethod);
+    }, [fulfillmentMethod]);
 
     useEffect(() => {
         if (!user) {
@@ -80,14 +92,14 @@ const Checkout = () => {
             return;
         }
 
-        if (!address.trim() || !city.trim() || !postalCode.trim() || !country.trim()) {
+        if (!isPickup && (!address.trim() || !city.trim() || !postalCode.trim() || !country.trim())) {
             const message = 'Please fill in your full shipping address before placing the order.';
             setError(message);
             setLoading(false);
             return;
         }
 
-        if (!selectedRegion || !selectedLocation) {
+        if (!isPickup && (!selectedRegion || !selectedLocation)) {
             setError('Please select your delivery region and location.');
             setLoading(false);
             return;
@@ -112,12 +124,14 @@ const Checkout = () => {
             shippingAddress: { 
                 name: fullName, 
                 phone: phoneNormalized, 
-                address, 
-                city, 
-                postalCode, 
+                address: isPickup ? (address.trim() || 'Store Pickup - Sweech Westlands') : address,
+                city: isPickup ? (city.trim() || 'Nairobi') : city,
+                postalCode: isPickup ? (postalCode.trim() || '00000') : postalCode,
                 country,
-                region: selectedRegion,
-                location: selectedLocation
+                region: isPickup ? 'PICKUP' : selectedRegion,
+                location: isPickup ? 'Sweech Westlands' : selectedLocation,
+                isPickup,
+                pickupLocation: isPickup ? 'Sweech Westlands' : undefined,
             },
             paymentMethod,
             itemsPrice: cartTotal,
@@ -171,6 +185,10 @@ const Checkout = () => {
         setError('');
         try {
             const cartProductIds = cart.map(item => item._id);
+            const cartItems = cart.map((item) => ({
+                product: item._id,
+                qty: item.quantity,
+            }));
             const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts/apply`, {
                 method: 'POST',
                 headers: {
@@ -180,6 +198,7 @@ const Checkout = () => {
                     code,
                     itemsTotal: cartTotal,
                     cartProductIds,
+                    cartItems,
                 }),
             });
             setDiscountAmount(data.discountAmount || 0);
@@ -227,7 +246,33 @@ const Checkout = () => {
             <div className="checkout-layout">
                 <form className="checkout-form" onSubmit={handlePlaceOrder}>
                     <div className="checkout-card" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
-                        <h2 style={{ fontSize: '20px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>Shipping Information</h2>
+                        <h2 style={{ fontSize: '20px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>Delivery / Pickup Information</h2>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>How would you like to receive your order?</label>
+                            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="radio"
+                                        name="fulfillmentMethod"
+                                        value="delivery"
+                                        checked={fulfillmentMethod === 'delivery'}
+                                        onChange={(e) => setFulfillmentMethod(e.target.value)}
+                                    />
+                                    Delivery
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="radio"
+                                        name="fulfillmentMethod"
+                                        value="pickup"
+                                        checked={fulfillmentMethod === 'pickup'}
+                                        onChange={(e) => setFulfillmentMethod(e.target.value)}
+                                    />
+                                    Pick up from shop (Sweech Westlands)
+                                </label>
+                            </div>
+                        </div>
 
                         <div style={{ marginBottom: '20px' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Full name</label>
@@ -239,53 +284,74 @@ const Checkout = () => {
                             <input type="tel" placeholder="e.g. 07xx xxx xxx" value={phone} onChange={(e) => setPhone(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Address</label>
-                            <input type="text" placeholder="Enter address" value={address} onChange={(e) => setAddress(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                        </div>
+                        {!isPickup && (
+                            <>
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Address</label>
+                                    <input type="text" placeholder="Enter address" value={address} onChange={(e) => setAddress(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
+                                </div>
 
-                        <div className="checkout-2col" style={{ marginBottom: '20px' }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>City</label>
-                                <input type="text" placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Postal Code</label>
-                                <input type="text" placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                            </div>
-                        </div>
+                                <div className="checkout-2col" style={{ marginBottom: '20px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>City</label>
+                                        <input type="text" placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Postal Code</label>
+                                        <input type="text" placeholder="Enter postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
+                                    </div>
+                                </div>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Delivery Region / Road</label>
-                            <select
-                                value={selectedRegion}
-                                onChange={e => {
-                                    setSelectedRegion(e.target.value);
-                                    setSelectedLocation('');
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Delivery Region / Road</label>
+                                    <select
+                                        value={selectedRegion}
+                                        onChange={e => {
+                                            setSelectedRegion(e.target.value);
+                                            setSelectedLocation('');
+                                        }}
+                                        required
+                                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px' }}
+                                    >
+                                        <option value="">Select Region</option>
+                                        {deliveryGroups.map(group => (
+                                            <option key={group.road} value={group.road}>{group.road}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {selectedRegion && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Specific Location</label>
+                                        <select
+                                            value={selectedLocation}
+                                            onChange={e => setSelectedLocation(e.target.value)}
+                                            required
+                                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                        >
+                                            <option value="">Select Location</option>
+                                            {currentGroup?.items.map(item => (
+                                                <option key={item.location} value={item.location}>{item.location} (KSh {item.price.toLocaleString()})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {isPickup && (
+                            <div
+                                style={{
+                                    marginBottom: '20px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#f0fdf4',
+                                    border: '1px solid #bbf7d0',
+                                    color: '#166534',
+                                    fontSize: '13px',
                                 }}
-                                required
-                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px' }}
                             >
-                                <option value="">Select Region</option>
-                                {deliveryGroups.map(group => (
-                                    <option key={group.road} value={group.road}>{group.road}</option>
-                                ))}
-                            </select>
-                        </div>
-                        {selectedRegion && (
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Specific Location</label>
-                                <select
-                                    value={selectedLocation}
-                                    onChange={e => setSelectedLocation(e.target.value)}
-                                    required
-                                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                                >
-                                    <option value="">Select Location</option>
-                                    {currentGroup?.items.map(item => (
-                                        <option key={item.location} value={item.location}>{item.location} (KSh {item.price.toLocaleString()})</option>
-                                    ))}
-                                </select>
+                                Pickup location: <strong>Sweech Westlands</strong>. Delivery fee is <strong>KSh 0</strong>.
+                                We will contact you on your phone number when your order is ready for collection.
                             </div>
                         )}
 

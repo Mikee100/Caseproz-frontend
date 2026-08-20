@@ -1,10 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SHIPPING_ZONES } from '../constants/shippingZones';
+import SeoMeta from '../components/SeoMeta';
+import { BUSINESS_PHONE_DISPLAY, SUPPORT_EMAIL } from '../utils/seo';
 
 const Delivery = () => {
     return (
         <div className="delivery-page">
+            <SeoMeta
+                title="Delivery Information | CaseProz Kenya"
+                description="Delivery timelines, zone-based shipping fees, and pickup options from CaseProz in Nairobi."
+                canonicalPath="/delivery"
+            />
             <section className="delivery-hero">
                 <div className="container">
                     <p className="delivery-badge">DELIVERY INFORMATION</p>
@@ -141,9 +148,9 @@ const Delivery = () => {
                         </p>
                         <p style={{ marginTop: '10px' }}>
                             Email:{' '}
-                            <a href="mailto:support@caseproz.co.ke">support@caseproz.co.ke</a>
+                            <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
                             <br />
-                            Phone / WhatsApp: <strong>+254 700 000 000</strong>
+                            Phone / WhatsApp: <strong>{BUSINESS_PHONE_DISPLAY}</strong>
                         </p>
                         <p style={{ marginTop: '16px' }}>
                             You can also{' '}
