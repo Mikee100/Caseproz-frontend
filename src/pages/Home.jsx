@@ -22,6 +22,9 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useAuth } from '../context/AuthContext';
 
 const SHOW_PHONE_CASES = false;
+const NEWEST_PAGE_SIZE = 16;
+const FEATURED_PAGE_SIZE = 24;
+const ON_SALE_PAGE_SIZE = 24;
 
 const isCaseProduct = (product) => {
     const category = String(product?.category || '').toLowerCase();
@@ -215,42 +218,63 @@ const Home = () => {
     const heroResumeTimeoutRef = useRef(null);
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchProducts = async () => {
             const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
 
             try {
-                const newestData = await apiFetch(`${baseUrl}?page=1&pageSize=42&sort=newest&isActive=true`);
-                setProducts(Array.isArray(newestData?.products) ? newestData.products : []);
+                const newestData = await apiFetch(
+                    `${baseUrl}?page=1&pageSize=${NEWEST_PAGE_SIZE}&sort=newest&isActive=true`
+                );
+                if (isMounted) {
+                    setProducts(Array.isArray(newestData?.products) ? newestData.products : []);
+                }
             } catch (err) {
                 console.error('Error fetching newest products:', err);
                 if (err instanceof ApiError) {
-                    setError(err.message || 'We could not load products right now.');
+                    if (isMounted) setError(err.message || 'We could not load products right now.');
                 } else {
-                    setError('We could not load products right now. Please refresh in a moment.');
+                    if (isMounted) setError('We could not load products right now. Please refresh in a moment.');
                 }
             } finally {
-                setLoadingNewest(false);
+                if (isMounted) setLoadingNewest(false);
             }
 
-            const [featuredResult, onSaleResult] = await Promise.allSettled([
-                apiFetch(`${baseUrl}?page=1&pageSize=120&sort=hero&isActive=true&isFeatured=true`),
-                apiFetch(`${baseUrl}?page=1&pageSize=120&sort=newest&isActive=true&onSale=true`),
-            ]);
+            // Defer non-critical sections so first paint is not blocked by extra payload.
+            const runDeferredFetch = async () => {
+                const [featuredResult, onSaleResult] = await Promise.allSettled([
+                    apiFetch(`${baseUrl}?page=1&pageSize=${FEATURED_PAGE_SIZE}&sort=hero&isActive=true&isFeatured=true`),
+                    apiFetch(`${baseUrl}?page=1&pageSize=${ON_SALE_PAGE_SIZE}&sort=newest&isActive=true&onSale=true`),
+                ]);
 
-            if (featuredResult.status === 'fulfilled') {
-                setFeaturedProducts(Array.isArray(featuredResult.value?.products) ? featuredResult.value.products : []);
-            } else {
-                console.error('Error fetching featured products:', featuredResult.reason);
-            }
+                if (!isMounted) return;
 
-            if (onSaleResult.status === 'fulfilled') {
-                setOnSaleProducts(Array.isArray(onSaleResult.value?.products) ? onSaleResult.value.products : []);
+                if (featuredResult.status === 'fulfilled') {
+                    setFeaturedProducts(Array.isArray(featuredResult.value?.products) ? featuredResult.value.products : []);
+                } else {
+                    console.error('Error fetching featured products:', featuredResult.reason);
+                }
+
+                if (onSaleResult.status === 'fulfilled') {
+                    setOnSaleProducts(Array.isArray(onSaleResult.value?.products) ? onSaleResult.value.products : []);
+                } else {
+                    console.error('Error fetching on-sale products:', onSaleResult.reason);
+                }
+            };
+
+            if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+                window.requestIdleCallback(runDeferredFetch, { timeout: 1200 });
             } else {
-                console.error('Error fetching on-sale products:', onSaleResult.reason);
+                setTimeout(runDeferredFetch, 0);
             }
         };
 
         fetchProducts();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const trackHomeClick = (eventName, section, label, metadata = {}) => {
