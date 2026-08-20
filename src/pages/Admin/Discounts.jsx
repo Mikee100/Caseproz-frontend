@@ -9,7 +9,7 @@ const emptyDiscount = () => ({
     description: '',
     type: 'percent',
     value: 10,
-    minOrderTotal: 0,
+    minOrderTotal: '',
     maxDiscount: '',
     active: true,
     startsAt: '',
@@ -87,17 +87,22 @@ const Discounts = () => {
     }, [user]);
 
     const startNew = () => {
+        setSelectAll(false);
         setEditing(emptyDiscount());
     };
 
     const startEdit = (disc) => {
+        setSelectAll(false);
         setEditing({
             _id: disc._id,
             code: disc.code || '',
             description: disc.description || '',
             type: disc.type || 'percent',
             value: disc.value || 0,
-            minOrderTotal: disc.minOrderTotal || 0,
+            minOrderTotal:
+                typeof disc.minOrderTotal === 'number' && disc.minOrderTotal > 0
+                    ? disc.minOrderTotal
+                    : '',
             maxDiscount: disc.maxDiscount ?? '',
             active: disc.active !== false,
             startsAt: disc.startsAt ? disc.startsAt.substring(0, 10) : '',
@@ -118,9 +123,13 @@ const Discounts = () => {
 
     // For react-select multi-select
     const handleProductsChange = (selectedOptions) => {
+        const selectedIds = selectedOptions ? selectedOptions.map((opt) => opt.value) : [];
+        if (products.length > 0) {
+            setSelectAll(selectedIds.length === products.length);
+        }
         setEditing((prev) => ({
             ...prev,
-            products: selectedOptions ? selectedOptions.map((opt) => opt.value) : [],
+            products: selectedIds,
         }));
     };
 
@@ -144,7 +153,10 @@ const Discounts = () => {
             description: editing.description,
             type: editing.type,
             value: Number(editing.value),
-            minOrderTotal: Number(editing.minOrderTotal || 0),
+            minOrderTotal:
+                editing.minOrderTotal === '' || editing.minOrderTotal === null
+                    ? null
+                    : Number(editing.minOrderTotal),
             maxDiscount:
                 editing.maxDiscount === '' ? undefined : Number(editing.maxDiscount),
             active: editing.active,
@@ -269,113 +281,100 @@ const Discounts = () => {
     };
 
     const styles = {
-        card: {
-            backgroundColor: 'white',
-            padding: '24px',
-            borderRadius: '16px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-            border: '1px solid #eee',
-            marginBottom: '24px',
+        page: {
+            maxWidth: '1280px',
+            margin: '0 auto',
+            display: 'grid',
+            gap: '12px',
+        },
+        panel: {
+            backgroundColor: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            padding: '12px',
         },
         label: {
             display: 'block',
-            marginBottom: '6px',
+            marginBottom: '4px',
             fontWeight: 600,
             color: '#374151',
-            fontSize: '13px',
+            fontSize: '12px',
         },
         input: {
             width: '100%',
             padding: '8px 10px',
             borderRadius: '8px',
-            border: '1px solid #e5e7eb',
+            border: '1px solid #d1d5db',
             fontSize: '13px',
+            backgroundColor: '#fff',
+        },
+        muted: {
+            fontSize: '12px',
+            color: '#6b7280',
+        },
+        danger: {
+            backgroundColor: '#fef2f2',
+            color: '#b91c1c',
+            padding: '10px 12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            border: '1px solid #fecaca',
         },
     };
 
     return (
-        <div>
-            <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px', color: '#111827' }}>
-                Discount Codes
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '14px' }}>
-                Create promotion codes that apply to the cart total at checkout. Control validity windows, limits, and
-                caps — and quickly test how much a code will discount a sample order.
-            </p>
+        <div style={styles.page}>
+            <div style={{ ...styles.panel, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div>
+                    <h1 style={{ fontSize: '22px', fontWeight: 800, margin: 0, color: '#111827' }}>Discount Codes</h1>
+                    <p style={{ ...styles.muted, marginTop: '4px', marginBottom: 0 }}>
+                        Manage promo codes, usage limits, and validity windows in one place.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={startNew}
+                    style={{
+                        padding: '9px 14px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: '#E41E26',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                    }}
+                >
+                    + New code
+                </button>
+            </div>
 
             {error && (
-                <div style={{ backgroundColor: '#fef2f2', color: '#b91c1c', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+                <div style={styles.danger}>
                     {error}
                 </div>
             )}
 
-            {/* Summary & actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '16px' }}>
-                <div style={{ ...styles.card, padding: '14px' }}>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Active codes</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a' }}>{stats.active}</div>
+            <div style={{ ...styles.panel, display: 'grid', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ padding: '6px 10px', borderRadius: '999px', backgroundColor: '#ecfdf5', color: '#166534', fontSize: '12px', fontWeight: 700 }}>
+                        Active: {stats.active}
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRadius: '999px', backgroundColor: '#eff6ff', color: '#1d4ed8', fontSize: '12px', fontWeight: 700 }}>
+                        Scheduled: {stats.scheduled}
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRadius: '999px', backgroundColor: '#fff7ed', color: '#9a3412', fontSize: '12px', fontWeight: 700 }}>
+                        Expired/Maxed: {stats.inactive}
+                    </div>
                 </div>
-                <div style={{ ...styles.card, padding: '14px' }}>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Scheduled</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#2563eb' }}>{stats.scheduled}</div>
-                </div>
-                <div style={{ ...styles.card, padding: '14px' }}>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Expired / maxed</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#b91c1c' }}>{stats.inactive}</div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                    <button
-                        type="button"
-                        onClick={startNew}
-                        style={{
-                            padding: '10px 16px',
-                            borderRadius: '10px',
-                            border: 'none',
-                            backgroundColor: '#E41E26',
-                            color: 'white',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 10px rgba(228, 30, 38, 0.25)',
-                        }}
-                    >
-                        + New discount code
-                    </button>
-                </div>
-            </div>
-
-            {/* Filters row */}
-            <div
-                style={{
-                    marginBottom: '16px',
-                    padding: '10px 14px',
-                    backgroundColor: 'white',
-                    borderRadius: '10px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '12px',
-                    fontSize: '13px',
-                    color: '#4b5563',
-                }}
-            >
-                <div>
-                    Showing {filteredDiscounts.length} of {discounts.length} codes
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div>
-                        <label style={{ fontSize: '12px', color: '#6b7280', marginRight: '6px' }}>Filter by status:</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={styles.muted}>Showing {filteredDiscounts.length} of {discounts.length} codes</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <label style={{ ...styles.muted, fontSize: '12px' }}>Status</label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            style={{
-                                padding: '6px 8px',
-                                borderRadius: '8px',
-                                border: '1px solid #e5e7eb',
-                                fontSize: '12px',
-                                backgroundColor: '#f9fafb',
-                            }}
+                            style={{ ...styles.input, width: '180px', padding: '7px 8px' }}
                         >
                             <option value="all">All</option>
                             <option value="active">Active now</option>
@@ -388,186 +387,13 @@ const Discounts = () => {
                 </div>
             </div>
 
-            {loading ? (
-                <div style={{ padding: '40px 0', textAlign: 'center', color: '#6b7280' }}>
-                    Loading discount codes...
-                </div>
-            ) : (
-                <div style={styles.card}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Code</th>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Type</th>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Value</th>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Min Total</th>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Window</th>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Status</th>
-                                <th style={{ textAlign: 'left', padding: '8px 6px', color: '#6b7280' }}>Usage</th>
-                                <th style={{ textAlign: 'right', padding: '8px 6px', color: '#6b7280' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredDiscounts.map((disc) => {
-                                const meta = getStatusMeta(disc);
-                                return (
-                                    <tr key={disc._id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                        <td style={{ padding: '8px 6px', fontWeight: 600 }}>{disc.code}</td>
-                                        <td style={{ padding: '8px 6px' }}>
-                                            {disc.type === 'percent' ? 'Percent' : 'Amount'}
-                                        </td>
-                                        <td style={{ padding: '8px 6px' }}>
-                                            {disc.type === 'percent'
-                                                ? `${disc.value}%`
-                                                : `KSh ${disc.value?.toLocaleString?.() ?? disc.value}`}
-                                        </td>
-                                        <td style={{ padding: '8px 6px' }}>
-                                            {disc.minOrderTotal
-                                                ? `KSh ${disc.minOrderTotal.toLocaleString()}`
-                                                : 'None'}
-                                        </td>
-                                        <td style={{ padding: '8px 6px', fontSize: '11px', color: '#6b7280' }}>
-                                            {disc.startsAt
-                                                ? new Date(disc.startsAt).toLocaleDateString()
-                                                : '—'}{' '}
-                                            –{' '}
-                                            {disc.expiresAt
-                                                ? new Date(disc.expiresAt).toLocaleDateString()
-                                                : '—'}
-                                        </td>
-                                        <td style={{ padding: '8px 6px' }}>
-                                            <span
-                                                style={{
-                                                    padding: '3px 8px',
-                                                    borderRadius: '999px',
-                                                    fontSize: '11px',
-                                                    fontWeight: 600,
-                                                    backgroundColor: meta.bg,
-                                                    color: meta.color,
-                                                }}
-                                            >
-                                                {meta.label}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '8px 6px' }}>
-                                            {disc.timesUsed ?? 0}
-                                            {typeof disc.maxUses === 'number' && (
-                                                <> / {disc.maxUses}</>
-                                            )}
-                                        </td>
-                                        <td style={{ padding: '8px 6px', textAlign: 'right' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => startEdit(disc)}
-                                                style={{
-                                                    padding: '6px 10px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #e5e7eb',
-                                                    backgroundColor: '#f9fafb',
-                                                    fontSize: '12px',
-                                                    marginRight: '6px',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteDiscount(disc)}
-                                                style={{
-                                                    padding: '6px 10px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #fee2e2',
-                                                    backgroundColor: '#fef2f2',
-                                                    color: '#b91c1c',
-                                                    fontSize: '12px',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                            {filteredDiscounts.length === 0 && (
-                                <tr>
-                                    <td colSpan={8} style={{ padding: '16px 6px', color: '#6b7280' }}>
-                                        No discount codes match this filter.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
             {editing && (
-                <div style={styles.card}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', color: '#111827' }}>
+                <div style={styles.panel}>
+                    <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px', color: '#111827' }}>
                         {editing._id ? `Edit ${editing.code}` : 'New Discount Code'}
                     </h2>
                     <form onSubmit={saveDiscount}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                                                        <div>
-                                                            <label style={styles.label}>Applies to products</label>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={selectAll}
-                                                                    onChange={handleSelectAll}
-                                                                    id="selectAllProducts"
-                                                                    style={{ marginRight: 4 }}
-                                                                    disabled={productsLoading}
-                                                                />
-                                                                <label htmlFor="selectAllProducts" style={{ fontSize: 13, color: '#374151', cursor: 'pointer' }}>
-                                                                    Select all products
-                                                                </label>
-                                                            </div>
-                                                            <Select
-                                                                isMulti
-                                                                isClearable
-                                                                isSearchable
-                                                                options={products.map((p) => ({
-                                                                    value: p._id,
-                                                                    label: p.name + (p.category ? ` (${p.category})` : ''),
-                                                                    image: p.images && p.images.length > 0 ? p.images[0] : null,
-                                                                }))}
-                                                                value={products
-                                                                    .filter((p) => (editing.products || []).includes(p._id))
-                                                                    .map((p) => ({
-                                                                        value: p._id,
-                                                                        label: p.name + (p.category ? ` (${p.category})` : ''),
-                                                                        image: p.images && p.images.length > 0 ? p.images[0] : null,
-                                                                    }))}
-                                                                onChange={handleProductsChange}
-                                                                isDisabled={productsLoading || selectAll}
-                                                                placeholder={productsLoading ? 'Loading products...' : 'Select products...'}
-                                                                styles={{
-                                                                    option: (base, state) => ({
-                                                                        ...base,
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                    }),
-                                                                    singleValue: (base, state) => ({
-                                                                        ...base,
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                    }),
-                                                                }}
-                                                                formatOptionLabel={(option) => (
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                        {option.image && (
-                                                                            <img src={option.image} alt="" style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: 6 }} />
-                                                                        )}
-                                                                        <span>{option.label}</span>
-                                                                    </div>
-                                                                )}
-                                                            />
-                                                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: 4 }}>
-                                                                Select products this code should apply to. If you pick specific products, the discount is only calculated from those product totals, not the whole cart.
-                                                            </div>
-                                                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px', marginBottom: '10px' }}>
                             <div>
                                 <label style={styles.label}>Code</label>
                                 <input
@@ -620,58 +446,96 @@ const Discounts = () => {
                                     type="number"
                                     value={editing.minOrderTotal}
                                     onChange={(e) => handleChange('minOrderTotal', e.target.value)}
+                                    placeholder="No minimum"
                                     style={styles.input}
                                 />
                                 <div style={{ fontSize: '12px', color: '#6b7280', marginTop: 4 }}>
-                                    Set to 0 to allow any cart subtotal.
+                                    Leave blank to allow any cart subtotal.
                                 </div>
-                            </div>
-                            <div>
-                                <label style={styles.label}>Max discount (KSh, optional)</label>
-                                <input
-                                    type="number"
-                                    value={editing.maxDiscount}
-                                    onChange={(e) => handleChange('maxDiscount', e.target.value)}
-                                    style={styles.input}
-                                />
-                                <label style={{ ...styles.label, marginTop: '8px' }}>Max uses (optional)</label>
-                                <input
-                                    type="number"
-                                    value={editing.maxUses}
-                                    onChange={(e) => handleChange('maxUses', e.target.value)}
-                                    style={styles.input}
-                                />
                                 <label style={{ ...styles.label, marginTop: '8px' }}>Active</label>
                                 <div>
                                     <input
                                         type="checkbox"
                                         checked={editing.active}
                                         onChange={(e) => handleChange('active', e.target.checked)}
-                                    />{' '}
+                                        />
+                                        {' '}
                                     <span style={{ fontSize: '12px', color: '#6b7280' }}>
                                         Allow customers to apply this code
                                     </span>
                                 </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                                    <div>
+                                        <label style={styles.label}>Starts at (optional)</label>
+                                        <input
+                                            type="date"
+                                            value={editing.startsAt}
+                                            onChange={(e) => handleChange('startsAt', e.target.value)}
+                                            style={styles.input}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={styles.label}>Expires at (optional)</label>
+                                        <input
+                                            type="date"
+                                            value={editing.expiresAt}
+                                            onChange={(e) => handleChange('expiresAt', e.target.value)}
+                                            style={styles.input}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                             <div>
-                                <label style={styles.label}>Starts at (optional)</label>
-                                <input
-                                    type="date"
-                                    value={editing.startsAt}
-                                    onChange={(e) => handleChange('startsAt', e.target.value)}
-                                    style={styles.input}
+                                <label style={styles.label}>Applies to products</label>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                    <label htmlFor="selectAllProducts" style={{ fontSize: 12, color: '#374151', cursor: 'pointer' }}>
+                                        Select all products
+                                    </label>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectAll}
+                                        onChange={handleSelectAll}
+                                        id="selectAllProducts"
+                                        disabled={productsLoading}
+                                    />
+                                </div>
+                                <Select
+                                    isMulti
+                                    isClearable
+                                    isSearchable
+                                    options={products.map((p) => ({
+                                        value: p._id,
+                                        label: p.name + (p.category ? ` (${p.category})` : ''),
+                                        image: p.images && p.images.length > 0 ? p.images[0] : null,
+                                    }))}
+                                    value={products
+                                        .filter((p) => (editing.products || []).includes(p._id))
+                                        .map((p) => ({
+                                            value: p._id,
+                                            label: p.name + (p.category ? ` (${p.category})` : ''),
+                                            image: p.images && p.images.length > 0 ? p.images[0] : null,
+                                        }))}
+                                    onChange={handleProductsChange}
+                                    isDisabled={productsLoading || selectAll}
+                                    placeholder={productsLoading ? 'Loading products...' : 'Select products...'}
+                                    styles={{
+                                        control: (base) => ({ ...base, minHeight: 38, borderColor: '#d1d5db', boxShadow: 'none' }),
+                                        option: (base) => ({ ...base, fontSize: 12, display: 'flex', alignItems: 'center' }),
+                                        multiValueLabel: (base) => ({ ...base, fontSize: 11 }),
+                                    }}
+                                    formatOptionLabel={(option) => (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            {option.image && (
+                                                <img src={option.image} alt="" style={{ width: 22, height: 22, objectFit: 'cover', borderRadius: 4 }} />
+                                            )}
+                                            <span>{option.label}</span>
+                                        </div>
+                                    )}
                                 />
-                            </div>
-                            <div>
-                                <label style={styles.label}>Expires at (optional)</label>
-                                <input
-                                    type="date"
-                                    value={editing.expiresAt}
-                                    onChange={(e) => handleChange('expiresAt', e.target.value)}
-                                    style={styles.input}
-                                />
+                                <div style={{ ...styles.muted, marginTop: 6 }}>
+                                    Selected: {selectAll ? 'All products' : `${(editing.products || []).length} products`}
+                                </div>
+                                <div style={{ ...styles.muted, marginTop: 2 }}>Target only selected products when not set to all.</div>
                             </div>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -680,7 +544,7 @@ const Discounts = () => {
                                 onClick={cancelEdit}
                                 style={{
                                     padding: '10px 16px',
-                                    borderRadius: '10px',
+                                    borderRadius: '8px',
                                     border: '1px solid #e5e7eb',
                                     backgroundColor: '#fff',
                                     color: '#374151',
@@ -695,7 +559,7 @@ const Discounts = () => {
                                 disabled={!!savingId}
                                 style={{
                                     padding: '10px 16px',
-                                    borderRadius: '10px',
+                                    borderRadius: '8px',
                                     border: 'none',
                                     backgroundColor: '#E41E26',
                                     color: 'white',
@@ -711,18 +575,134 @@ const Discounts = () => {
                 </div>
             )}
 
+            {loading ? (
+                <div style={{ ...styles.panel, padding: '32px 0', textAlign: 'center', color: '#6b7280' }}>
+                    Loading discount codes...
+                </div>
+            ) : (
+                <div style={styles.panel}>
+                    <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '920px' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid #d1d5db' }}>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Code</th>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Type</th>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Value</th>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Min Total</th>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Window</th>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Status</th>
+                                <th style={{ textAlign: 'left', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Usage</th>
+                                <th style={{ textAlign: 'right', padding: '10px 8px', color: '#6b7280', whiteSpace: 'nowrap' }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredDiscounts.map((disc) => {
+                                const meta = getStatusMeta(disc);
+                                return (
+                                    <tr key={disc._id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                        <td style={{ padding: '10px 8px', fontWeight: 700, letterSpacing: '0.02em' }}>{disc.code}</td>
+                                        <td style={{ padding: '10px 8px' }}>
+                                            {disc.type === 'percent' ? 'Percent' : 'Amount'}
+                                        </td>
+                                        <td style={{ padding: '10px 8px' }}>
+                                            {disc.type === 'percent'
+                                                ? `${disc.value}%`
+                                                : `KSh ${disc.value?.toLocaleString?.() ?? disc.value}`}
+                                        </td>
+                                        <td style={{ padding: '10px 8px' }}>
+                                            {disc.minOrderTotal
+                                                ? `KSh ${disc.minOrderTotal.toLocaleString()}`
+                                                : 'None'}
+                                        </td>
+                                        <td style={{ padding: '10px 8px', fontSize: '11px', color: '#6b7280' }}>
+                                            {disc.startsAt
+                                                ? new Date(disc.startsAt).toLocaleDateString()
+                                                : '—'}{' '}
+                                            –{' '}
+                                            {disc.expiresAt
+                                                ? new Date(disc.expiresAt).toLocaleDateString()
+                                                : '—'}
+                                        </td>
+                                        <td style={{ padding: '10px 8px' }}>
+                                            <span
+                                                style={{
+                                                    padding: '4px 9px',
+                                                    borderRadius: '999px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 600,
+                                                    backgroundColor: meta.bg,
+                                                    color: meta.color,
+                                                }}
+                                            >
+                                                {meta.label}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '10px 8px' }}>
+                                            {disc.timesUsed ?? 0}
+                                            {typeof disc.maxUses === 'number' && (
+                                                <> / {disc.maxUses}</>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '10px 8px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => startEdit(disc)}
+                                                style={{
+                                                    padding: '6px 10px',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #e5e7eb',
+                                                    backgroundColor: '#fff',
+                                                    fontSize: '12px',
+                                                    marginRight: '6px',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteDiscount(disc)}
+                                                style={{
+                                                    padding: '6px 10px',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #fee2e2',
+                                                    backgroundColor: '#fef2f2',
+                                                    color: '#b91c1c',
+                                                    fontSize: '12px',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {filteredDiscounts.length === 0 && (
+                                <tr>
+                                    <td colSpan={8} style={{ padding: '18px 8px', color: '#6b7280' }}>
+                                        No discount codes match this filter.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            )}
+
             {/* Testing panel */}
-            <div style={styles.card}>
-                <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', color: '#111827' }}>
+            <div style={styles.panel}>
+                <h2 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px', color: '#111827' }}>
                     Quick test a code
                 </h2>
-                <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '12px' }}>
+                <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '10px' }}>
                     Simulate checkout by entering a cart total and any code (active, scheduled, or expired) to see
                     whether it applies and how much it would discount.
                 </p>
                 <form
                     onSubmit={handleTestDiscount}
-                    style={{ display: 'grid', gridTemplateColumns: '2fr 2fr auto', gap: '10px', alignItems: 'center' }}
+                    style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) minmax(180px, 1fr) auto', gap: '8px', alignItems: 'center' }}
                 >
                     <div>
                         <label style={styles.label}>Code</label>
@@ -748,9 +728,9 @@ const Discounts = () => {
                         type="submit"
                         disabled={testing}
                         style={{
-                            marginTop: '20px',
-                            padding: '10px 18px',
-                            borderRadius: '10px',
+                            marginTop: '18px',
+                            padding: '9px 14px',
+                            borderRadius: '8px',
                             border: 'none',
                             backgroundColor: '#111827',
                             color: 'white',
@@ -769,12 +749,12 @@ const Discounts = () => {
                 {sampleResult && !sampleError && (
                     <div
                         style={{
-                            marginTop: '12px',
-                            padding: '10px 12px',
+                            marginTop: '10px',
+                            padding: '9px 10px',
                             borderRadius: '8px',
                             backgroundColor: '#ecfdf3',
                             color: '#166534',
-                            fontSize: '13px',
+                            fontSize: '12px',
                         }}
                     >
                         <strong>KSh {sampleResult.discountAmount.toLocaleString()}</strong> discount will be

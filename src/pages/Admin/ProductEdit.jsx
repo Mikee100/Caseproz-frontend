@@ -61,6 +61,7 @@ const ProductEdit = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [variantUploadingIndex, setVariantUploadingIndex] = useState(null);
     const [availableCategories, setAvailableCategories] = useState({});
     const [availableBrands, setAvailableBrands] = useState([]);
     const [draggedImageIndex, setDraggedImageIndex] = useState(null);
@@ -173,6 +174,16 @@ const ProductEdit = () => {
         fetchProduct();
     }, [id, isEditMode]);
 
+    const uploadImageFile = async (file) => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        return apiFetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+    };
+
     const uploadFileHandler = async (e) => {
         const files = Array.from(e.target.files || []);
         if (!files.length) return;
@@ -183,13 +194,7 @@ const ProductEdit = () => {
             const uploadedUrls = [];
 
             for (const file of files) {
-                const formData = new FormData();
-                formData.append('image', file);
-
-                const url = await apiFetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
-                    method: 'POST',
-                    body: formData,
-                }, { parseJson: false }); // Assuming upload returns plain text URL or JSON. Let's check apiFetch.
+                const url = await uploadImageFile(file);
                 uploadedUrls.push(url);
             }
 
@@ -203,6 +208,23 @@ const ProductEdit = () => {
         } finally {
             setUploading(false);
             // Allow selecting the same file(s) again by resetting the input
+            e.target.value = '';
+        }
+    };
+
+    const uploadVariantImageHandler = async (variantIdx, e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setVariantUploadingIndex(variantIdx);
+        try {
+            const uploadedUrl = await uploadImageFile(file);
+            updateVariant(variantIdx, 'image', uploadedUrl);
+        } catch (err) {
+            console.error(err);
+            setError(err?.message || 'Failed to upload variant image');
+        } finally {
+            setVariantUploadingIndex(null);
             e.target.value = '';
         }
     };
@@ -892,7 +914,41 @@ const ProductEdit = () => {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '10px' }}>
                                     <div>
                                         <label style={styles.label}>Image URL</label>
-                                        <input type="text" value={variant.image || ''} onChange={e => updateVariant(idx, 'image', e.target.value)} placeholder="Paste image URL" style={styles.input} />
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+                                            <input type="text" value={variant.image || ''} onChange={e => updateVariant(idx, 'image', e.target.value)} placeholder="Paste image URL" style={styles.input} />
+                                            <label style={{
+                                                padding: '0 12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #e5e7eb',
+                                                backgroundColor: '#fff',
+                                                color: '#334155',
+                                                fontSize: '12px',
+                                                fontWeight: 700,
+                                                cursor: variantUploadingIndex === idx ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                whiteSpace: 'nowrap',
+                                                opacity: variantUploadingIndex === idx ? 0.7 : 1,
+                                            }}>
+                                                {variantUploadingIndex === idx ? 'Uploading...' : 'Upload'}
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => uploadVariantImageHandler(idx, e)}
+                                                    style={{ display: 'none' }}
+                                                    disabled={variantUploadingIndex === idx}
+                                                />
+                                            </label>
+                                        </div>
+                                        {variant.image && (
+                                            <div style={{ marginTop: '8px' }}>
+                                                <img
+                                                    src={variant.image}
+                                                    alt={`${variant.label || 'Variant'} preview`}
+                                                    style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <div>
                                         <label style={styles.label}>SKU *</label>
