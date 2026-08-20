@@ -9,11 +9,12 @@ import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import SeoMeta from '../components/SeoMeta';
 import {
+    buildLocalBusinessSchema,
+    buildOrganizationSchema,
+    buildWebSiteSchema,
     DEFAULT_OG_IMAGE,
     SITE_URL,
     SOCIAL_PROFILES,
-    SUPPORT_EMAIL,
-    SUPPORT_PHONE,
 } from '../utils/seo';
 import { trackEvent } from '../utils/analytics';
 import { useCart } from '../context/CartContext';
@@ -474,27 +475,17 @@ const Home = () => {
         toggleFavourite(product);
     };
 
-    const onlineStoreSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'CaseProz',
+    const onlineStoreSchema = buildOrganizationSchema({
         url: SITE_URL,
         logo: DEFAULT_OG_IMAGE,
-        description: 'CaseProz is a Kenyan ecommerce store for premium phone cases, chargers, power banks, audio products and tech accessories.',
         sameAs: SOCIAL_PROFILES,
-    };
+        description:
+            'CaseProz is a Kenyan ecommerce store for premium phone accessories, chargers, power banks, audio products and tech essentials.',
+    });
 
-    const localBusinessSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'CaseProz',
+    const webSiteSchema = buildWebSiteSchema({
         url: SITE_URL,
-        potentialAction: {
-            '@type': 'SearchAction',
-            target: `${SITE_URL}/search?q={search_term_string}`,
-            'query-input': 'required name=search_term_string',
-        },
-    };
+    });
 
     const homepageSchema = {
         '@context': 'https://schema.org',
@@ -505,28 +496,14 @@ const Home = () => {
         isPartOf: SITE_URL,
     };
 
-    const storeSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'Store',
-        name: 'CaseProz',
+    const storeSchema = buildLocalBusinessSchema({
+        type: 'ElectronicsStore',
         image: DEFAULT_OG_IMAGE,
         url: SITE_URL,
-        telephone: SUPPORT_PHONE,
-        email: SUPPORT_EMAIL,
-        priceRange: 'KSh',
-        description: 'Premium phone cases, charging and audio accessories with delivery across Kenya.',
-        address: {
-            '@type': 'PostalAddress',
-            addressCountry: 'KE',
-        },
-        currenciesAccepted: 'KES',
-        paymentAccepted: 'Cash, Mobile Money, Card',
-        areaServed: {
-            '@type': 'Country',
-            name: 'Kenya',
-        },
         sameAs: SOCIAL_PROFILES,
-    };
+        description:
+            'Shop premium phone accessories, chargers, power banks and audio products at CaseProz, Simara Mall Nairobi.',
+    });
 
     return (
         <div className="home-page caseproz-premium-home">
@@ -535,8 +512,8 @@ const Home = () => {
             </h1>
             <SeoMeta
                 title="CaseProz Kenya | Phone Cases, Accessories & Tech"
-                description="Shop premium phone cases, chargers, power banks, audio products and tech accessories in Kenya. Quality products and convenient delivery from CaseProz."
-                keywords="phone cases Kenya, chargers Kenya, power banks Kenya, audio accessories Kenya, tech accessories Kenya, CaseProz"
+                description="Shop phone cases, chargers, power banks, earbuds and premium tech accessories in Kenya. Visit CaseProz at Simara Mall, Tom Mboya Street, Nairobi."
+                keywords="phone accessories Kenya, chargers Nairobi, power banks Kenya, earbuds Nairobi, electronics store Nairobi CBD, CaseProz"
                 canonicalPath="/"
                 noIndex={productCount <= 0}
             />
@@ -545,7 +522,7 @@ const Home = () => {
                     {JSON.stringify(onlineStoreSchema)}
                 </script>
                 <script type="application/ld+json">
-                    {JSON.stringify(localBusinessSchema)}
+                    {JSON.stringify(webSiteSchema)}
                 </script>
                 <script type="application/ld+json">
                     {JSON.stringify(homepageSchema)}

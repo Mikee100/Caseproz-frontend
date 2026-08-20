@@ -565,7 +565,7 @@ const Discounts = () => {
                                                                 )}
                                                             />
                                                             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: 4 }}>
-                                                                Search and select products. Selected products appear as tags. Leave empty or check "Select all" for all products.
+                                                                Select products this code should apply to. If you pick specific products, the discount is only calculated from those product totals, not the whole cart.
                                                             </div>
                                                         </div>
                             <div>
@@ -588,17 +588,20 @@ const Discounts = () => {
                                 />
                             </div>
                             <div>
-                                <label style={styles.label}>Type</label>
+                                <label style={styles.label}>Discount type</label>
                                 <select
                                     value={editing.type}
                                     onChange={(e) => handleChange('type', e.target.value)}
                                     style={styles.input}
                                 >
-                                    <option value="percent">Percent (%)</option>
-                                    <option value="amount">Fixed amount (KSh)</option>
+                                    <option value="percent">Percentage off</option>
+                                    <option value="amount">Fixed amount off (KSh)</option>
                                 </select>
+                                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: 4 }}>
+                                    Choose how the discount is calculated.
+                                </div>
                                 <label style={{ ...styles.label, marginTop: '8px' }}>
-                                    Value {editing.type === 'percent' ? '(%)' : '(KSh)'}
+                                    {editing.type === 'percent' ? 'Discount percentage (%)' : 'Discount amount (KSh)'}
                                 </label>
                                 <input
                                     type="number"
@@ -607,13 +610,21 @@ const Discounts = () => {
                                     style={styles.input}
                                     required
                                 />
-                                <label style={{ ...styles.label, marginTop: '8px' }}>Min order total (KSh)</label>
+                                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: 4 }}>
+                                    {editing.type === 'percent'
+                                        ? 'Example: 10 means 10% off the eligible subtotal.'
+                                        : 'Example: 300 means KSh 300 off the eligible subtotal.'}
+                                </div>
+                                <label style={{ ...styles.label, marginTop: '8px' }}>Minimum cart subtotal required (KSh)</label>
                                 <input
                                     type="number"
                                     value={editing.minOrderTotal}
                                     onChange={(e) => handleChange('minOrderTotal', e.target.value)}
                                     style={styles.input}
                                 />
+                                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: 4 }}>
+                                    Set to 0 to allow any cart subtotal.
+                                </div>
                             </div>
                             <div>
                                 <label style={styles.label}>Max discount (KSh, optional)</label>

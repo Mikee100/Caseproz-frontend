@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { apiFetch } from '../utils/apiClient';
+import { ApiError, apiFetch } from '../utils/apiClient';
 import ProductCard from '../components/ProductCard';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { SHIPPING_ZONES } from '../constants/shippingZones';
@@ -55,6 +55,11 @@ const Cart = () => {
         }
 
         try {
+            const cartProductIds = cart.map((item) => item._id);
+            const cartItems = cart.map((item) => ({
+                product: item._id,
+                qty: item.quantity,
+            }));
             const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts/apply`, {
                 method: 'POST',
                 headers: {
@@ -63,6 +68,8 @@ const Cart = () => {
                 body: JSON.stringify({
                     code,
                     itemsTotal: cartTotal,
+                    cartProductIds,
+                    cartItems,
                 }),
             });
 
@@ -74,9 +81,12 @@ const Cart = () => {
                 `Coupon applied! You received a discount of KSh ${discountAmount.toLocaleString()}.`;
             setCouponSuccess(message);
         } catch (err) {
-            console.error('Error applying coupon', err);
             setDiscount(0);
-            setCouponError('We could not apply this coupon right now. Please try again in a moment.');
+            if (err instanceof ApiError) {
+                setCouponError(err.message || 'Failed to apply coupon code.');
+            } else {
+                setCouponError('We could not apply this coupon right now. Please try again in a moment.');
+            }
         }
     };
 

@@ -2,7 +2,126 @@ export const SITE_URL = 'https://www.caseproz.co.ke';
 export const SITE_NAME = 'CaseProz Kenya';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 export const SUPPORT_EMAIL = 'support@caseproz.co.ke';
-export const SUPPORT_PHONE = '+254794057030';
+export const SUPPORT_PHONE = '+254142190003';
+
+export const BUSINESS_LOCATION = {
+    city: 'Nairobi',
+    streetAddress: 'Simara Mall, 5th Floor, Shop No. 5, Tom Mboya Street',
+    addressRegion: 'Nairobi County',
+    postalCode: '00100',
+    addressCountry: 'KE',
+};
+
+export const BUSINESS_COORDINATES = {
+    latitude: -1.2838,
+    longitude: 36.8252,
+};
+
+export const BUSINESS_HOURS = {
+    weekdaysAndSaturday: 'Mon - Sat: 9:00am - 5:30pm',
+    sunday: 'Sunday: Closed',
+};
+
+export const BUSINESS_PHONE = '0142190003';
+export const BUSINESS_PHONE_DISPLAY = '+254 142 190003';
+export const BUSINESS_WHATSAPP_NUMBER = '254142190003';
+export const BUSINESS_EMAIL_NOTE = '';
+
+export const buildLocalBusinessSchema = ({
+    type = 'ElectronicsStore',
+    name = 'CaseProz',
+    url = SITE_URL,
+    image = DEFAULT_OG_IMAGE,
+    description = 'Premium phone accessories, chargers, audio products and tech essentials in Nairobi, Kenya.',
+    sameAs = SOCIAL_PROFILES,
+} = {}) => ({
+    '@context': 'https://schema.org',
+    '@type': type,
+    name,
+    image,
+    url,
+    telephone: BUSINESS_PHONE_DISPLAY,
+    email: SUPPORT_EMAIL,
+    priceRange: 'KSh',
+    description,
+    address: {
+        '@type': 'PostalAddress',
+        streetAddress: BUSINESS_LOCATION.streetAddress,
+        addressLocality: BUSINESS_LOCATION.city,
+        addressRegion: BUSINESS_LOCATION.addressRegion,
+        postalCode: BUSINESS_LOCATION.postalCode,
+        addressCountry: BUSINESS_LOCATION.addressCountry,
+    },
+    geo: {
+        '@type': 'GeoCoordinates',
+        latitude: BUSINESS_COORDINATES.latitude,
+        longitude: BUSINESS_COORDINATES.longitude,
+    },
+    openingHoursSpecification: [
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            opens: '09:00',
+            closes: '17:30',
+        },
+    ],
+    openingHours: [BUSINESS_HOURS.weekdaysAndSaturday, BUSINESS_HOURS.sunday],
+    currenciesAccepted: 'KES',
+    paymentAccepted: 'Cash, Mobile Money, Card',
+    areaServed: {
+        '@type': 'Country',
+        name: 'Kenya',
+    },
+    contactPoint: [
+        {
+            '@type': 'ContactPoint',
+            telephone: BUSINESS_PHONE_DISPLAY,
+            contactType: 'customer support',
+            areaServed: 'KE',
+            availableLanguage: 'English',
+        },
+        {
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            email: SUPPORT_EMAIL,
+            areaServed: 'KE',
+            availableLanguage: 'English',
+        },
+    ],
+    sameAs,
+});
+
+export const buildOrganizationSchema = ({
+    name = 'CaseProz',
+    url = SITE_URL,
+    logo = DEFAULT_OG_IMAGE,
+    description = 'CaseProz is a Kenyan ecommerce store for premium phone accessories, chargers, power banks, audio products and tech essentials.',
+    sameAs = SOCIAL_PROFILES,
+} = {}) => ({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name,
+    url,
+    logo,
+    description,
+    sameAs,
+});
+
+export const buildWebSiteSchema = ({
+    name = 'CaseProz',
+    url = SITE_URL,
+    searchPath = '/search?q={search_term_string}',
+} = {}) => ({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name,
+    url,
+    potentialAction: {
+        '@type': 'SearchAction',
+        target: `${url}${searchPath}`,
+        'query-input': 'required name=search_term_string',
+    },
+});
 
 export const SOCIAL_PROFILES = [
     'https://www.facebook.com/caseproz',

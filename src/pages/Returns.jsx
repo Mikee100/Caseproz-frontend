@@ -1,9 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SeoMeta from '../components/SeoMeta';
+import { BUSINESS_PHONE_DISPLAY, SUPPORT_EMAIL } from '../utils/seo';
 
 const Returns = () => {
     return (
         <div className="returns-page">
+            <SeoMeta
+                title="Returns & Refunds Policy | CaseProz Kenya"
+                description="Read CaseProz returns and refund policy, eligibility rules, and support contacts for purchases in Kenya."
+                canonicalPath="/returns"
+            />
             <section className="returns-hero">
                 <div className="container">
                     <p className="returns-badge">RETURNS &amp; REFUNDS</p>
@@ -74,8 +81,8 @@ const Returns = () => {
                         <ol className="returns-steps">
                             <li>
                                 <strong>Contact support</strong> – Reach us via{' '}
-                                <a href="mailto:support@caseproz.co.ke">support@caseproz.co.ke</a> or WhatsApp on{' '}
-                                <strong>+254 700 000 000</strong>.
+                                <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> or WhatsApp on{' '}
+                                <strong>{BUSINESS_PHONE_DISPLAY}</strong>.
                             </li>
                             <li>
                                 <strong>Share details</strong> – Provide your order number, photos/videos of the issue, and a brief

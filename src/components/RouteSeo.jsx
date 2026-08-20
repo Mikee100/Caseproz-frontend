@@ -30,7 +30,7 @@ const routeMeta = (pathname) => {
     if (pathname === '/contact') {
         return {
             title: 'Contact CaseProz | Support, Sales & Bulk Orders',
-            description: 'Contact CaseProz for order support, product questions, and bulk purchase inquiries in Kenya.',
+            description: 'Visit CaseProz at Tom Mboya Street, Simara Mall 5th Floor Shop 5, Nairobi. Open Mon-Sat 9:00am-5:30pm for support, sales and bulk orders.',
             image: '/og-contact.png',
             noIndex: false,
         };

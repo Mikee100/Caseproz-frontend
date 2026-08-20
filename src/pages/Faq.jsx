@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import SeoMeta from '../components/SeoMeta';
+import { BUSINESS_PHONE_DISPLAY, SUPPORT_EMAIL } from '../utils/seo';
 
 const faqSchema = {
     '@context': 'https://schema.org',
@@ -52,6 +54,11 @@ const faqSchema = {
 const Faq = () => {
     return (
         <div className="faq-page">
+            <SeoMeta
+                title="FAQs | CaseProz Kenya"
+                description="Frequently asked questions about delivery, payments, returns, and order support at CaseProz Kenya."
+                canonicalPath="/faq"
+            />
             <Helmet>
                 <script type="application/ld+json">
                     {JSON.stringify(faqSchema)}
@@ -214,9 +221,9 @@ const Faq = () => {
                         </p>
                         <p style={{ marginTop: '8px' }}>
                             Email:{' '}
-                            <a href="mailto:support@caseproz.co.ke">support@caseproz.co.ke</a>
+                            <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
                             <br />
-                            Phone / WhatsApp: <strong>+254 700 000 000</strong>
+                            Phone / WhatsApp: <strong>{BUSINESS_PHONE_DISPLAY}</strong>
                         </p>
                         <p style={{ marginTop: '12px' }}>
                             You can also{' '}
