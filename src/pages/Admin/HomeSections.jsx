@@ -8,6 +8,8 @@ const sectionTypeLabels = {
 
 const HomeSections = () => {
   const [sections, setSections] = useState([]);
+  const [archivedSections, setArchivedSections] = useState([]);
+  const [viewMode, setViewMode] = useState('active');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -26,8 +28,13 @@ const HomeSections = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/sections`);
-        setSections(Array.isArray(data) ? data : []);
+        if (viewMode === 'archived') {
+          const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/sections/archived/list`);
+          setArchivedSections(Array.isArray(data) ? data : []);
+        } else {
+          const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/sections`);
+          setSections(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         setError(err.message || 'Failed to fetch sections');
       } finally {
@@ -35,7 +42,7 @@ const HomeSections = () => {
       }
     };
     fetchSections();
-  }, []);
+  }, [viewMode]);
 
   // Create section
   const handleCreate = async (e) => {
@@ -123,7 +130,7 @@ const HomeSections = () => {
 
   // Delete section
   const handleDelete = async (sectionId) => {
-    if (!window.confirm('Are you sure you want to delete this section?')) return;
+    if (!window.confirm('Archive this section? You can restore it later.')) return;
     setDeleting(true);
     try {
       await apiFetch(`${import.meta.env.VITE_API_URL}/api/sections/${sectionId}`, { method: 'DELETE' });
@@ -135,6 +142,34 @@ const HomeSections = () => {
     }
   };
 
+  const handleRestore = async (sectionId) => {
+    if (!window.confirm('Restore this section?')) return;
+    setDeleting(true);
+    try {
+      await apiFetch(`${import.meta.env.VITE_API_URL}/api/sections/${sectionId}/restore`, { method: 'PUT' });
+      setArchivedSections((prev) => prev.filter((s) => s._id !== sectionId));
+    } catch (err) {
+      alert(err.message || 'Failed to restore section');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handlePurge = async (sectionId) => {
+    if (!window.confirm('Permanently delete this section? This cannot be undone.')) return;
+    setDeleting(true);
+    try {
+      await apiFetch(`${import.meta.env.VITE_API_URL}/api/sections/${sectionId}/purge`, { method: 'DELETE' });
+      setArchivedSections((prev) => prev.filter((s) => s._id !== sectionId));
+    } catch (err) {
+      alert(err.message || 'Failed to permanently delete section');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const visibleSections = viewMode === 'archived' ? archivedSections : sections;
+
   return (
     <div className="admin-section-page" style={{ padding: '32px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
@@ -144,9 +179,45 @@ const HomeSections = () => {
         </div>
         <button
           onClick={() => setShowModal('create')}
-          style={{ background: '#E41E26', color: '#fff', border: 'none', borderRadius: 6, padding: '12px 24px', fontWeight: 600, fontSize: 16, cursor: 'pointer', boxShadow: '0 2px 8px #e41e2622' }}
+          disabled={viewMode === 'archived'}
+          style={{ background: viewMode === 'archived' ? '#9ca3af' : '#E41E26', color: '#fff', border: 'none', borderRadius: 6, padding: '12px 24px', fontWeight: 600, fontSize: 16, cursor: viewMode === 'archived' ? 'not-allowed' : 'pointer', boxShadow: '0 2px 8px #e41e2622' }}
         >
           + Add Section
+        </button>
+      </div>
+
+      <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
+        <button
+          type="button"
+          onClick={() => setViewMode('active')}
+          style={{
+            padding: '7px 10px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: viewMode === 'active' ? '#111827' : '#fff',
+            color: viewMode === 'active' ? '#fff' : '#374151',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Active
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('archived')}
+          style={{
+            padding: '7px 10px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: viewMode === 'archived' ? '#111827' : '#fff',
+            color: viewMode === 'archived' ? '#fff' : '#374151',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Archived
         </button>
       </div>
 
@@ -154,7 +225,7 @@ const HomeSections = () => {
         <div style={{ textAlign: 'center', margin: '48px 0' }}>Loading sections...</div>
       ) : error ? (
         <div style={{ color: 'red', textAlign: 'center', margin: '48px 0' }}>{error}</div>
-      ) : sections.length === 0 ? (
+      ) : visibleSections.length === 0 ? (
         <div style={{ textAlign: 'center', margin: '48px 0' }}>No sections found.</div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
@@ -169,7 +240,7 @@ const HomeSections = () => {
               </tr>
             </thead>
             <tbody>
-              {sections.map((section, idx) => (
+              {visibleSections.map((section, idx) => (
                 <tr key={section._id} style={{ background: idx % 2 === 0 ? '#fafbfc' : '#fff', transition: 'background 0.2s' }}>
                   <td style={{ padding: '14px 12px', fontWeight: 500 }}>{section.name}</td>
                   <td style={{ padding: '14px 12px' }}>
@@ -182,17 +253,37 @@ const HomeSections = () => {
                   <td style={{ padding: '14px 12px', textAlign: 'center' }}>
                     <button
                       onClick={() => openManageModal(section)}
+                      disabled={viewMode === 'archived'}
                       style={{ background: '#f7f7fa', border: 'none', borderRadius: 6, padding: '7px 16px', marginRight: 8, cursor: 'pointer', fontWeight: 500 }}
                     >
                       <i className="fas fa-edit" style={{ marginRight: 6 }} />Manage
                     </button>
-                    <button
-                      onClick={() => handleDelete(section._id)}
-                      style={{ background: '#fff0f0', color: '#E41E26', border: 'none', borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontWeight: 500 }}
-                      disabled={deleting}
-                    >
-                      <i className="fas fa-trash" style={{ marginRight: 6 }} />Delete
-                    </button>
+                    {viewMode === 'active' ? (
+                      <button
+                        onClick={() => handleDelete(section._id)}
+                        style={{ background: '#fff0f0', color: '#E41E26', border: 'none', borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontWeight: 500 }}
+                        disabled={deleting}
+                      >
+                        <i className="fas fa-archive" style={{ marginRight: 6 }} />Archive
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleRestore(section._id)}
+                          style={{ background: '#ecfdf5', color: '#166534', border: 'none', borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontWeight: 500, marginRight: 8 }}
+                          disabled={deleting}
+                        >
+                          <i className="fas fa-undo" style={{ marginRight: 6 }} />Restore
+                        </button>
+                        <button
+                          onClick={() => handlePurge(section._id)}
+                          style={{ background: '#fff0f0', color: '#E41E26', border: 'none', borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontWeight: 500 }}
+                          disabled={deleting}
+                        >
+                          <i className="fas fa-trash" style={{ marginRight: 6 }} />Purge
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

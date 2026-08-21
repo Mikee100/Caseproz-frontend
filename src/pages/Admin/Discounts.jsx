@@ -22,6 +22,8 @@ const emptyDiscount = () => ({
 const Discounts = () => {
     const { user } = useAuth();
     const [discounts, setDiscounts] = useState([]);
+    const [archivedDiscounts, setArchivedDiscounts] = useState([]);
+    const [viewMode, setViewMode] = useState('active');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [savingId, setSavingId] = useState(null);
@@ -67,13 +69,18 @@ const Discounts = () => {
         fetchProducts();
     }, []);
 
-    const fetchDiscounts = async () => {
+    const fetchDiscounts = async (mode = 'active') => {
         if (!user) return;
         setLoading(true);
         setError('');
         try {
-            const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts`);
-            setDiscounts(data);
+            if (mode === 'archived') {
+                const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts/archived/list`);
+                setArchivedDiscounts(Array.isArray(data) ? data : []);
+            } else {
+                const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts`);
+                setDiscounts(Array.isArray(data) ? data : []);
+            }
         } catch (err) {
             setError(err.message || 'Failed to load discount codes');
         } finally {
@@ -82,9 +89,9 @@ const Discounts = () => {
     };
 
     useEffect(() => {
-        fetchDiscounts();
+        fetchDiscounts(viewMode);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
+    }, [user, viewMode]);
 
     const startNew = () => {
         setSelectAll(false);
@@ -184,7 +191,7 @@ const Discounts = () => {
                 body: JSON.stringify(payload),
             });
             setEditing(null);
-            fetchDiscounts();
+            fetchDiscounts(viewMode);
         } catch (err) {
             setError(err.message || 'Failed to save discount code');
         } finally {
@@ -193,15 +200,41 @@ const Discounts = () => {
     };
 
     const deleteDiscount = async (disc) => {
-        if (!window.confirm(`Delete discount code ${disc.code}?`)) return;
+        if (!window.confirm(`Archive discount code ${disc.code}?`)) return;
         if (!user) return;
         try {
             await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts/${disc._id}`, {
                 method: 'DELETE',
             });
-            fetchDiscounts();
+            fetchDiscounts(viewMode);
         } catch (err) {
             setError(err.message || 'Failed to delete discount code');
+        }
+    };
+
+    const restoreDiscount = async (disc) => {
+        if (!window.confirm(`Restore discount code ${disc.code}?`)) return;
+        if (!user) return;
+        try {
+            await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts/${disc._id}/restore`, {
+                method: 'PUT',
+            });
+            fetchDiscounts(viewMode);
+        } catch (err) {
+            setError(err.message || 'Failed to restore discount code');
+        }
+    };
+
+    const purgeDiscount = async (disc) => {
+        if (!window.confirm(`Permanently delete discount code ${disc.code}? This cannot be undone.`)) return;
+        if (!user) return;
+        try {
+            await apiFetch(`${import.meta.env.VITE_API_URL}/api/discounts/${disc._id}/purge`, {
+                method: 'DELETE',
+            });
+            fetchDiscounts(viewMode);
+        } catch (err) {
+            setError(err.message || 'Failed to permanently delete discount code');
         }
     };
 
@@ -231,13 +264,15 @@ const Discounts = () => {
         return { id: 'active', label: 'Active', color: '#16a34a', bg: '#ecfdf5' };
     };
 
-    const filteredDiscounts = discounts.filter((disc) => {
+    const visibleDiscounts = viewMode === 'archived' ? archivedDiscounts : discounts;
+
+    const filteredDiscounts = visibleDiscounts.filter((disc) => {
         if (statusFilter === 'all') return true;
         const meta = getStatusMeta(disc);
         return meta.id === statusFilter;
     });
 
-    const stats = discounts.reduce(
+    const stats = visibleDiscounts.reduce(
         (acc, disc) => {
             const meta = getStatusMeta(disc);
             if (meta.id === 'active') acc.active += 1;
@@ -334,18 +369,54 @@ const Discounts = () => {
                 <button
                     type="button"
                     onClick={startNew}
+                    disabled={viewMode === 'archived'}
                     style={{
                         padding: '9px 14px',
                         borderRadius: '8px',
                         border: 'none',
-                        backgroundColor: '#E41E26',
+                        backgroundColor: viewMode === 'archived' ? '#9ca3af' : '#E41E26',
                         color: '#fff',
                         fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: viewMode === 'archived' ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    + New code
+                </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                    type="button"
+                    onClick={() => setViewMode('active')}
+                    style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: viewMode === 'active' ? '#111827' : '#fff',
+                        color: viewMode === 'active' ? '#fff' : '#374151',
+                        fontSize: '12px',
                         fontWeight: 700,
                         cursor: 'pointer',
                     }}
                 >
-                    + New code
+                    Active
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setViewMode('archived')}
+                    style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: viewMode === 'archived' ? '#111827' : '#fff',
+                        color: viewMode === 'archived' ? '#fff' : '#374151',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                    }}
+                >
+                    Archived
                 </button>
             </div>
 
@@ -368,7 +439,7 @@ const Discounts = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={styles.muted}>Showing {filteredDiscounts.length} of {discounts.length} codes</span>
+                    <span style={styles.muted}>Showing {filteredDiscounts.length} of {visibleDiscounts.length} codes</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <label style={{ ...styles.muted, fontSize: '12px' }}>Status</label>
                         <select
@@ -387,7 +458,7 @@ const Discounts = () => {
                 </div>
             </div>
 
-            {editing && (
+            {editing && viewMode === 'active' && (
                 <div style={styles.panel}>
                     <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px', color: '#111827' }}>
                         {editing._id ? `Edit ${editing.code}` : 'New Discount Code'}
@@ -644,36 +715,74 @@ const Discounts = () => {
                                             )}
                                         </td>
                                         <td style={{ padding: '10px 8px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => startEdit(disc)}
-                                                style={{
-                                                    padding: '6px 10px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #e5e7eb',
-                                                    backgroundColor: '#fff',
-                                                    fontSize: '12px',
-                                                    marginRight: '6px',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteDiscount(disc)}
-                                                style={{
-                                                    padding: '6px 10px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #fee2e2',
-                                                    backgroundColor: '#fef2f2',
-                                                    color: '#b91c1c',
-                                                    fontSize: '12px',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                Delete
-                                            </button>
+                                            {viewMode === 'active' ? (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => startEdit(disc)}
+                                                        style={{
+                                                            padding: '6px 10px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid #e5e7eb',
+                                                            backgroundColor: '#fff',
+                                                            fontSize: '12px',
+                                                            marginRight: '6px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteDiscount(disc)}
+                                                        style={{
+                                                            padding: '6px 10px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid #fee2e2',
+                                                            backgroundColor: '#fef2f2',
+                                                            color: '#b91c1c',
+                                                            fontSize: '12px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        Archive
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => restoreDiscount(disc)}
+                                                        style={{
+                                                            padding: '6px 10px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid #bbf7d0',
+                                                            backgroundColor: '#ecfdf5',
+                                                            color: '#166534',
+                                                            fontSize: '12px',
+                                                            marginRight: '6px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        Restore
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => purgeDiscount(disc)}
+                                                        style={{
+                                                            padding: '6px 10px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid #fee2e2',
+                                                            backgroundColor: '#fef2f2',
+                                                            color: '#b91c1c',
+                                                            fontSize: '12px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        Purge
+                                                    </button>
+                                                </>
+                                            )}
                                         </td>
                                     </tr>
                                 );
@@ -692,7 +801,7 @@ const Discounts = () => {
             )}
 
             {/* Testing panel */}
-            <div style={styles.panel}>
+            {viewMode === 'active' && <div style={styles.panel}>
                 <h2 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px', color: '#111827' }}>
                     Quick test a code
                 </h2>
@@ -761,7 +870,7 @@ const Discounts = () => {
                         applied. {sampleResult.message}
                     </div>
                 )}
-            </div>
+            </div>}
         </div>
     );
 };

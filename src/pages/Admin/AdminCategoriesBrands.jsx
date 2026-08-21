@@ -3,10 +3,13 @@ import { apiFetch } from '../../utils/apiClient';
 
 const AdminCategoriesBrands = () => {
   const [categories, setCategories] = useState([]);
+  const [archivedCategories, setArchivedCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [archivedBrands, setArchivedBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('categories'); // 'categories' or 'brands'
+  const [tabView, setTabView] = useState({ categories: 'active', brands: 'active' });
 
   // Form states
   const [newCategory, setNewCategory] = useState('');
@@ -26,14 +29,18 @@ const AdminCategoriesBrands = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [catRes, brandRes] = await Promise.all([
+      const [catRes, brandRes, archivedCatRes, archivedBrandRes] = await Promise.all([
         apiFetch(`${import.meta.env.VITE_API_URL}/api/categories`),
         apiFetch(`${import.meta.env.VITE_API_URL}/api/brands`),
+        apiFetch(`${import.meta.env.VITE_API_URL}/api/categories/archived/list`),
+        apiFetch(`${import.meta.env.VITE_API_URL}/api/brands/archived/list`),
       ]);
       
       // Fix: apiFetch returns the parsed body directly (usually an array for these endpoints)
       setCategories(Array.isArray(catRes.data) ? catRes.data : catRes);
       setBrands(Array.isArray(brandRes.data) ? brandRes.data : brandRes);
+      setArchivedCategories(Array.isArray(archivedCatRes.data) ? archivedCatRes.data : archivedCatRes);
+      setArchivedBrands(Array.isArray(archivedBrandRes.data) ? archivedBrandRes.data : archivedBrandRes);
     } catch (err) {
       console.error('Fetch data error:', err);
       setError('Failed to fetch data');
@@ -91,7 +98,7 @@ const AdminCategoriesBrands = () => {
   };
 
   const handleDeleteCategory = async (catId) => {
-    if (!window.confirm('Delete this category? All products using it will be affected.')) return;
+    if (!window.confirm('Archive this category? You can restore it later.')) return;
     setActionLoading(true);
     try {
       await apiFetch(`${import.meta.env.VITE_API_URL}/api/categories/${catId}`, { method: 'DELETE' });
@@ -202,13 +209,65 @@ const AdminCategoriesBrands = () => {
   };
 
   const handleDeleteBrand = async (brandId) => {
-    if (!window.confirm('Delete this brand?')) return;
+    if (!window.confirm('Archive this brand? You can restore it later.')) return;
     setActionLoading(true);
     try {
       await apiFetch(`${import.meta.env.VITE_API_URL}/api/brands/${brandId}`, { method: 'DELETE' });
       await fetchData();
     } catch (err) {
       setError('Failed to delete brand');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRestoreCategory = async (catId) => {
+    if (!window.confirm('Restore this category?')) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`${import.meta.env.VITE_API_URL}/api/categories/${catId}/restore`, { method: 'PUT' });
+      await fetchData();
+    } catch (err) {
+      setError('Failed to restore category');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePurgeCategory = async (catId) => {
+    if (!window.confirm('Permanently delete this category? This cannot be undone.')) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`${import.meta.env.VITE_API_URL}/api/categories/${catId}/purge`, { method: 'DELETE' });
+      await fetchData();
+    } catch (err) {
+      setError('Failed to permanently delete category');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRestoreBrand = async (brandId) => {
+    if (!window.confirm('Restore this brand?')) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`${import.meta.env.VITE_API_URL}/api/brands/${brandId}/restore`, { method: 'PUT' });
+      await fetchData();
+    } catch (err) {
+      setError('Failed to restore brand');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePurgeBrand = async (brandId) => {
+    if (!window.confirm('Permanently delete this brand? This cannot be undone.')) return;
+    setActionLoading(true);
+    try {
+      await apiFetch(`${import.meta.env.VITE_API_URL}/api/brands/${brandId}/purge`, { method: 'DELETE' });
+      await fetchData();
+    } catch (err) {
+      setError('Failed to permanently delete brand');
     } finally {
       setActionLoading(false);
     }
@@ -362,10 +421,45 @@ const AdminCategoriesBrands = () => {
         </button>
       </div>
 
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        <button
+          type="button"
+          onClick={() => setTabView((prev) => ({ ...prev, [activeTab]: 'active' }))}
+          style={{
+            padding: '7px 10px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: tabView[activeTab] === 'active' ? '#111827' : '#fff',
+            color: tabView[activeTab] === 'active' ? '#fff' : '#374151',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Active
+        </button>
+        <button
+          type="button"
+          onClick={() => setTabView((prev) => ({ ...prev, [activeTab]: 'archived' }))}
+          style={{
+            padding: '7px 10px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: tabView[activeTab] === 'archived' ? '#111827' : '#fff',
+            color: tabView[activeTab] === 'archived' ? '#fff' : '#374151',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Archived
+        </button>
+      </div>
+
       {activeTab === 'categories' ? (
         <div style={{ display: 'grid', gap: '40px' }}>
           {/* Add Category Form */}
-          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #eee', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+          {tabView.categories === 'active' && <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #eee', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
             <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', fontWeight: '800' }}>Create New Root Category</h3>
             <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '12px' }}>
               <input
@@ -379,13 +473,13 @@ const AdminCategoriesBrands = () => {
                 {actionLoading ? '...' : 'ADD CATEGORY'}
               </button>
             </form>
-          </div>
+          </div>}
 
           <div style={styles.grid}>
-            {categories.map((cat) => (
+            {(tabView.categories === 'archived' ? archivedCategories : categories).map((cat) => (
               <div key={cat._id} style={styles.card}>
                 <div style={styles.cardHeader}>
-                  {editCategoryId === cat._id ? (
+                  {tabView.categories === 'active' && editCategoryId === cat._id ? (
                     <div style={{ flex: 1, display: 'flex', gap: '8px' }}>
                       <input
                         type="text"
@@ -401,8 +495,17 @@ const AdminCategoriesBrands = () => {
                     <>
                       <h4 style={styles.cardTitle}>{cat.name}</h4>
                       <div>
-                        <button title="Edit" onClick={() => handleEditCategory(cat)} style={styles.actionBtn()}><i className="fas fa-edit"></i></button>
-                        <button title="Delete" onClick={() => handleDeleteCategory(cat._id)} style={styles.actionBtn('#dc2626')}><i className="fas fa-trash"></i></button>
+                        {tabView.categories === 'active' ? (
+                          <>
+                            <button title="Edit" onClick={() => handleEditCategory(cat)} style={styles.actionBtn()}><i className="fas fa-edit"></i></button>
+                            <button title="Archive" onClick={() => handleDeleteCategory(cat._id)} style={styles.actionBtn('#dc2626')}><i className="fas fa-archive"></i></button>
+                          </>
+                        ) : (
+                          <>
+                            <button title="Restore" onClick={() => handleRestoreCategory(cat._id)} style={styles.actionBtn('#16a34a')}><i className="fas fa-undo"></i></button>
+                            <button title="Purge" onClick={() => handlePurgeCategory(cat._id)} style={styles.actionBtn('#dc2626')}><i className="fas fa-trash"></i></button>
+                          </>
+                        )}
                       </div>
                     </>
                   )}
@@ -410,7 +513,7 @@ const AdminCategoriesBrands = () => {
 
                 <div style={{ flex: 1 }}>
                   <span style={styles.badge}>{cat.subCategories?.length || 0} Subcategories</span>
-                  <ul style={styles.subList}>
+                  {tabView.categories === 'active' && <ul style={styles.subList}>
                     {(cat.subCategories || []).map((sub) => (
                       <li key={sub._id} style={styles.subItem}>
                         {editSubCategory.id === sub._id ? (
@@ -435,10 +538,10 @@ const AdminCategoriesBrands = () => {
                         )}
                       </li>
                     ))}
-                  </ul>
+                  </ul>}
                 </div>
 
-                <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #f0f0f0' }}>
+                {tabView.categories === 'active' && <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #f0f0f0' }}>
                    <div style={{ display: 'flex', gap: '8px' }}>
                     <input
                       type="text"
@@ -451,7 +554,7 @@ const AdminCategoriesBrands = () => {
                         <i className="fas fa-plus"></i>
                     </button>
                   </div>
-                </div>
+                </div>}
               </div>
             ))}
           </div>
@@ -459,7 +562,7 @@ const AdminCategoriesBrands = () => {
       ) : (
         <div style={{ display: 'grid', gap: '40px' }}>
              {/* Add Brand Form */}
-             <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #eee', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+             {tabView.brands === 'active' && <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #eee', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
                 <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', fontWeight: '800' }}>Add New Brand</h3>
                 <form onSubmit={handleAddBrand} style={{ display: 'flex', gap: '12px' }}>
                 <input
@@ -473,12 +576,12 @@ const AdminCategoriesBrands = () => {
                     {actionLoading ? '...' : 'ADD BRAND'}
                 </button>
                 </form>
-            </div>
+              </div>}
 
             <div style={styles.grid}>
-                {brands.map((brand) => (
+                {(tabView.brands === 'archived' ? archivedBrands : brands).map((brand) => (
                     <div key={brand._id} style={{ ...styles.card, padding: '20px' }}>
-                        {editBrandId === brand._id ? (
+                    {tabView.brands === 'active' && editBrandId === brand._id ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <input
                                     type="text"
@@ -505,17 +608,26 @@ const AdminCategoriesBrands = () => {
                                     {brand.description && <p style={{ fontSize: '12px', color: '#999', margin: 0 }}>{brand.description}</p>}
                                 </div>
                                 <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button onClick={() => handleEditBrand(brand)} style={styles.actionBtn()}><i className="fas fa-edit"></i></button>
-                                    <button onClick={() => handleDeleteBrand(brand._id)} style={styles.actionBtn('#dc2626')}><i className="fas fa-trash"></i></button>
+                                    {tabView.brands === 'active' ? (
+                                      <>
+                                        <button onClick={() => handleEditBrand(brand)} style={styles.actionBtn()}><i className="fas fa-edit"></i></button>
+                                        <button onClick={() => handleDeleteBrand(brand._id)} style={styles.actionBtn('#dc2626')}><i className="fas fa-archive"></i></button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button onClick={() => handleRestoreBrand(brand._id)} style={styles.actionBtn('#16a34a')}><i className="fas fa-undo"></i></button>
+                                        <button onClick={() => handlePurgeBrand(brand._id)} style={styles.actionBtn('#dc2626')}><i className="fas fa-trash"></i></button>
+                                      </>
+                                    )}
                                 </div>
                             </div>
                         )}
                     </div>
                 ))}
             </div>
-            {brands.length === 0 && (
+            {(tabView.brands === 'archived' ? archivedBrands : brands).length === 0 && (
                 <div style={{ textAlign: 'center', padding: '50px', backgroundColor: '#fff', borderRadius: '16px', border: '1px dashed #ddd', color: '#999' }}>
-                    No brands added yet.
+                    {tabView.brands === 'archived' ? 'No archived brands.' : 'No brands added yet.'}
                 </div>
             )}
         </div>
