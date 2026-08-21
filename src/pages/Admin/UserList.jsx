@@ -6,6 +6,8 @@ import { apiFetch } from '../../utils/apiClient';
 const UserList = () => {
     const { user } = useAuth();
     const [users, setUsers] = useState([]);
+    const [archivedUsers, setArchivedUsers] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchEmail, setSearchEmail] = useState('');
@@ -14,8 +16,13 @@ const UserList = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/users`);
-                setUsers(data);
+                const endpoint = showArchived ? '/api/users/archived/list' : '/api/users';
+                const data = await apiFetch(`${import.meta.env.VITE_API_URL}${endpoint}`);
+                if (showArchived) {
+                    setArchivedUsers(Array.isArray(data) ? data : []);
+                } else {
+                    setUsers(Array.isArray(data) ? data : []);
+                }
             } catch (err) {
                 setError(err.message || 'Something went wrong. Could not load users.');
             } finally {
@@ -24,12 +31,13 @@ const UserList = () => {
         };
 
         if (user && user.isAdmin) {
+            setLoading(true);
             fetchUsers();
         }
-    }, [user]);
+    }, [user, showArchived]);
 
     const deleteHandler = async (id) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
+        if (window.confirm('Archive this user? You can restore later from Archived view.')) {
             try {
                 await apiFetch(`${import.meta.env.VITE_API_URL}/api/users/${id}`, {
                     method: 'DELETE',
@@ -38,6 +46,30 @@ const UserList = () => {
             } catch (err) {
                 alert(err.message || 'Something went wrong while deleting user.');
             }
+        }
+    };
+
+    const restoreHandler = async (id) => {
+        if (!window.confirm('Restore this user?')) return;
+        try {
+            await apiFetch(`${import.meta.env.VITE_API_URL}/api/users/${id}/restore`, {
+                method: 'PUT',
+            });
+            setArchivedUsers((prev) => prev.filter((u) => u._id !== id));
+        } catch (err) {
+            alert(err.message || 'Failed to restore user.');
+        }
+    };
+
+    const purgeHandler = async (id) => {
+        if (!window.confirm('Permanently delete this user? This cannot be undone.')) return;
+        try {
+            await apiFetch(`${import.meta.env.VITE_API_URL}/api/users/${id}/purge`, {
+                method: 'DELETE',
+            });
+            setArchivedUsers((prev) => prev.filter((u) => u._id !== id));
+        } catch (err) {
+            alert(err.message || 'Failed to permanently delete user.');
         }
     };
 
@@ -50,7 +82,9 @@ const UserList = () => {
         );
     if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
-    const filteredUsers = users.filter((u) => {
+    const visibleUsers = showArchived ? archivedUsers : users;
+
+    const filteredUsers = visibleUsers.filter((u) => {
         const matchEmail = searchEmail
             ? u.email.toLowerCase().includes(searchEmail.toLowerCase())
             : true;
@@ -68,6 +102,41 @@ const UserList = () => {
     return (
         <div>
             <h1 style={{ fontSize: '28px', marginBottom: '20px', color: '#333' }}>Users</h1>
+
+            <div style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
+                <button
+                    type="button"
+                    onClick={() => setShowArchived(false)}
+                    style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: showArchived ? '#fff' : '#111827',
+                        color: showArchived ? '#374151' : '#fff',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                    }}
+                >
+                    Active
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setShowArchived(true)}
+                    style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: showArchived ? '#111827' : '#fff',
+                        color: showArchived ? '#fff' : '#374151',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                    }}
+                >
+                    Archived
+                </button>
+            </div>
 
             <div
                 style={{
@@ -102,7 +171,7 @@ const UserList = () => {
                     />
                 </div>
                 <div style={{ alignSelf: 'flex-end', fontSize: '13px', color: '#6b7280' }}>
-                    Showing {filteredUsers.length} of {users.length} users
+                    Showing {filteredUsers.length} of {visibleUsers.length} users
                 </div>
             </div>
 
@@ -148,15 +217,34 @@ const UserList = () => {
                                 </td>
                                 <td style={{ padding: '12px', fontSize: '14px' }}>
                                     <div style={{ display: 'flex', gap: '10px' }}>
-                                        <Link to={`/admin/user/${currentUser._id}/edit`} style={{ padding: '6px 12px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: '4px', textDecoration: 'none', fontSize: '12px' }}>
-                                            <i className="fas fa-edit"></i> Edit
-                                        </Link>
-                                        <button
-                                            onClick={() => deleteHandler(currentUser._id)}
-                                            style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                                        >
-                                            <i className="fas fa-trash"></i> Delete
-                                        </button>
+                                        {!showArchived ? (
+                                            <>
+                                                <Link to={`/admin/user/${currentUser._id}/edit`} style={{ padding: '6px 12px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: '4px', textDecoration: 'none', fontSize: '12px' }}>
+                                                    <i className="fas fa-edit"></i> Edit
+                                                </Link>
+                                                <button
+                                                    onClick={() => deleteHandler(currentUser._id)}
+                                                    style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                                >
+                                                    <i className="fas fa-archive"></i> Archive
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => restoreHandler(currentUser._id)}
+                                                    style={{ padding: '6px 12px', backgroundColor: '#ecfdf5', color: '#166534', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                                >
+                                                    <i className="fas fa-undo"></i> Restore
+                                                </button>
+                                                <button
+                                                    onClick={() => purgeHandler(currentUser._id)}
+                                                    style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                                >
+                                                    <i className="fas fa-trash"></i> Purge
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

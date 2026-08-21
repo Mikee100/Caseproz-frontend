@@ -5,6 +5,8 @@ import { apiFetch } from '../../utils/apiClient';
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
+    const [archivedProducts, setArchivedProducts] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const { user } = useAuth();
@@ -17,9 +19,10 @@ const ProductList = () => {
     const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
+    const visibleProducts = showArchived ? archivedProducts : products;
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const filteredProducts = normalizedQuery
-        ? products.filter((product) => {
+        ? visibleProducts.filter((product) => {
             const searchable = [
                 product.name,
                 product.category,
@@ -31,25 +34,31 @@ const ProductList = () => {
                 .toLowerCase();
             return searchable.includes(normalizedQuery);
         })
-        : products;
+        : visibleProducts;
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (archivedMode = false) => {
         try {
-            const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
-            const pageSize = 60;
-            let page = 1;
-            let totalPages = 1;
-            const aggregated = [];
+            if (archivedMode) {
+                const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/products/archived/list`);
+                const archived = Array.isArray(data?.products) ? data.products : [];
+                setArchivedProducts(archived);
+            } else {
+                const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
+                const pageSize = 60;
+                let page = 1;
+                let totalPages = 1;
+                const aggregated = [];
 
-            while (page <= totalPages) {
-                const data = await apiFetch(`${baseUrl}?page=${page}&pageSize=${pageSize}&sort=newest`);
-                const pageProducts = Array.isArray(data?.products) ? data.products : [];
-                aggregated.push(...pageProducts);
-                totalPages = Number.isFinite(data?.pages) && data.pages > 0 ? data.pages : 1;
-                page += 1;
+                while (page <= totalPages) {
+                    const data = await apiFetch(`${baseUrl}?page=${page}&pageSize=${pageSize}&sort=newest`);
+                    const pageProducts = Array.isArray(data?.products) ? data.products : [];
+                    aggregated.push(...pageProducts);
+                    totalPages = Number.isFinite(data?.pages) && data.pages > 0 ? data.pages : 1;
+                    page += 1;
+                }
+
+                setProducts(aggregated);
             }
-
-            setProducts(aggregated);
             setSelectedProductIds([]);
             setLoading(false);
         } catch (err) {
@@ -59,20 +68,44 @@ const ProductList = () => {
     };
 
     useEffect(() => {
-        fetchProducts();
+        fetchProducts(showArchived);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [showArchived]);
 
     const deleteHandler = async (id) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
+        if (window.confirm('Archive this product? You can restore it later from Archived view.')) {
             try {
                 await apiFetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
                     method: 'DELETE',
                 });
-                fetchProducts();
+                fetchProducts(showArchived);
             } catch (err) {
                 alert(err.message || 'Something went wrong');
             }
+        }
+    };
+
+    const restoreHandler = async (id) => {
+        if (!window.confirm('Restore this archived product?')) return;
+        try {
+            await apiFetch(`${import.meta.env.VITE_API_URL}/api/products/${id}/restore`, {
+                method: 'PUT',
+            });
+            fetchProducts(true);
+        } catch (err) {
+            alert(err.message || 'Failed to restore product');
+        }
+    };
+
+    const purgeHandler = async (id) => {
+        if (!window.confirm('Permanently delete this product? This cannot be undone.')) return;
+        try {
+            await apiFetch(`${import.meta.env.VITE_API_URL}/api/products/${id}/purge`, {
+                method: 'DELETE',
+            });
+            fetchProducts(true);
+        } catch (err) {
+            alert(err.message || 'Failed to permanently delete product');
         }
     };
 
@@ -291,6 +324,41 @@ const ProductList = () => {
                         <i className="fas fa-plus"></i> Add New Product
                     </Link>
                 </div>
+            </div>
+
+            <div style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
+                <button
+                    type="button"
+                    onClick={() => setShowArchived(false)}
+                    style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: showArchived ? '#fff' : '#111827',
+                        color: showArchived ? '#374151' : '#fff',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                    }}
+                >
+                    Active
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setShowArchived(true)}
+                    style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        backgroundColor: showArchived ? '#111827' : '#fff',
+                        color: showArchived ? '#fff' : '#374151',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                    }}
+                >
+                    Archived
+                </button>
             </div>
 
             {/* Bulk controls temporarily hidden
@@ -551,15 +619,37 @@ const ProductList = () => {
                                         )}
                                     </td>
                                     <td style={styles.td}>
-                                        <Link to={`/admin/product/${product._id}/edit`} style={{ ...styles.actionBtn, textDecoration: 'none' }}>
-                                            <i className="fas fa-edit" style={{ color: '#3b82f6' }}></i>
-                                        </Link>
-                                        <button
-                                            onClick={() => deleteHandler(product._id)}
-                                            style={{ ...styles.actionBtn, color: '#dc2626' }}
-                                        >
-                                            <i className="fas fa-trash"></i>
-                                        </button>
+                                        {!showArchived ? (
+                                            <>
+                                                <Link to={`/admin/product/${product._id}/edit`} style={{ ...styles.actionBtn, textDecoration: 'none' }}>
+                                                    <i className="fas fa-edit" style={{ color: '#3b82f6' }}></i>
+                                                </Link>
+                                                <button
+                                                    onClick={() => deleteHandler(product._id)}
+                                                    style={{ ...styles.actionBtn, color: '#dc2626' }}
+                                                    title="Archive"
+                                                >
+                                                    <i className="fas fa-archive"></i>
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => restoreHandler(product._id)}
+                                                    style={{ ...styles.actionBtn, color: '#16a34a' }}
+                                                    title="Restore"
+                                                >
+                                                    <i className="fas fa-undo"></i>
+                                                </button>
+                                                <button
+                                                    onClick={() => purgeHandler(product._id)}
+                                                    style={{ ...styles.actionBtn, color: '#dc2626' }}
+                                                    title="Purge"
+                                                >
+                                                    <i className="fas fa-trash"></i>
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             );

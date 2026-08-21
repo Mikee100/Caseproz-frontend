@@ -25,6 +25,7 @@ const SHOW_PHONE_CASES = false;
 const NEWEST_PAGE_SIZE = 16;
 const FEATURED_PAGE_SIZE = 24;
 const ON_SALE_PAGE_SIZE = 24;
+const HOME_GRID_SIZE = 6;
 
 const isCaseProduct = (product) => {
     const category = String(product?.category || '').toLowerCase();
@@ -214,6 +215,7 @@ const Home = () => {
     const [heroIndex, setHeroIndex] = useState(0);
     const [heroPaused, setHeroPaused] = useState(false);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+    const [showBelowFoldSections, setShowBelowFoldSections] = useState(false);
     const heroTouchStartX = useRef(null);
     const heroResumeTimeoutRef = useRef(null);
 
@@ -338,17 +340,23 @@ const Home = () => {
 
     const activeHeroProduct = heroCarouselProducts[heroIndex] || null;
 
-    const soundcoreSpotlight = focusPool.filter((p) => isSoundcoreProduct(p)).slice(0, 8);
-    const ankerSpotlight = focusPool.filter((p) => isAnkerProduct(p)).slice(0, 8);
-    const soundcoreSectionProducts = soundcoreSpotlight.length > 0 ? soundcoreSpotlight : focusPool.slice(0, 8);
-    const ankerSectionProducts = ankerSpotlight.length > 0 ? ankerSpotlight : focusPool.slice(0, 8);
+    const soundcoreSpotlight = useMemo(
+        () => focusPool.filter((p) => isSoundcoreProduct(p)).slice(0, HOME_GRID_SIZE),
+        [focusPool]
+    );
+    const ankerSpotlight = useMemo(
+        () => focusPool.filter((p) => isAnkerProduct(p)).slice(0, HOME_GRID_SIZE),
+        [focusPool]
+    );
+    const soundcoreSectionProducts = soundcoreSpotlight.length > 0 ? soundcoreSpotlight : focusPool.slice(0, HOME_GRID_SIZE);
+    const ankerSectionProducts = ankerSpotlight.length > 0 ? ankerSpotlight : focusPool.slice(0, HOME_GRID_SIZE);
 
     const featuredByFlag = (featuredProducts.length > 0
         ? featuredProducts
         : products.filter((p) => p.isFeatured)
     ).filter((p) => (SHOW_PHONE_CASES ? true : !isCaseProduct(p)));
 
-    const customerFavorites = (featuredByFlag.length > 0 ? featuredByFlag : focusPool).slice(0, 8);
+    const customerFavorites = (featuredByFlag.length > 0 ? featuredByFlag : focusPool).slice(0, HOME_GRID_SIZE);
 
     const featuredSavingsProducts = useMemo(() => {
         const merged = [...onSaleProducts, ...activeMerchPool];
@@ -418,6 +426,28 @@ const Home = () => {
         if (heroResumeTimeoutRef.current) {
             window.clearTimeout(heroResumeTimeoutRef.current);
         }
+    }, []);
+
+    useEffect(() => {
+        let timeoutId = null;
+        let idleId = null;
+
+        const revealBelowFold = () => setShowBelowFoldSections(true);
+
+        if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+            idleId = window.requestIdleCallback(revealBelowFold, { timeout: 1600 });
+        } else {
+            timeoutId = window.setTimeout(revealBelowFold, 700);
+        }
+
+        return () => {
+            if (idleId && typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+                window.cancelIdleCallback(idleId);
+            }
+            if (timeoutId) {
+                window.clearTimeout(timeoutId);
+            }
+        };
     }, []);
 
     const pauseHeroAutoplayTemporarily = (ms = 9000) => {
@@ -577,14 +607,7 @@ const Home = () => {
                 }}
             >
                 <div className="container home-premium-hero-grid" tabIndex={0}>
-                    {loadingNewest ? (
-                        <div className="home-hero-loading" aria-live="polite" aria-busy="true" aria-label="Loading featured products">
-                            <span className="home-hero-loading-line lg shimmer" aria-hidden="true"></span>
-                            <span className="home-hero-loading-line md shimmer" aria-hidden="true"></span>
-                            <span className="home-hero-loading-line sm shimmer" aria-hidden="true"></span>
-                            <span className="home-hero-loading-btn shimmer" aria-hidden="true"></span>
-                        </div>
-                    ) : !activeHeroProduct ? (
+                    {loadingNewest ? null : !activeHeroProduct ? (
                         <div className="home-hero-empty-state">
                             <h2 id="hero-title">Premium Electronics for Everyday Power</h2>
                             <p>Explore our latest Anker and Soundcore products.</p>
@@ -723,8 +746,8 @@ const Home = () => {
                                                                 className="home-new-arrivals-image-primary"
                                                                 src={image}
                                                                 alt={product.name || 'Product image'}
-                                                                loading={index < 2 ? 'eager' : 'lazy'}
-                                                                fetchPriority={index < 2 ? 'high' : 'auto'}
+                                                                loading={index < 1 ? 'eager' : 'lazy'}
+                                                                fetchPriority={index < 1 ? 'high' : 'auto'}
                                                                 decoding="async"
                                                                 width="520"
                                                                 height="520"
@@ -845,8 +868,8 @@ const Home = () => {
                                                                 className="home-new-arrivals-image-primary"
                                                                 src={image}
                                                                 alt={product.name || 'Product image'}
-                                                                loading={index < 2 ? 'eager' : 'lazy'}
-                                                                fetchPriority={index < 2 ? 'high' : 'auto'}
+                                                                loading={index < 1 ? 'eager' : 'lazy'}
+                                                                fetchPriority={index < 1 ? 'high' : 'auto'}
                                                                 decoding="async"
                                                                 width="520"
                                                                 height="520"
@@ -923,6 +946,8 @@ const Home = () => {
                 </section>
             )}
 
+            {showBelowFoldSections && (
+                <>
             <section className="home-brand-hero container" aria-label="Shop by brand">
                 <div className="section-header">
                     <div className="title-area">
@@ -1062,6 +1087,8 @@ const Home = () => {
                     })}
                 </div>
             </section>
+                </>
+            )}
 
         </div>
     );
