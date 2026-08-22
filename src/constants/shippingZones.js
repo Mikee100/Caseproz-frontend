@@ -1,3 +1,7 @@
+import { BUSINESS_LOCATION, SITE_NAME } from '../utils/seo';
+
+const PICKUP_LABEL = `Pick up from ${SITE_NAME} shop (${BUSINESS_LOCATION.streetAddress})`;
+
 export const SHIPPING_ZONES = [
   {
     id: 'cbd-ngara-pangani',
@@ -231,9 +235,9 @@ export const SHIPPING_ZONES = [
   },
   {
     id: 'pickup-sweech-westlands',
-    label: 'Pick up from Sweech Westlands Location',
+    label: PICKUP_LABEL,
     subLocations: [
-      { id: 'pickup', label: 'Pick up from Sweech Westlands Location' },
+      { id: 'pickup', label: PICKUP_LABEL },
     ],
     price: 0,
   },

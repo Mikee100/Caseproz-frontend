@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../utils/apiClient';
+import { BUSINESS_LOCATION, SITE_NAME } from '../../utils/seo';
+
+const PICKUP_LOCATION_FALLBACK = `${SITE_NAME} Shop, ${BUSINESS_LOCATION.streetAddress}`;
 
 const OrderDetailsAdmin = () => {
     const { id } = useParams();
@@ -102,6 +105,10 @@ const OrderDetailsAdmin = () => {
 
     const statusOrder = statusSteps.map((step) => step.id);
     const currentIndex = statusOrder.indexOf(rawStatus);
+    const isPickupOrder =
+        order.fulfillmentMethod === 'pickup' ||
+        order?.shippingAddress?.isPickup ||
+        order?.shippingAddress?.region === 'PICKUP';
 
     const formatStatusLabel = (status) => {
         const found = statusSteps.find((s) => s.id === status);
@@ -248,18 +255,30 @@ const OrderDetailsAdmin = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', alignItems: 'flex-start' }}>
                 <div>
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.03)', marginBottom: '20px' }}>
-                        <h3 style={{ fontSize: '16px', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '10px' }}>Customer & Delivery</h3>
+                        <h3 style={{ fontSize: '16px', marginBottom: '16px', borderBottom: '1px solid #f3f4f6', paddingBottom: '10px' }}>
+                            Customer & {isPickupOrder ? 'Pickup' : 'Delivery'}
+                        </h3>
                         <p style={{ margin: '0 0 5px 0', fontSize: '14px' }}><strong>Name:</strong> {order.user.name}</p>
                         <p style={{ margin: '0 0 5px 0', fontSize: '14px' }}><strong>Email:</strong> {order.user.email}</p>
                         <p style={{ margin: '0 0 5px 0', fontSize: '14px' }}><strong>Phone:</strong> {order.user.phone || 'N/A'}</p>
-                        <p style={{ margin: '12px 0 5px 0', fontSize: '14px' }}><strong>Shipping Address:</strong></p>
-                        <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                            {order.shippingAddress.address}, {order.shippingAddress.city}
-                            {order.shippingAddress.region && `, ${order.shippingAddress.region}`}
-                            {order.shippingAddress.location && ` (${order.shippingAddress.location})`}
-                            <br />
-                            {order.shippingAddress.postalCode}, {order.shippingAddress.country}
-                        </p>
+                        {!isPickupOrder && (
+                            <>
+                                <p style={{ margin: '12px 0 5px 0', fontSize: '14px' }}><strong>Shipping Address:</strong></p>
+                                <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+                                    {order.shippingAddress.address}, {order.shippingAddress.city}
+                                    {order.shippingAddress.region && `, ${order.shippingAddress.region}`}
+                                    {order.shippingAddress.location && ` (${order.shippingAddress.location})`}
+                                    <br />
+                                    {order.shippingAddress.postalCode}, {order.shippingAddress.country}
+                                </p>
+                            </>
+                        )}
+                        {isPickupOrder && (
+                            <p style={{ margin: '12px 0 0 0', color: '#166534', fontSize: '14px' }}>
+                                <strong>Pickup location:</strong>{' '}
+                                {order.shippingAddress?.pickupLocation || order.shippingAddress?.location || PICKUP_LOCATION_FALLBACK}
+                            </p>
+                        )}
                         <p style={{ marginTop: '12px', fontSize: '13px', color: '#6b7280' }}>
                             <strong>Placed:</strong>{' '}
                             {order.createdAt ? new Date(order.createdAt).toLocaleString() : '—'}
@@ -400,7 +419,7 @@ const OrderDetailsAdmin = () => {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: '#6b7280' }}>Shipping:</span>
-                                <span>KSh {order.shippingPrice.toLocaleString()}</span>
+                                <span>{isPickupOrder ? 'Pick up (Free)' : `KSh ${order.shippingPrice.toLocaleString()}`}</span>
                             </div>
 
                             {order.discountAmount > 0 && (
@@ -418,6 +437,9 @@ const OrderDetailsAdmin = () => {
                         <div style={{ marginTop: '18px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px', fontSize: '13px' }}>
                             <p style={{ margin: '0 0 8px 0' }}>
                                 <strong>Payment Method:</strong> {order.paymentMethod}
+                            </p>
+                            <p style={{ margin: '0 0 8px 0' }}>
+                                <strong>Fulfillment:</strong> {isPickupOrder ? 'Pickup from shop' : 'Delivery'}
                             </p>
                             <p style={{ margin: 0 }}>
                                 <strong>Order status:</strong>{' '}

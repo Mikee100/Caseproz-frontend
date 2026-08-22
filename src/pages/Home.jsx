@@ -358,7 +358,7 @@ const Home = () => {
 
     const customerFavorites = (featuredByFlag.length > 0 ? featuredByFlag : focusPool).slice(0, HOME_GRID_SIZE);
 
-    const featuredSavingsProducts = useMemo(() => {
+    const promotionProducts = useMemo(() => {
         const merged = [...onSaleProducts, ...activeMerchPool];
         const deduped = [];
         const seen = new Set();
@@ -387,7 +387,7 @@ const Home = () => {
         return ranked.slice(0, 6);
     }, [onSaleProducts, activeMerchPool]);
 
-    const shouldRenderFeaturedSavings = loadingNewest || featuredSavingsProducts.length > 0;
+    const shouldRenderPromotions = loadingNewest || promotionProducts.length > 0;
 
     const promoProducts = focusPool.slice(0, 3);
 
@@ -509,11 +509,11 @@ const Home = () => {
         trackHomeClick('home_new_arrivals_add_to_cart', 'new_arrivals', product.slug || product._id || 'unknown');
     };
 
-    const handleFeaturedSavingsAddToCart = (product) => {
+    const handlePromotionAddToCart = (product) => {
         if (!product) return;
         if (Number(product?.stock || 0) <= 0) return;
         addToCart(product, 1);
-        trackHomeClick('home_featured_savings_add_to_cart', 'featured_savings', product.slug || product._id || 'unknown');
+        trackHomeClick('home_promotions_add_to_cart', 'promotions', product.slug || product._id || 'unknown');
     };
 
     const handleNewArrivalToggleFavourite = (event, product) => {
@@ -823,19 +823,19 @@ const Home = () => {
                 </section>
             )}
 
-            {shouldRenderFeaturedSavings && (
-                <section className="home-featured-savings" aria-labelledby="featured-savings-title">
+            {shouldRenderPromotions && (
+                <section className="home-featured-savings" aria-labelledby="promotions-title">
                     <div className="home-featured-savings-strip">
                         <div className="container">
-                            <h2 id="featured-savings-title">FEATURED SAVINGS</h2>
+                            <h2 id="promotions-title">PROMOTION OFFERS</h2>
                         </div>
                     </div>
 
                     <div className="container home-featured-savings-content">
                         {loadingNewest ? (
                             <div className="home-new-arrivals-grid home-new-arrivals-grid-skeleton" aria-busy="true" aria-live="polite">
-                                {Array.from({ length: 5 }).map((_, idx) => (
-                                    <article key={`featured-savings-skeleton-${idx}`} className="home-new-arrivals-item-skeleton" aria-hidden="true">
+                                    {Array.from({ length: 5 }).map((_, idx) => (
+                                    <article key={`promotions-skeleton-${idx}`} className="home-new-arrivals-item-skeleton" aria-hidden="true">
                                         <div className="home-new-arrivals-image-skeleton shimmer" />
                                         <div className="home-new-arrivals-line-skeleton shimmer" />
                                         <div className="home-new-arrivals-line-skeleton short shimmer" />
@@ -846,7 +846,7 @@ const Home = () => {
                         ) : (
                             <>
                                 <div className="home-new-arrivals-grid" role="list">
-                                    {featuredSavingsProducts.map((product, index) => {
+                                    {promotionProducts.map((product, index) => {
                                         const image = (Array.isArray(product?.images) && product.images[0]) || '/placeholder-product.svg';
                                         const secondaryImage = (Array.isArray(product?.images) && product.images[1]) || null;
                                         const discountPercent = getDiscountPercent(product);
@@ -861,7 +861,7 @@ const Home = () => {
                                                     <Link
                                                         to={`/product/${product.slug}`}
                                                         className="home-new-arrivals-image-link"
-                                                        onClick={() => trackHomeClick('home_featured_savings_product_click', 'featured_savings', product.slug || product._id || 'unknown')}
+                                                        onClick={() => trackHomeClick('home_promotions_product_click', 'promotions', product.slug || product._id || 'unknown')}
                                                     >
                                                         <span className="home-new-arrivals-image-stage">
                                                             <img
@@ -905,7 +905,7 @@ const Home = () => {
                                                 <Link
                                                     to={`/product/${product.slug}`}
                                                     className="home-new-arrivals-name"
-                                                    onClick={() => trackHomeClick('home_featured_savings_product_click', 'featured_savings_name', product.slug || product._id || 'unknown')}
+                                                    onClick={() => trackHomeClick('home_promotions_product_click', 'promotions_name', product.slug || product._id || 'unknown')}
                                                 >
                                                     {product.name}
                                                 </Link>
@@ -919,7 +919,7 @@ const Home = () => {
                                                     <button
                                                         type="button"
                                                         className="home-new-arrivals-add"
-                                                        onClick={() => handleFeaturedSavingsAddToCart(product)}
+                                                        onClick={() => handlePromotionAddToCart(product)}
                                                         disabled={outOfStock}
                                                         aria-label={outOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}
                                                     >
@@ -935,9 +935,9 @@ const Home = () => {
                                     <Link
                                         to="/search?onSale=true"
                                         className="home-new-arrivals-view-all"
-                                        onClick={() => trackHomeClick('home_featured_savings_view_all_click', 'featured_savings', 'view_all_savings')}
+                                        onClick={() => trackHomeClick('home_promotions_view_all_click', 'promotions', 'view_all_promotions')}
                                     >
-                                        VIEW ALL SAVINGS <ChevronRight size={16} />
+                                        VIEW ALL PROMOTIONS <ChevronRight size={16} />
                                     </Link>
                                 </div>
                             </>

@@ -46,6 +46,7 @@ const AdminCategoriesBrands = lazy(() => import('./pages/Admin/AdminCategoriesBr
 const HomeSections = lazy(() => import('./pages/Admin/HomeSections'));
 const DeliveryRoutes = lazy(() => import('./pages/Admin/DeliveryRoutes'));
 const MerchandisingDiagnostics = lazy(() => import('./pages/Admin/MerchandisingDiagnostics'));
+const AuditLog = lazy(() => import('./pages/Admin/AuditLog'));
 
 function RouteFallback() {
   return <LoadingState message="Loading page..." compact />;
@@ -117,6 +118,7 @@ function App() {
                   <Route path="categories-brands" element={<AdminCategoriesBrands />} />
                   <Route path="home-sections" element={<HomeSections />} />
                   <Route path="merchandising-diagnostics" element={<MerchandisingDiagnostics />} />
+                  <Route path="audit-log" element={<AuditLog />} />
                   <Route path="delivery-routes" element={<DeliveryRoutes />} />
                 </Route>
               </Route>
