@@ -31,15 +31,28 @@ const Brand = () => {
             intro: 'Discover Soundcore Premium Audio Solutions - Experience superior sound quality.',
             about: 'Soundcore specializes in high-fidelity audio products designed for music lovers who demand exceptional sound quality and performance.',
             benefits: ['Crystal-clear sound quality', 'Premium audio technology', 'Comfortable all-day listening', 'Reliable audio excellence']
-        }
+        },
+        'soundcore-by-anker': {
+            intro: 'Discover Soundcore Premium Audio Solutions - Experience superior sound quality.',
+            about: 'Soundcore specializes in high-fidelity audio products designed for music lovers who demand exceptional sound quality and performance.',
+            benefits: ['Crystal-clear sound quality', 'Premium audio technology', 'Comfortable all-day listening', 'Reliable audio excellence']
+        },
     };
 
-    const brandSlug = (brandName || '').toLowerCase();
+    const brandSlug = (brandName || '').toLowerCase().replace(/\s+/g, '-');
+    const brandSearchName = brandSlug === 'soundcore-by-anker' ? 'Soundcore' : decodeURIComponent(brandName || '').replace(/-/g, ' ');
     const brandInfo = brandDescriptions[brandSlug] || {
         intro: `Shop ${formattedTitle} - Premium quality tech and accessories.`,
         about: `Discover our selection of authentic ${formattedTitle} products.`,
         benefits: ['Quality assured', 'Fast shipping', 'Great value']
     };
+    const brandInitials = formattedTitle
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -48,9 +61,8 @@ const Brand = () => {
             try {
                 const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
                 const pageSize = 48;
-                const searchBrand = decodeURIComponent(brandName || '').replace(/-/g, ' ');
                 const data = await apiFetch(
-                    `${baseUrl}?brand=${encodeURIComponent(searchBrand)}&isActive=true&page=1&pageSize=${pageSize}&sort=newest`
+                    `${baseUrl}?brand=${encodeURIComponent(brandSearchName)}&isActive=true&page=1&pageSize=${pageSize}&sort=newest`
                 );
 
                 const firstPageProducts = Array.isArray(data?.products) ? data.products : [];
@@ -83,11 +95,10 @@ const Brand = () => {
         try {
             const baseUrl = `${import.meta.env.VITE_API_URL}/api/products`;
             const pageSize = 48;
-            const searchBrand = decodeURIComponent(brandName || '').replace(/-/g, ' ');
             const nextPage = page + 1;
 
             const data = await apiFetch(
-                `${baseUrl}?brand=${encodeURIComponent(searchBrand)}&isActive=true&page=${nextPage}&pageSize=${pageSize}&sort=newest`
+                `${baseUrl}?brand=${encodeURIComponent(brandSearchName)}&isActive=true&page=${nextPage}&pageSize=${pageSize}&sort=newest`
             );
 
             const nextPageProducts = Array.isArray(data?.products) ? data.products : [];
@@ -134,7 +145,7 @@ const Brand = () => {
     };
 
     return (
-        <div className="brand-page container" style={{ padding: '40px 0' }}>
+        <div className="brand-page container" style={{ padding: '28px 0 48px' }}>
             <SeoMeta
                 title={brandSeo.title}
                 description={brandSeo.description}
@@ -157,29 +168,38 @@ const Brand = () => {
                 ))}
             </Helmet>
 
-            <div className="breadcrumb" style={{ marginBottom: '18px', color: '#666', fontSize: '14px' }}>
-                <Link to="/" style={{ color: '#E41E26', textDecoration: 'none' }}>Home</Link> /
-                <span style={{ marginLeft: '5px', fontWeight: 'bold' }}>{formattedTitle}</span>
-            </div>
+            <nav className="brand-breadcrumb" aria-label="Breadcrumb">
+                <Link to="/">Home</Link>
+                <span aria-hidden="true">/</span>
+                <span>{formattedTitle}</span>
+            </nav>
 
-            <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '12px', color: '#1a1a1a' }}>
-                {formattedTitle} Products &amp; Accessories in Kenya
-            </h1>
-            <p style={{ color: '#666', marginBottom: '8px', fontSize: '15px', fontStyle: 'italic' }}>
-                {brandInfo.intro}
-            </p>
-            <p style={{ color: '#555', marginBottom: '16px', fontSize: '15px', lineHeight: '1.6' }}>
-                {brandInfo.about}
-            </p>
-            {brandInfo.benefits && brandInfo.benefits.length > 0 && (
-                <ul style={{ marginBottom: '20px', paddingLeft: '20px', color: '#666', fontSize: '14px' }}>
-                    {brandInfo.benefits.map((benefit, idx) => (
-                        <li key={idx} style={{ marginBottom: '6px' }}>
-                            ✓ {benefit}
-                        </li>
-                    ))}
-                </ul>
-            )}
+            <header className={`brand-hero brand-hero-${brandSlug}`}>
+                <div className="brand-hero-mark" aria-hidden="true">{brandInitials}</div>
+                <div className="brand-hero-copy">
+                    <p className="brand-hero-kicker">Official collection</p>
+                    <h1>{formattedTitle}</h1>
+                    <p className="brand-hero-intro">{brandInfo.intro}</p>
+                    <p className="brand-hero-about">{brandInfo.about}</p>
+                    <div className="brand-benefits" aria-label={`${formattedTitle} shopping benefits`}>
+                        {brandInfo.benefits.map((benefit) => (
+                            <span key={benefit}>{benefit}</span>
+                        ))}
+                    </div>
+                </div>
+                <div className="brand-hero-summary">
+                    <strong>{products.length}</strong>
+                    <span>{products.length === 1 ? 'product' : 'products'} available</span>
+                </div>
+            </header>
+
+            <div className="brand-results-heading">
+                <div>
+                    <h2>Shop {formattedTitle}</h2>
+                    <p>{products.length > 0 ? 'Find your next tech essential.' : 'This collection is being refreshed.'}</p>
+                </div>
+                <Link className="brand-results-link" to="/search">Browse all products</Link>
+            </div>
 
             <ErrorBanner message={error} onClose={() => setError('')} />
 
