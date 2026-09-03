@@ -9462,14 +9462,19 @@ body {
   .caseproz-premium-home .home-premium-hero-stage {
     grid-template-columns: 1fr;
     gap: 10px;
+    justify-items: center;
   }
 
   .caseproz-premium-home .home-hero-primary {
     min-height: 430px;
     padding: 8px;
+    width: 100%;
+    justify-items: center;
   }
 
   .caseproz-premium-home .home-hero-primary img {
+    display: block;
+    margin: 0 auto;
     height: min(64vw, 390px);
     padding-top: 10px;
   }

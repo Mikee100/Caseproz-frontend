@@ -12,6 +12,7 @@ const adminLinks = [
     { to: '/admin/categories-brands', icon: 'fas fa-layer-group', label: 'Categories & Brands' },
     { to: '/admin/home-sections', icon: 'fas fa-th-large', label: 'Home Sections' },
     { to: '/admin/merchandising-diagnostics', icon: 'fas fa-magnifying-glass-chart', label: 'Merchandising Diagnostics' },
+    { to: '/admin/audit-log', icon: 'fas fa-clipboard-list', label: 'Audit Log' },
     { to: '/admin/delivery-routes', icon: 'fas fa-route', label: 'Delivery Routes' },
     { to: '/admin/settings', icon: 'fas fa-cog', label: 'Site Settings' },
 ];

@@ -150,7 +150,8 @@ const emptyItem = () => ({ location: '', price: '' });
 const DeliveryRoutes = () => {
     const { config, setConfig } = useSiteConfig();
     const [routeGroups, setRouteGroups] = useState(defaultDeliveryRouteGroups);
-    const [collapsedGroups, setCollapsedGroups] = useState({});
+    const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
@@ -181,10 +182,26 @@ const DeliveryRoutes = () => {
 
     const addGroup = () => {
         setRouteGroups((prev) => [...prev, { road: '', items: [emptyItem()] }]);
+        setSelectedGroupIndex(routeGroups.length);
+        setSearchQuery('');
     };
 
     const removeGroup = (groupIndex) => {
-        setRouteGroups((prev) => prev.filter((_, index) => index !== groupIndex));
+        const next = routeGroups.filter((_, index) => index !== groupIndex);
+        setRouteGroups(next);
+        if (next.length === 0) {
+            setSelectedGroupIndex(-1);
+            return;
+        }
+
+        if (selectedGroupIndex === groupIndex) {
+            setSelectedGroupIndex(Math.max(0, groupIndex - 1));
+            return;
+        }
+
+        if (selectedGroupIndex > groupIndex) {
+            setSelectedGroupIndex(selectedGroupIndex - 1);
+        }
     };
 
     const addItem = (groupIndex) => {
@@ -204,25 +221,6 @@ const DeliveryRoutes = () => {
                 return { ...group, items: (group.items || []).filter((_, i) => i !== itemIndex) };
             })
         );
-    };
-
-    const toggleGroup = (groupIndex) => {
-        setCollapsedGroups((prev) => ({
-            ...prev,
-            [groupIndex]: !prev[groupIndex],
-        }));
-    };
-
-    const expandAll = () => {
-        setCollapsedGroups({});
-    };
-
-    const collapseAll = () => {
-        const next = {};
-        routeGroups.forEach((_, index) => {
-            next[index] = true;
-        });
-        setCollapsedGroups(next);
     };
 
     const submitHandler = async (e) => {
@@ -263,209 +261,255 @@ const DeliveryRoutes = () => {
         }
     };
 
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+    const filteredGroupIndexes = routeGroups
+        .map((group, index) => ({ group, index }))
+        .filter(({ group }) => {
+            if (!normalizedSearch) return true;
+            return String(group.road || '').toLowerCase().includes(normalizedSearch);
+        })
+        .map(({ index }) => index);
+
+    useEffect(() => {
+        if (filteredGroupIndexes.length === 0) {
+            setSelectedGroupIndex(-1);
+            return;
+        }
+
+        if (!filteredGroupIndexes.includes(selectedGroupIndex)) {
+            setSelectedGroupIndex(filteredGroupIndexes[0]);
+        }
+    }, [filteredGroupIndexes, selectedGroupIndex]);
+
+    const selectedGroup = selectedGroupIndex >= 0 ? routeGroups[selectedGroupIndex] : null;
+
     return (
-        <div>
-            <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '10px', color: '#111827' }}>
+        <div style={{ maxWidth: '1200px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '6px', color: '#111827' }}>
                 Delivery Routes & Prices
             </h1>
-            <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '14px' }}>
-                Maintain delivery prices grouped by road/zone exactly like your courier price list.
+            <p style={{ color: '#4b5563', marginBottom: '12px', fontSize: '13px' }}>
+                Pick a road group, edit it, save.
             </p>
 
             {error && (
-                <div style={{ backgroundColor: '#fef2f2', color: '#b91c1c', padding: '10px 12px', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>
+                <div style={{ backgroundColor: '#fef2f2', color: '#b91c1c', padding: '8px 10px', borderRadius: '6px', marginBottom: '10px', fontSize: '12px' }}>
                     {error}
                 </div>
             )}
             {message && (
-                <div style={{ backgroundColor: '#ecfdf3', color: '#166534', padding: '10px 12px', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>
+                <div style={{ backgroundColor: '#ecfdf3', color: '#166534', padding: '8px 10px', borderRadius: '6px', marginBottom: '10px', fontSize: '12px' }}>
                     {message}
                 </div>
             )}
 
             <form onSubmit={submitHandler}>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                    <button
-                        type="button"
-                        onClick={expandAll}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Filter road groups"
                         style={{
-                            padding: '10px 14px',
-                            borderRadius: '8px',
+                            padding: '8px 10px',
+                            borderRadius: '6px',
                             border: '1px solid #d1d5db',
-                            background: '#fff',
-                            cursor: 'pointer',
-                            fontWeight: 600,
+                            fontSize: '13px',
+                            minWidth: '220px',
+                            flex: '1 1 260px',
                         }}
-                    >
-                        Expand all
-                    </button>
-                    <button
-                        type="button"
-                        onClick={collapseAll}
-                        style={{
-                            padding: '10px 14px',
-                            borderRadius: '8px',
-                            border: '1px solid #d1d5db',
-                            background: '#fff',
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                        }}
-                    >
-                        Collapse all
-                    </button>
+                    />
                     <button
                         type="button"
                         onClick={addGroup}
                         style={{
-                            padding: '10px 14px',
-                            borderRadius: '8px',
+                            padding: '8px 11px',
+                            borderRadius: '6px',
                             border: '1px dashed #d1d5db',
                             background: '#fff',
                             cursor: 'pointer',
                             fontWeight: 600,
+                            fontSize: '12px',
                         }}
                     >
-                        + Add road group
+                        + Add group
                     </button>
                     <button
                         type="submit"
                         disabled={saving}
                         style={{
-                            padding: '10px 16px',
-                            borderRadius: '8px',
+                            padding: '8px 14px',
+                            borderRadius: '6px',
                             border: 'none',
                             background: '#E41E26',
                             color: '#fff',
                             cursor: saving ? 'not-allowed' : 'pointer',
                             fontWeight: 700,
+                            fontSize: '12px',
                         }}
                     >
-                        {saving ? 'Saving...' : 'Save delivery routes'}
+                        {saving ? 'Saving...' : 'Save'}
                     </button>
                 </div>
 
-                <div style={{ display: 'grid', gap: '16px' }}>
-                    {routeGroups.map((group, groupIndex) => (
-                        <section
-                            key={`${group.road}-${groupIndex}`}
-                            style={{
-                                background: '#fff',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '12px',
-                                padding: '16px',
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                <input
-                                    type="text"
-                                    value={group.road || ''}
-                                    onChange={(e) => updateGroupName(groupIndex, e.target.value)}
-                                    placeholder="Road heading (e.g. WAIYAKI WAY)"
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <aside
+                        style={{
+                            flex: '0 0 260px',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            maxHeight: '620px',
+                            overflowY: 'auto',
+                            background: '#fff',
+                        }}
+                    >
+                        {filteredGroupIndexes.length === 0 && (
+                            <div style={{ padding: '10px', fontSize: '12px', color: '#6b7280' }}>
+                                No road groups found.
+                            </div>
+                        )}
+
+                        {filteredGroupIndexes.map((groupIndex) => {
+                            const group = routeGroups[groupIndex];
+                            const isActive = groupIndex === selectedGroupIndex;
+                            return (
+                                <button
+                                    key={`${group.road}-${groupIndex}`}
+                                    type="button"
+                                    onClick={() => setSelectedGroupIndex(groupIndex)}
                                     style={{
                                         width: '100%',
-                                        maxWidth: '420px',
-                                        padding: '10px 12px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #d1d5db',
-                                        fontWeight: 700,
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => toggleGroup(groupIndex)}
-                                    style={{
-                                        marginLeft: '12px',
+                                        textAlign: 'left',
                                         border: 'none',
-                                        background: 'transparent',
-                                        color: '#374151',
+                                        borderBottom: '1px solid #f3f4f6',
+                                        background: isActive ? '#f9fafb' : '#fff',
                                         cursor: 'pointer',
-                                        fontSize: '13px',
-                                        fontWeight: 600,
+                                        padding: '10px',
                                     }}
                                 >
-                                    {collapsedGroups[groupIndex] ? 'Expand' : 'Collapse'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => removeGroup(groupIndex)}
-                                    style={{
-                                        marginLeft: '12px',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        color: '#dc2626',
-                                        cursor: 'pointer',
-                                        fontSize: '13px',
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    Remove group
-                                </button>
-                            </div>
-
-                            {!collapsedGroups[groupIndex] && (
-                            <>
-                            <div style={{ display: 'grid', gap: '8px' }}>
-                                {(group.items || []).map((item, itemIndex) => (
-                                    <div key={`${item.location}-${itemIndex}`} style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '8px' }}>
-                                        <input
-                                            type="text"
-                                            value={item.location || ''}
-                                            onChange={(e) => updateItem(groupIndex, itemIndex, 'location', e.target.value)}
-                                            placeholder="Location / Stop"
-                                            style={{
-                                                padding: '9px 10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid #e5e7eb',
-                                            }}
-                                        />
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={item.price}
-                                            onChange={(e) => updateItem(groupIndex, itemIndex, 'price', e.target.value)}
-                                            placeholder="Price"
-                                            style={{
-                                                padding: '9px 10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid #e5e7eb',
-                                            }}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeItem(groupIndex, itemIndex)}
-                                            style={{
-                                                border: 'none',
-                                                background: 'transparent',
-                                                color: '#dc2626',
-                                                cursor: 'pointer',
-                                                fontSize: '12px',
-                                            }}
-                                        >
-                                            Remove
-                                        </button>
+                                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>
+                                        {group.road || 'Untitled road group'}
                                     </div>
-                                ))}
-                            </div>
+                                    <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
+                                        {(group.items || []).length} stops
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </aside>
 
-                            <button
-                                type="button"
-                                onClick={() => addItem(groupIndex)}
-                                style={{
-                                    marginTop: '10px',
-                                    padding: '8px 12px',
-                                    borderRadius: '8px',
-                                    border: '1px dashed #d1d5db',
-                                    background: '#f9fafb',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                }}
-                            >
-                                + Add location
-                            </button>
+                    <section
+                        style={{
+                            flex: '1 1 560px',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            padding: '10px',
+                            background: '#fff',
+                        }}
+                    >
+                        {!selectedGroup && (
+                            <div style={{ fontSize: '13px', color: '#6b7280' }}>
+                                Select a group on the left or add a new one.
+                            </div>
+                        )}
+
+                        {selectedGroup && (
+                            <>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
+                                    <input
+                                        type="text"
+                                        value={selectedGroup.road || ''}
+                                        onChange={(e) => updateGroupName(selectedGroupIndex, e.target.value)}
+                                        placeholder="Road heading"
+                                        style={{
+                                            flex: '1 1 280px',
+                                            padding: '8px 10px',
+                                            borderRadius: '6px',
+                                            border: '1px solid #d1d5db',
+                                            fontWeight: 700,
+                                            fontSize: '13px',
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeGroup(selectedGroupIndex)}
+                                        style={{
+                                            border: 'none',
+                                            background: 'transparent',
+                                            color: '#dc2626',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Remove group
+                                    </button>
+                                </div>
+
+                                <div style={{ display: 'grid', gap: '6px' }}>
+                                    {(selectedGroup.items || []).map((item, itemIndex) => (
+                                        <div key={`${item.location}-${itemIndex}`} style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) 120px auto', gap: '6px', alignItems: 'center' }}>
+                                            <input
+                                                type="text"
+                                                value={item.location || ''}
+                                                onChange={(e) => updateItem(selectedGroupIndex, itemIndex, 'location', e.target.value)}
+                                                placeholder="Location / Stop"
+                                                style={{
+                                                    padding: '8px 9px',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #e5e7eb',
+                                                    fontSize: '13px',
+                                                }}
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={item.price}
+                                                onChange={(e) => updateItem(selectedGroupIndex, itemIndex, 'price', e.target.value)}
+                                                placeholder="Price"
+                                                style={{
+                                                    padding: '8px 9px',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #e5e7eb',
+                                                    fontSize: '13px',
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItem(selectedGroupIndex, itemIndex)}
+                                                style={{
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    color: '#dc2626',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => addItem(selectedGroupIndex)}
+                                    style={{
+                                        marginTop: '8px',
+                                        padding: '7px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px dashed #d1d5db',
+                                        background: '#f9fafb',
+                                        cursor: 'pointer',
+                                        fontSize: '12px',
+                                    }}
+                                >
+                                    + Add location
+                                </button>
                             </>
-                            )}
-                        </section>
-                    ))}
+                        )}
+                    </section>
                 </div>
             </form>
         </div>

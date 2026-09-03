@@ -17,6 +17,65 @@ const Login = () => {
     const searchParams = new URLSearchParams(location.search);
     const redirect = searchParams.get('redirect') || '/';
 
+    const ui = {
+        page: {
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '22px',
+            background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        },
+        card: {
+            width: '100%',
+            maxWidth: '420px',
+            backgroundColor: '#ffffff',
+            borderRadius: '14px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 10px 30px rgba(15,23,42,0.06)',
+            padding: '28px 24px',
+        },
+        heading: {
+            fontSize: '24px',
+            fontWeight: 800,
+            color: '#111827',
+            margin: 0,
+            lineHeight: 1.2,
+        },
+        subheading: {
+            fontSize: '13px',
+            color: '#6b7280',
+            margin: '6px 0 0',
+        },
+        fieldLabel: {
+            display: 'block',
+            marginBottom: '6px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: '#374151',
+        },
+        input: {
+            width: '100%',
+            padding: '10px 11px',
+            borderRadius: '8px',
+            border: '1px solid #d1d5db',
+            outline: 'none',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+        },
+        button: {
+            width: '100%',
+            padding: '11px 12px',
+            backgroundColor: '#111827',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontSize: '14px',
+        },
+    };
+
     useEffect(() => {
         if (user) {
             navigate(redirect);
@@ -54,55 +113,29 @@ const Login = () => {
 
     if (successMsg) {
         return (
-            <div className="login-container" style={{ 
-                minHeight: '100vh', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                padding: '40px 20px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-            }}>
-                <div style={{ marginBottom: '32px', position: 'absolute', top: '40px' }}>
-                    <Link to="/" style={{ 
-                        fontSize: '28px', 
-                        fontWeight: '900', 
-                        color: '#1a1a1a', 
-                        textDecoration: 'none',
-                        letterSpacing: '-1px'
-                    }}>
-                        <span style={{ color: '#E41E26' }}>C</span>ASEPROZ
-                    </Link>
-                </div>
-                
-                <div className="login-card" style={{ 
-                    width: '100%', 
-                    maxWidth: '480px', 
-                    backgroundColor: 'white', 
-                    borderRadius: '24px', 
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.08)',
-                    padding: '48px 40px',
-                    border: '1px solid rgba(255,255,255,0.8)',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#38a169', fontSize: '32px' }}>
+            <div className="login-container" style={ui.page}>
+                <div className="login-card" style={{ ...ui.card, textAlign: 'center', maxWidth: '440px' }}>
+                    <div
+                        style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '999px',
+                            backgroundColor: '#ecfdf3',
+                            border: '1px solid #bbf7d0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 14px',
+                            color: '#166534',
+                            fontSize: '20px',
+                        }}
+                    >
                         <i className="far fa-envelope"></i>
                     </div>
-                    <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px', color: '#1a202c' }}>Check your email</h1>
-                    <p style={{ color: '#4a5568', marginBottom: '32px', lineHeight: '1.6' }}>{successMsg}</p>
-                    <button onClick={() => setSuccessMsg('')} style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: '16px',
-                        backgroundColor: '#1a1a1a',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                    }}>
-                        BACK TO LOGIN
+                    <h1 style={ui.heading}>Check your email</h1>
+                    <p style={{ ...ui.subheading, marginTop: '10px', marginBottom: '16px', lineHeight: 1.5 }}>{successMsg}</p>
+                    <button onClick={() => setSuccessMsg('')} style={ui.button}>
+                        Back to login
                     </button>
                 </div>
             </div>
@@ -110,142 +143,88 @@ const Login = () => {
     }
 
     return (
-        <div className="login-container" style={{ 
-            minHeight: '100vh', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: '20px',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-        }}>
-            <div className="login-card" style={{ 
-                width: '100%', 
-                maxWidth: '440px', 
-                backgroundColor: 'white', 
-                borderRadius: '24px', 
-                boxShadow: '0 20px 50px rgba(0,0,0,0.08)',
-                padding: '48px 40px',
-                border: '1px solid rgba(255,255,255,0.8)'
-            }}>
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <h1 style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '800', 
-                        color: '#1a202c',
-                        marginBottom: '12px',
-                        letterSpacing: '-0.5px'
-                    }}>Welcome back!</h1>
-                    <p style={{ color: '#718096', fontSize: '15px' }}>Enter your details to sign in</p>
+        <div className="login-container" style={ui.page}>
+            <div className="login-card" style={ui.card}>
+                <div style={{ textAlign: 'left', marginBottom: '18px' }}>
+                    <div style={{ marginBottom: '10px' }}>
+                        <Link
+                            to="/"
+                            style={{
+                                fontSize: '18px',
+                                fontWeight: 800,
+                                color: '#111827',
+                                textDecoration: 'none',
+                            }}
+                        >
+                            CASEPROZ
+                        </Link>
+                    </div>
+                    <h1 style={ui.heading}>Login</h1>
+                    <p style={ui.subheading}>Sign in to continue to your account.</p>
                 </div>
 
                 {error && (
-                    <div style={{ 
-                        backgroundColor: '#fef2f2', 
-                        color: '#dc2626', 
-                        padding: '14px 16px', 
-                        borderRadius: '12px', 
-                        marginBottom: '28px', 
-                        fontSize: '14px',
+                    <div style={{
+                        backgroundColor: '#fef2f2',
+                        color: '#b91c1c',
+                        padding: '9px 10px',
+                        borderRadius: '8px',
+                        marginBottom: '14px',
+                        fontSize: '12px',
                         border: '1px solid #fee2e2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
                     }}>
-                        <span>⚠️</span> {error}
+                        {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ 
-                            display: 'block', 
-                            marginBottom: '10px', 
-                            fontSize: '14px', 
-                            fontWeight: '600',
-                            color: '#4a5568'
-                        }}>Email Address</label>
+                    <div style={{ marginBottom: '12px' }}>
+                        <label style={ui.fieldLabel}>Email address</label>
                         <input
                             type="email"
                             placeholder="mail@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            style={{ 
-                                width: '100%', 
-                                padding: '15px 18px', 
-                                borderRadius: '14px', 
-                                border: '1px solid #e2e8f0', 
-                                outline: 'none',
-                                fontSize: '15px',
-                                transition: 'all 0.2s ease',
-                                backgroundColor: '#f9fafb'
-                            }}
+                            style={ui.input}
                             className="auth-input"
                             required
                         />
                     </div>
 
-                    <div style={{ marginBottom: '28px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <label style={{ 
-                                fontSize: '14px', 
-                                fontWeight: '600',
-                                color: '#4a5568'
-                            }}>Password</label>
-                            <Link to="/forgot-password" style={{ fontSize: '13px', color: '#E41E26', textDecoration: 'none', fontWeight: '500' }}>Forgot password?</Link>
+                    <div style={{ marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <label style={ui.fieldLabel}>Password</label>
+                            <Link
+                                to="/forgot-password"
+                                style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
+                            >
+                                Forgot?
+                            </Link>
                         </div>
                         <input
                             type="password"
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={{ 
-                                width: '100%', 
-                                padding: '15px 18px', 
-                                borderRadius: '14px', 
-                                border: '1px solid #e2e8f0', 
-                                outline: 'none',
-                                fontSize: '15px',
-                                transition: 'all 0.2s ease',
-                                backgroundColor: '#f9fafb'
-                            }}
+                            style={ui.input}
                             className="auth-input"
                             required
                         />
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
-                        style={{ 
-                            width: '100%', 
-                            padding: '16px', 
-                            backgroundColor: '#E41E26', 
-                            color: 'white', 
-                            border: 'none', 
-                            borderRadius: '14px', 
-                            fontWeight: '700', 
-                            cursor: loading ? 'not-allowed' : 'pointer', 
-                            fontSize: '16px',
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 10px 20px rgba(228, 30, 38, 0.2)',
-                            marginBottom: '24px'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                        onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                        style={{ ...ui.button, marginTop: '10px', marginBottom: '16px', opacity: loading ? 0.75 : 1 }}
                     >
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? 'Signing in...' : 'Sign in'}
                     </button>
                 </form>
 
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    margin: '24px 0', 
-                    color: '#cbd5e0'
-                }}>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }}></div>
-                    <span style={{ padding: '0 15px', fontSize: '13px', color: '#a0aec0', fontWeight: '500' }}>OR CONTINUE WITH</span>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', margin: '12px 0 14px', color: '#9ca3af' }}>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
+                    <span style={{ padding: '0 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em' }}>OR</span>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
                 </div>
 
                 <div style={{ width: '100%' }}>
@@ -254,31 +233,27 @@ const Login = () => {
                         onError={() => setError('Google Authentication Failed')}
                         useOneTap
                         width="100%"
-                        shape="pill"
+                        shape="rectangular"
                         theme="outline"
                         text="signin_with"
                     />
                 </div>
 
-                <div style={{ 
-                    marginTop: '32px', 
-                    textAlign: 'center', 
-                    fontSize: '15px', 
-                    color: '#718096' 
-                }}>
-                    New to our store? <Link to={`/register?redirect=${redirect}`} style={{ 
-                        color: '#E41E26', 
-                        textDecoration: 'none', 
-                        fontWeight: '700' 
-                    }}>Create an account</Link>
+                <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '13px', color: '#6b7280' }}>
+                    New here?{' '}
+                    <Link
+                        to={`/register?redirect=${redirect}`}
+                        style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 700 }}
+                    >
+                        Create an account
+                    </Link>
                 </div>
             </div>
 
             <style>{`
                 .auth-input:focus {
-                    border-color: #E41E26 !important;
-                    background-color: #fff !important;
-                    box-shadow: 0 0 0 4px rgba(228, 30, 38, 0.05);
+                    border-color: #111827 !important;
+                    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
                 }
             `}</style>
         </div>

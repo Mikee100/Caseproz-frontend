@@ -24,6 +24,65 @@ const Register = () => {
     const searchParams = new URLSearchParams(location.search);
     const redirect = searchParams.get('redirect') || '/';
 
+    const ui = {
+        page: {
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '22px',
+            background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        },
+        card: {
+            width: '100%',
+            maxWidth: '520px',
+            backgroundColor: '#fff',
+            borderRadius: '14px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 10px 30px rgba(15,23,42,0.06)',
+            padding: '28px 24px',
+        },
+        heading: {
+            fontSize: '24px',
+            fontWeight: 800,
+            color: '#111827',
+            margin: 0,
+            lineHeight: 1.2,
+        },
+        subheading: {
+            fontSize: '13px',
+            color: '#6b7280',
+            margin: '6px 0 0',
+        },
+        fieldLabel: {
+            display: 'block',
+            marginBottom: '6px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: '#374151',
+        },
+        input: {
+            width: '100%',
+            padding: '10px 11px',
+            borderRadius: '8px',
+            border: '1px solid #d1d5db',
+            outline: 'none',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+        },
+        button: {
+            width: '100%',
+            padding: '11px 12px',
+            backgroundColor: '#111827',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontSize: '14px',
+        },
+    };
+
     useEffect(() => {
         if (user) {
             navigate(redirect);
@@ -78,55 +137,29 @@ const Register = () => {
 
     if (successMsg) {
         return (
-            <div className="register-container" style={{ 
-                minHeight: '100vh', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                padding: '40px 20px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-            }}>
-                <div style={{ marginBottom: '32px', position: 'absolute', top: '40px' }}>
-                    <Link to="/" style={{ 
-                        fontSize: '28px', 
-                        fontWeight: '900', 
-                        color: '#1a1a1a', 
-                        textDecoration: 'none',
-                        letterSpacing: '-1px'
-                    }}>
-                        <span style={{ color: '#E41E26' }}>C</span>ASEPROZ
-                    </Link>
-                </div>
-                
-                <div className="register-card" style={{ 
-                    width: '100%', 
-                    maxWidth: '480px', 
-                    backgroundColor: 'white', 
-                    borderRadius: '24px', 
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.08)',
-                    padding: '48px 40px',
-                    border: '1px solid rgba(255,255,255,0.8)',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#38a169', fontSize: '32px' }}>
+            <div className="register-container" style={ui.page}>
+                <div className="register-card" style={{ ...ui.card, textAlign: 'center', maxWidth: '440px' }}>
+                    <div
+                        style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '999px',
+                            backgroundColor: '#ecfdf3',
+                            border: '1px solid #bbf7d0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 14px',
+                            color: '#166534',
+                            fontSize: '20px',
+                        }}
+                    >
                         <i className="far fa-envelope"></i>
                     </div>
-                    <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px', color: '#1a202c' }}>Check your email</h1>
-                    <p style={{ color: '#4a5568', marginBottom: '32px', lineHeight: '1.6' }}>{successMsg}</p>
-                    <Link to="/login" style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: '16px',
-                        backgroundColor: '#1a1a1a',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        textDecoration: 'none',
-                        transition: 'all 0.3s ease'
-                    }}>
-                        GO TO LOGIN
+                    <h1 style={ui.heading}>Check your email</h1>
+                    <p style={{ ...ui.subheading, marginTop: '10px', marginBottom: '16px', lineHeight: 1.5 }}>{successMsg}</p>
+                    <Link to="/login" style={{ ...ui.button, display: 'block', textDecoration: 'none' }}>
+                        Go to login
                     </Link>
                 </div>
             </div>
@@ -134,240 +167,192 @@ const Register = () => {
     }
 
     return (
-        <div className="register-container" style={{ 
-            minHeight: '100vh', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: '40px 20px',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-        }}>
-            <div className="register-card" style={{ 
-                width: '100%', 
-                maxWidth: '800px', 
-                backgroundColor: 'white', 
-                borderRadius: '32px', 
-                boxShadow: '0 25px 70px rgba(0,0,0,0.07)',
-                padding: '56px 48px',
-                border: '1px solid rgba(255,255,255,0.8)'
-            }}>
-                <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-                    <h1 style={{ 
-                        fontSize: '36px', 
-                        fontWeight: '800', 
-                        color: '#1a202c',
-                        marginBottom: '12px',
-                        letterSpacing: '-1px'
-                    }}>Create account</h1>
-                    <p style={{ color: '#718096', fontSize: '16px' }}>Join us and start shopping premium products</p>
+        <div className="register-container" style={ui.page}>
+            <div className="register-card" style={ui.card}>
+                <div style={{ textAlign: 'left', marginBottom: '18px' }}>
+                    <div style={{ marginBottom: '10px' }}>
+                        <Link
+                            to="/"
+                            style={{
+                                fontSize: '18px',
+                                fontWeight: 800,
+                                color: '#111827',
+                                textDecoration: 'none',
+                            }}
+                        >
+                            CASEPROZ
+                        </Link>
+                    </div>
+                    <h1 style={ui.heading}>Create account</h1>
+                    <p style={ui.subheading}>Register with your details to continue.</p>
                 </div>
 
                 {error && (
-                    <div style={{ 
-                        backgroundColor: '#fef2f2', 
-                        color: '#dc2626', 
-                        padding: '16px 20px', 
-                        borderRadius: '14px', 
-                        marginBottom: '32px', 
-                        fontSize: '14px',
+                    <div style={{
+                        backgroundColor: '#fef2f2',
+                        color: '#b91c1c',
+                        padding: '9px 10px',
+                        borderRadius: '8px',
+                        marginBottom: '14px',
+                        fontSize: '12px',
                         border: '1px solid #fee2e2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
                     }}>
-                        <span>⚠️</span> {error}
+                        {error}
                     </div>
                 )}
 
-                <div style={{ width: '100%', marginBottom: '40px' }}>
+                <div style={{ width: '100%', marginBottom: '14px' }}>
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
                         onError={() => setError('Google Sign Up Failed')}
                         useOneTap
                         width="100%"
-                        shape="pill"
-                        theme="filled_blue"
+                        shape="rectangular"
+                        theme="outline"
                         text="signup_with"
                     />
                 </div>
 
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    margin: '32px 0', 
-                    color: '#cbd5e0'
-                }}>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }}></div>
-                    <span style={{ padding: '0 20px', fontSize: '13px', color: '#a0aec0', fontWeight: '600' }}>OR REGISTER WITH EMAIL</span>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', margin: '12px 0 14px', color: '#9ca3af' }}>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
+                    <span style={{ padding: '0 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em' }}>OR</span>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-                        gap: '24px',
-                        marginBottom: '32px'
-                    }}>
+                    <div style={{ display: 'grid', gap: '12px', marginBottom: '12px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>Full Name</label>
+                            <label style={ui.fieldLabel}>Full name</label>
                             <input
                                 type="text"
                                 placeholder="John Doe"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                style={inputStyle}
+                                style={ui.input}
                                 className="auth-input"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>Email Address</label>
+                            <label style={ui.fieldLabel}>Email address</label>
                             <input
                                 type="email"
                                 placeholder="john@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                style={inputStyle}
+                                style={ui.input}
                                 className="auth-input"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>Mobile Number</label>
+                            <label style={ui.fieldLabel}>Mobile number</label>
                             <input
                                 type="tel"
                                 placeholder="e.g. 0712 345 678"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                style={inputStyle}
+                                style={ui.input}
                                 className="auth-input"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>City / Town</label>
+                            <label style={ui.fieldLabel}>City or town</label>
                             <input
                                 type="text"
                                 placeholder="Nairobi"
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
-                                style={inputStyle}
+                                style={ui.input}
                                 className="auth-input"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>Password</label>
+                            <label style={ui.fieldLabel}>Password</label>
                             <input
                                 type="password"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                style={inputStyle}
+                                style={ui.input}
                                 className="auth-input"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>Confirm Password</label>
+                            <label style={ui.fieldLabel}>Confirm password</label>
                             <input
                                 type="password"
                                 placeholder="••••••••"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                style={inputStyle}
+                                style={ui.input}
                                 className="auth-input"
                                 required
                             />
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '32px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontSize: '14px', fontWeight: '600', color: '#4a5568' }}>Delivery Address (Optional)</label>
+                    <div style={{ marginBottom: '12px' }}>
+                        <label style={ui.fieldLabel}>Delivery address (optional)</label>
                         <textarea
                             placeholder="Estate, Street, House No."
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
-                            style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                            style={{ ...ui.input, minHeight: '80px', resize: 'vertical' }}
                             className="auth-input"
                         />
                     </div>
 
-                    <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <input
                             id="newsletter"
                             type="checkbox"
                             checked={newsletterOptIn}
                             onChange={(e) => setNewsletterOptIn(e.target.checked)}
-                            style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: '#E41E26' }}
+                            style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#111827' }}
                         />
-                        <label htmlFor="newsletter" style={{ cursor: 'pointer', color: '#718096', fontSize: '14px' }}>
-                            I'd like to receive updates about new products and special offers.
+                        <label htmlFor="newsletter" style={{ cursor: 'pointer', color: '#6b7280', fontSize: '12px' }}>
+                            Send me updates and offers.
                         </label>
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
-                        style={{ 
-                            width: '100%', 
-                            padding: '18px', 
-                            backgroundColor: '#E41E26', 
-                            color: 'white', 
-                            border: 'none', 
-                            borderRadius: '16px', 
-                            fontWeight: '700', 
-                            cursor: loading ? 'not-allowed' : 'pointer', 
-                            fontSize: '17px',
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 12px 24px rgba(228, 30, 38, 0.2)'
-                        }}
+                        style={{ ...ui.button, opacity: loading ? 0.75 : 1 }}
                     >
-                        {loading ? 'Creating account...' : 'Create Account'}
+                        {loading ? 'Creating account...' : 'Create account'}
                     </button>
                 </form>
 
-                <div style={{ 
-                    marginTop: '40px', 
-                    textAlign: 'center', 
-                    fontSize: '15px', 
-                    color: '#718096' 
-                }}>
-                    Already have an account? <Link to={`/login?redirect=${redirect}`} style={{ 
-                        color: '#E41E26', 
-                        textDecoration: 'none', 
-                        fontWeight: '700' 
-                    }}>Sign In</Link>
+                <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '13px', color: '#6b7280' }}>
+                    Already have an account?{' '}
+                    <Link
+                        to={`/login?redirect=${redirect}`}
+                        style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 700 }}
+                    >
+                        Sign in
+                    </Link>
                 </div>
             </div>
 
             <style>{`
                 .auth-input:focus {
-                    border-color: #E41E26 !important;
-                    background-color: #fff !important;
-                    box-shadow: 0 0 0 4px rgba(228, 30, 38, 0.05);
+                    border-color: #111827 !important;
+                    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
                     outline: none;
                 }
             `}</style>
         </div>
     );
-};
-
-const inputStyle = {
-    width: '100%', 
-    padding: '15px 18px', 
-    borderRadius: '14px', 
-    border: '1px solid #e2e8f0', 
-    outline: 'none',
-    fontSize: '15px',
-    transition: 'all 0.2s ease',
-    backgroundColor: '#f9fafb'
 };
 
 export default Register;

@@ -20,6 +20,27 @@ const Brand = () => {
     const brandSeo = buildBrandSeo(brandName || '');
     const formattedTitle = formatBrandName(brandName);
 
+    // Brand descriptions for enhanced SEO
+    const brandDescriptions = {
+        'anker': {
+            intro: 'Shop Anker - A trusted leader in power technology and smart accessories.',
+            about: 'Anker is a global technology powerhouse dedicated to charging and smart accessories. Our products deliver premium quality, innovative design, and exceptional reliability.',
+            benefits: ['Trusted by millions worldwide', 'Innovative charging technology', 'Reliable long-lasting products', 'Fast delivery to Kenya']
+        },
+        'soundcore': {
+            intro: 'Discover Soundcore Premium Audio Solutions - Experience superior sound quality.',
+            about: 'Soundcore specializes in high-fidelity audio products designed for music lovers who demand exceptional sound quality and performance.',
+            benefits: ['Crystal-clear sound quality', 'Premium audio technology', 'Comfortable all-day listening', 'Reliable audio excellence']
+        }
+    };
+
+    const brandSlug = (brandName || '').toLowerCase();
+    const brandInfo = brandDescriptions[brandSlug] || {
+        intro: `Shop ${formattedTitle} - Premium quality tech and accessories.`,
+        about: `Discover our selection of authentic ${formattedTitle} products.`,
+        benefits: ['Quality assured', 'Fast shipping', 'Great value']
+    };
+
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
@@ -141,12 +162,24 @@ const Brand = () => {
                 <span style={{ marginLeft: '5px', fontWeight: 'bold' }}>{formattedTitle}</span>
             </div>
 
-            <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', color: '#1a1a1a' }}>
+            <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '12px', color: '#1a1a1a' }}>
                 {formattedTitle} Products &amp; Accessories in Kenya
             </h1>
-            <p style={{ color: '#666', marginBottom: '24px', fontSize: '15px' }}>
-                Explore our collection of authentic {formattedTitle} tech, chargers, phone covers, and accessories with fast delivery across Kenya.
+            <p style={{ color: '#666', marginBottom: '8px', fontSize: '15px', fontStyle: 'italic' }}>
+                {brandInfo.intro}
             </p>
+            <p style={{ color: '#555', marginBottom: '16px', fontSize: '15px', lineHeight: '1.6' }}>
+                {brandInfo.about}
+            </p>
+            {brandInfo.benefits && brandInfo.benefits.length > 0 && (
+                <ul style={{ marginBottom: '20px', paddingLeft: '20px', color: '#666', fontSize: '14px' }}>
+                    {brandInfo.benefits.map((benefit, idx) => (
+                        <li key={idx} style={{ marginBottom: '6px' }}>
+                            ✓ {benefit}
+                        </li>
+                    ))}
+                </ul>
+            )}
 
             <ErrorBanner message={error} onClose={() => setError('')} />
 

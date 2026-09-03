@@ -6,6 +6,15 @@ import { useAuth } from '../context/AuthContext';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import ErrorBanner from '../components/ErrorBanner';
+import { BUSINESS_LOCATION, SITE_NAME } from '../utils/seo';
+
+const PICKUP_LOCATION_LABEL = `${SITE_NAME} Shop, ${BUSINESS_LOCATION.streetAddress}`;
+const PICKUP_DEFAULTS = {
+    address: BUSINESS_LOCATION.streetAddress,
+    city: BUSINESS_LOCATION.city,
+    postalCode: BUSINESS_LOCATION.postalCode,
+    country: 'Kenya',
+};
 
 const Checkout = () => {
     const { cart, cartTotal, clearCart } = useCart();
@@ -59,6 +68,14 @@ const Checkout = () => {
     useEffect(() => {
         localStorage.setItem('fulfillmentMethod', fulfillmentMethod);
     }, [fulfillmentMethod]);
+
+    useEffect(() => {
+        if (!isPickup) return;
+        if (!address.trim()) setAddress(PICKUP_DEFAULTS.address);
+        if (!city.trim()) setCity(PICKUP_DEFAULTS.city);
+        if (!postalCode.trim()) setPostalCode(PICKUP_DEFAULTS.postalCode);
+        if (!country.trim()) setCountry(PICKUP_DEFAULTS.country);
+    }, [isPickup]);
 
     useEffect(() => {
         if (!user) {
@@ -121,17 +138,18 @@ const Checkout = () => {
                 product: item._id,
                 variantSku: item.variantSku || undefined,
             })),
+            fulfillmentMethod,
             shippingAddress: { 
                 name: fullName, 
                 phone: phoneNormalized, 
-                address: isPickup ? (address.trim() || 'Store Pickup - Sweech Westlands') : address,
-                city: isPickup ? (city.trim() || 'Nairobi') : city,
-                postalCode: isPickup ? (postalCode.trim() || '00000') : postalCode,
-                country,
+                address: isPickup ? (address.trim() || PICKUP_DEFAULTS.address) : address,
+                city: isPickup ? (city.trim() || PICKUP_DEFAULTS.city) : city,
+                postalCode: isPickup ? (postalCode.trim() || PICKUP_DEFAULTS.postalCode) : postalCode,
+                country: isPickup ? (country.trim() || PICKUP_DEFAULTS.country) : country,
                 region: isPickup ? 'PICKUP' : selectedRegion,
-                location: isPickup ? 'Sweech Westlands' : selectedLocation,
+                location: isPickup ? PICKUP_LOCATION_LABEL : selectedLocation,
                 isPickup,
-                pickupLocation: isPickup ? 'Sweech Westlands' : undefined,
+                pickupLocation: isPickup ? PICKUP_LOCATION_LABEL : undefined,
             },
             paymentMethod,
             itemsPrice: cartTotal,
@@ -269,7 +287,7 @@ const Checkout = () => {
                                         checked={fulfillmentMethod === 'pickup'}
                                         onChange={(e) => setFulfillmentMethod(e.target.value)}
                                     />
-                                    Pick up from shop (Sweech Westlands)
+                                    {`Pick up from shop (${BUSINESS_LOCATION.streetAddress})`}
                                 </label>
                             </div>
                         </div>
@@ -350,7 +368,7 @@ const Checkout = () => {
                                     fontSize: '13px',
                                 }}
                             >
-                                Pickup location: <strong>Sweech Westlands</strong>. Delivery fee is <strong>KSh 0</strong>.
+                                Pickup location: <strong>{PICKUP_LOCATION_LABEL}</strong>. Delivery fee is <strong>KSh 0</strong>.
                                 We will contact you on your phone number when your order is ready for collection.
                             </div>
                         )}
