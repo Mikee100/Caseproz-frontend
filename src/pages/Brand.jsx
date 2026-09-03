@@ -174,7 +174,7 @@ const Brand = () => {
                 <span>{formattedTitle}</span>
             </nav>
 
-            <header className="brand-hero">
+            <header className={`brand-hero brand-hero-${brandSlug}`}>
                 <div className="brand-hero-mark" aria-hidden="true">{brandInitials}</div>
                 <div className="brand-hero-copy">
                     <p className="brand-hero-kicker">Official collection</p>
