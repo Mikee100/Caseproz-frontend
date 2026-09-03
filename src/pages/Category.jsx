@@ -86,6 +86,32 @@ const Category = () => {
     const categorySeo = buildCategorySeo(categoryName || '');
     const formattedTitle = categorySeo.title.replace(/\s*\|\s*CaseProz Kenya\s*$/i, '');
 
+    // Category descriptions for SEO
+    const categoryDescriptions = {
+        'audio-headphones': {
+            intro: 'Discover premium audio products including earbuds, headphones, and Bluetooth speakers.',
+            benefits: ['Crystal clear sound quality', 'Comfortable all-day wear', 'Fast delivery across Kenya']
+        },
+        'power-solar': {
+            intro: 'Shop portable power banks and charging solutions. Keep your devices powered on the go with reliable, high-capacity power banks.',
+            benefits: ['Fast charging technology', 'Compact and portable', 'Long battery life']
+        },
+        'accessories': {
+            intro: 'Essential tech accessories including cables, adapters, and charging solutions to complete your setup.',
+            benefits: ['Quality materials', 'Reliable connectivity', 'Compatible with major devices']
+        },
+        'phones-tablets': {
+            intro: 'Phone and tablet accessories to protect and enhance your mobile devices.',
+            benefits: ['Device protection', 'Enhanced functionality', 'Quality craftsmanship']
+        }
+    };
+
+    const categorySlug = (categoryName || '').toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-');
+    const categoryInfo = categoryDescriptions[categorySlug] || {
+        intro: `Browse our selection of ${formattedTitle.toLowerCase()} products.`,
+        benefits: []
+    };
+
     if (loading)
         return (
             <>
@@ -142,6 +168,20 @@ const Category = () => {
             <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '12px', color: '#1a1a1a' }}>
                 {formattedTitle}
             </h1>
+
+            <p style={{ fontSize: '16px', color: '#555', marginBottom: '20px', lineHeight: '1.6' }}>
+                {categoryInfo.intro}
+            </p>
+
+            {categoryInfo.benefits.length > 0 && (
+                <ul style={{ marginBottom: '20px', paddingLeft: '20px', color: '#666', fontSize: '14px' }}>
+                    {categoryInfo.benefits.map((benefit, idx) => (
+                        <li key={idx} style={{ marginBottom: '6px' }}>
+                            ✓ {benefit}
+                        </li>
+                    ))}
+                </ul>
+            )}
 
             <ErrorBanner message={error} onClose={() => setError('')} />
 
