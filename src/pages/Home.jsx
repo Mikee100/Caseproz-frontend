@@ -846,7 +846,7 @@ const Home = () => {
                         ) : (
                             <>
                                 <div className="home-new-arrivals-grid" role="list">
-                                    {promotionProducts.map((product, index) => {
+                                    {promotionProducts.map((product) => {
                                         const image = (Array.isArray(product?.images) && product.images[0]) || '/placeholder-product.svg';
                                         const secondaryImage = (Array.isArray(product?.images) && product.images[1]) || null;
                                         const discountPercent = getDiscountPercent(product);
@@ -868,8 +868,8 @@ const Home = () => {
                                                                 className="home-new-arrivals-image-primary"
                                                                 src={image}
                                                                 alt={product.name || 'Product image'}
-                                                                loading={index < 1 ? 'eager' : 'lazy'}
-                                                                fetchPriority={index < 1 ? 'high' : 'auto'}
+                                                                loading="lazy"
+                                                                fetchPriority="low"
                                                                 decoding="async"
                                                                 width="520"
                                                                 height="520"
