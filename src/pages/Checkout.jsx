@@ -241,7 +241,7 @@ const Checkout = () => {
 
     return (
         <div className="checkout-page container" style={{ padding: '60px 0' }}>
-            {showMpesaInstructions && (
+            {/* {showMpesaInstructions && (
                 <div className="checkout-mpesa-banner" style={{
                     background: '#e6f7ee',
                     border: '1px solid #38a169',
@@ -257,7 +257,7 @@ const Checkout = () => {
                     <strong>Account Number:</strong> 40043<br />
                     <strong>Business Number:</strong> (your name as entered in the order)
                 </div>
-            )}
+            )} */}
             <h1 className="checkout-title" style={{ marginBottom: '16px', fontSize: '32px', fontWeight: 'bold' }}>Checkout</h1>
             <ErrorBanner message={error} onClose={() => setError('')} />
 
