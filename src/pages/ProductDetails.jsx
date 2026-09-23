@@ -49,9 +49,12 @@ const ProductDetails = () => {
     const [isImageLoading, setIsImageLoading] = useState(true);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false);
+    const [thumbNav, setThumbNav] = useState({ canScrollStart: false, canScrollEnd: false });
+    const [hoverImage, setHoverImage] = useState('');
     const touchStartXRef = useRef(null);
     const addToCartRef = useRef(null);
     const mainImageRef = useRef(null);
+    const thumbsRailRef = useRef(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -123,6 +126,8 @@ const ProductDetails = () => {
     const effectiveImage = mainImage || selectedVariant?.image || product?.images?.[0] || '';
     const activeImageIndex = galleryImages.indexOf(effectiveImage);
     const visibleImageIndex = activeImageIndex >= 0 ? activeImageIndex : 0;
+    const previewImageIndex = hoverImage ? galleryImages.indexOf(hoverImage) : -1;
+    const slideIndex = previewImageIndex >= 0 ? previewImageIndex : visibleImageIndex;
 
     useEffect(() => {
         if (!effectiveImage) {
@@ -223,9 +228,58 @@ const ProductDetails = () => {
     const handleSelectMainImage = (imageUrl) => {
         if (!imageUrl) return;
         setMainImage(imageUrl);
+        setHoverImage('');
         setIsZoomActive(false);
         setZoomTransform(null);
     };
+
+    const handleThumbPreview = (imageUrl) => {
+        if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover)').matches) return;
+        setHoverImage(imageUrl);
+    };
+
+    // The rail is a vertical column on desktop and a horizontal strip below 900px.
+    const isThumbRailHorizontal = () =>
+        typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches;
+
+    const updateThumbNav = useCallback(() => {
+        const el = thumbsRailRef.current;
+        if (!el) return;
+        const horizontal = isThumbRailHorizontal();
+        const pos = horizontal ? el.scrollLeft : el.scrollTop;
+        const max = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+        setThumbNav({
+            canScrollStart: max > 4 && pos > 4,
+            canScrollEnd: max > 4 && pos < max - 4,
+        });
+    }, []);
+
+    const scrollThumbs = (direction) => {
+        const el = thumbsRailRef.current;
+        if (!el) return;
+        const horizontal = isThumbRailHorizontal();
+        const step = (horizontal ? el.clientWidth : el.clientHeight) * 0.8;
+        el.scrollBy(
+            horizontal
+                ? { left: direction * step, behavior: 'smooth' }
+                : { top: direction * step, behavior: 'smooth' }
+        );
+    };
+
+    useEffect(() => {
+        updateThumbNav();
+        window.addEventListener('resize', updateThumbNav);
+        return () => window.removeEventListener('resize', updateThumbNav);
+    }, [updateThumbNav, galleryImages.length]);
+
+    useEffect(() => {
+        const el = thumbsRailRef.current;
+        if (!el) return;
+        const activeThumb = el.querySelector('.pd-thumb.active');
+        if (activeThumb) {
+            activeThumb.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+        }
+    }, [effectiveImage]);
 
     const handleCycleImage = useCallback((direction) => {
         if (galleryImages.length <= 1) return;
@@ -350,25 +404,59 @@ const ProductDetails = () => {
             <div className="pd-layout">
                 {/* Left: Thumbnails + Main image area (feature headline, image, notes) */}
                 <div className="pd-images">
-                    <div className="pd-thumbnails-col">
-                        {galleryImages.length > 0 && galleryImages.map((img, index) => (
+                    {galleryImages.length > 0 && (
+                        <div
+                            className={`pd-thumbs-rail ${thumbNav.canScrollStart ? 'can-scroll-start' : ''} ${thumbNav.canScrollEnd ? 'can-scroll-end' : ''}`}
+                            onMouseLeave={() => setHoverImage('')}
+                        >
                             <button
-                                key={index}
                                 type="button"
-                                className={`pd-thumb ${effectiveImage === img ? 'active' : ''}`}
-                                onClick={() => handleSelectMainImage(img)}
-                                aria-label={`Show image ${index + 1} of ${galleryImages.length}`}
-                                aria-pressed={effectiveImage === img}
+                                className="pd-thumbs-nav pd-thumbs-nav--start"
+                                onClick={() => scrollThumbs(-1)}
+                                disabled={!thumbNav.canScrollStart}
+                                aria-label="Show previous thumbnails"
+                                tabIndex={-1}
                             >
-                                <img
-                                    src={img}
-                                    alt={`${product.name} thumbnail ${index + 1}`}
-                                    loading="lazy"
-                                    decoding="async"
-                                />
+                                <span aria-hidden="true">‹</span>
                             </button>
-                        ))}
-                    </div>
+                            <div
+                                className="pd-thumbnails-col"
+                                ref={thumbsRailRef}
+                                onScroll={updateThumbNav}
+                            >
+                                {galleryImages.map((img, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        className={`pd-thumb ${effectiveImage === img ? 'active' : ''} ${hoverImage === img ? 'previewing' : ''}`}
+                                        onClick={() => handleSelectMainImage(img)}
+                                        onMouseEnter={() => handleThumbPreview(img)}
+                                        onFocus={() => handleThumbPreview(img)}
+                                        onBlur={() => setHoverImage('')}
+                                        aria-label={`Show image ${index + 1} of ${galleryImages.length}`}
+                                        aria-pressed={effectiveImage === img}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`${product.name} thumbnail ${index + 1}`}
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                className="pd-thumbs-nav pd-thumbs-nav--end"
+                                onClick={() => scrollThumbs(1)}
+                                disabled={!thumbNav.canScrollEnd}
+                                aria-label="Show more thumbnails"
+                                tabIndex={-1}
+                            >
+                                <span aria-hidden="true">›</span>
+                            </button>
+                        </div>
+                    )}
                     <div className="pd-main-col">
                         {(product.featureHeadline || product.featureSubtext) && (
                             <div className="pd-feature-headline">
@@ -398,22 +486,46 @@ const ProductDetails = () => {
                         >
                             {galleryImages.length > 1 && (
                                 <div className="pd-image-index" aria-live="polite">
-                                    {visibleImageIndex + 1}/{galleryImages.length}
+                                    {slideIndex + 1}/{galleryImages.length}
                                 </div>
                             )}
                             {isImageLoading && <div className="pd-main-image-loader" aria-hidden="true"></div>}
-                            <img
-                                ref={mainImageRef}
-                                src={effectiveImage}
-                                alt={product.name}
-                                loading="eager"
-                                fetchPriority="high"
-                                decoding="async"
-                                className={isImageLoading ? 'is-loading' : 'is-loaded'}
-                                style={zoomTransform || undefined}
-                                onLoad={() => setIsImageLoading(false)}
-                                onError={() => setIsImageLoading(false)}
-                            />
+                            {galleryImages.length > 0 ? (
+                                <div
+                                    className="pd-main-track"
+                                    style={{ transform: `translate3d(-${slideIndex * 100}%, 0, 0)` }}
+                                >
+                                    {galleryImages.map((img, index) => (
+                                        <div className="pd-main-slide" key={img}>
+                                            <img
+                                                ref={index === visibleImageIndex ? mainImageRef : null}
+                                                src={img}
+                                                alt={index === slideIndex ? product.name : ''}
+                                                loading={index === visibleImageIndex ? 'eager' : 'lazy'}
+                                                fetchPriority={index === visibleImageIndex ? 'high' : 'low'}
+                                                decoding="async"
+                                                className={index === visibleImageIndex && isImageLoading ? 'is-loading' : 'is-loaded'}
+                                                style={index === slideIndex && zoomTransform ? zoomTransform : undefined}
+                                                onLoad={index === visibleImageIndex ? () => setIsImageLoading(false) : undefined}
+                                                onError={index === visibleImageIndex ? () => setIsImageLoading(false) : undefined}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <img
+                                    ref={mainImageRef}
+                                    src={effectiveImage}
+                                    alt={product.name}
+                                    loading="eager"
+                                    fetchPriority="high"
+                                    decoding="async"
+                                    className={isImageLoading ? 'is-loading' : 'is-loaded'}
+                                    style={zoomTransform || undefined}
+                                    onLoad={() => setIsImageLoading(false)}
+                                    onError={() => setIsImageLoading(false)}
+                                />
+                            )}
                         </div>
                         {product.notes && product.notes.length > 0 && (
                             <div className="pd-notes">

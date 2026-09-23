@@ -6145,20 +6145,104 @@ button {
   align-items: flex-start;
 }
 
+.pd-thumbs-rail {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  align-self: stretch;
+}
+
 .pd-thumbnails-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
-  max-height: 420px;
+  max-height: 520px;
   overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 2px;
+}
+
+.pd-thumbnails-col::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Fade hints so a long list reads as "more below/above" instead of a hard cut */
+.pd-thumbs-rail::before,
+.pd-thumbs-rail::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+  z-index: 1;
+}
+
+.pd-thumbs-rail::before {
+  top: 24px;
+  background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0));
+}
+
+.pd-thumbs-rail::after {
+  bottom: 24px;
+  background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0));
+}
+
+.pd-thumbs-rail.can-scroll-start::before,
+.pd-thumbs-rail.can-scroll-end::after {
+  opacity: 1;
+}
+
+.pd-thumbs-nav {
+  width: 72px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.pd-thumbs-nav span {
+  transform: rotate(90deg);
+}
+
+.pd-thumbs-nav:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: var(--primary-red);
+}
+
+.pd-thumbs-nav:disabled {
+  opacity: 0;
+  visibility: hidden;
+  cursor: default;
 }
 
 .pd-thumb {
-  width: 72px;
-  height: 72px;
-  min-width: 72px;
-  border: 2px solid #eee;
+  width: 68px;
+  height: 68px;
+  min-width: 68px;
+  min-height: 68px;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
@@ -6168,10 +6252,40 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.pd-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #d4d7dc;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+
+.pd-thumb:hover::after,
+.pd-thumb.previewing::after {
+  opacity: 0.45;
+}
+
+.pd-thumb:hover {
+  border-color: #c9ccd1;
+}
+
+.pd-thumb.previewing {
+  border-color: var(--primary-red);
+}
+
+.pd-thumb.previewing img {
+  transform: scale(1.08);
 }
 
 .pd-thumb.active {
   border-color: var(--primary-red);
+  box-shadow: 0 0 0 1px var(--primary-red);
 }
 
 .pd-thumb:focus-visible {
@@ -6183,6 +6297,7 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pd-main-col {
@@ -6223,6 +6338,26 @@ button {
 .pd-main-image:focus-visible {
   outline: 2px solid var(--primary-red);
   outline-offset: 3px;
+}
+
+.pd-main-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pd-main-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-main-track {
+    transition: none;
+  }
 }
 
 .pd-main-image img {
@@ -6269,6 +6404,7 @@ button {
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 3;
   width: 30px;
   height: 30px;
   margin-top: -15px;
@@ -7161,13 +7297,49 @@ button {
     align-items: center;
   }
 
+  .pd-thumbs-rail {
+    flex-direction: row;
+    width: min(100%, 520px);
+    align-self: auto;
+  }
+
   .pd-thumbnails-col {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     max-height: none;
-    overflow: visible;
-    justify-content: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
     width: 100%;
+  }
+
+  .pd-thumbs-rail::before,
+  .pd-thumbs-rail::after {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: auto;
+    height: auto;
+    width: 28px;
+  }
+
+  .pd-thumbs-rail::before {
+    left: 24px;
+    background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+  }
+
+  .pd-thumbs-rail::after {
+    right: 24px;
+    background: linear-gradient(to left, #fff, rgba(255, 255, 255, 0));
+  }
+
+  .pd-thumbs-nav {
+    width: 22px;
+    height: 68px;
+  }
+
+  .pd-thumbs-nav span {
+    transform: none;
   }
 
   .pd-main-col {
