@@ -14,6 +14,7 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Checkout = lazy(() => import('./pages/Checkout'));
+const PaymentCallback = lazy(() => import('./pages/PaymentCallback'));
 const OrderDetails = lazy(() => import('./pages/OrderDetails'));
 const Category = lazy(() => import('./pages/Category'));
 const Brand = lazy(() => import('./pages/Brand'));
@@ -89,6 +90,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/payment/callback" element={<PaymentCallback />} />
               <Route path="/order/:id" element={<OrderDetails />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/orders" element={<MyOrders />} />

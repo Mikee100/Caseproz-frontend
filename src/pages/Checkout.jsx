@@ -49,6 +49,7 @@ const Checkout = () => {
     const [discountAmount, setDiscountAmount] = useState(0);
     const [discountMessage, setDiscountMessage] = useState('');
     const [applyingDiscount, setApplyingDiscount] = useState(false);
+    const [pendingOrderId, setPendingOrderId] = useState(() => sessionStorage.getItem('paystackPendingOrderId') || '');
 
     const deliveryGroups = config?.deliveryRouteGroups || [];
     const currentGroup = deliveryGroups.find(g => g.road === selectedRegion);
@@ -161,31 +162,45 @@ const Checkout = () => {
         };
 
         try {
-            const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+            let orderId = pendingOrderId;
+            if (!orderId) {
+                const order = await apiFetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData),
+                });
+                orderId = order._id;
+                sessionStorage.setItem('paystackPendingOrderId', orderId);
+                setPendingOrderId(orderId);
+            }
+
+            const payment = await apiFetch(`${import.meta.env.VITE_API_URL}/api/payments/paystack/initialize`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(orderData),
+                body: JSON.stringify({ orderId }),
             });
 
             clearCart();
-            const message = 'Order placed successfully! Redirecting to your order...';
-            setSuccess(message);
-            setTimeout(() => {
-                navigate(`/order/${data._id}`);
-            }, 1200);
+            window.location.assign(payment.authorizationUrl);
         } catch (err) {
             if (err instanceof ApiError) {
                 if (err.status === 401) {
                     setError('Your session has expired. Please log in again to place your order.');
+                } else if (err.status === 409 && err.message === 'This order has already been paid') {
+                    sessionStorage.removeItem('paystackPendingOrderId');
+                    setPendingOrderId('');
+                    setError('Your previous payment was confirmed. Click Pay with Paystack again to create payment for this cart.');
                 } else if (err.status === 400) {
                     setError(err.message || 'Please review your details and try again.');
                 } else {
                     setError(err.message);
                 }
             } else {
-                setError('Something went wrong while placing your order. Please check your connection and try again.');
+                setError('Something went wrong while starting payment. Please check your connection and try again.');
             }
         } finally {
             setLoading(false);
@@ -235,9 +250,6 @@ const Checkout = () => {
     };
 
     if (!user || cart.length === 0) return null;
-
-    // Lipa na M-Pesa payment instructions
-    const showMpesaInstructions = paymentMethod === 'M-Pesa';
 
     return (
         <div className="checkout-page container" style={{ padding: '60px 0' }}>
@@ -543,7 +555,7 @@ const Checkout = () => {
                                 opacity: loading ? 0.7 : 1
                             }}
                         >
-                            {loading ? 'PLACING ORDER...' : 'PLACE ORDER'}
+                            {loading ? 'STARTING PAYMENT...' : pendingOrderId ? 'RETRY PAYMENT' : 'PAY WITH PAYSTACK'}
                         </button>
                     </div>
                 </div>

@@ -12,6 +12,7 @@ const OrderDetails = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const [order, setOrder] = useState(null);
+    const [payment, setPayment] = useState(null);
     const [loading, setLoading] = useState(true);
     const [deliverLoading, setDeliverLoading] = useState(false);
     const [error, setError] = useState('');
@@ -27,6 +28,8 @@ const OrderDetails = () => {
                     credentials: 'include',
                 });
                 setOrder(data);
+                const paymentData = await apiFetch(`${import.meta.env.VITE_API_URL}/api/payments/order/${id}`);
+                setPayment(paymentData.payment);
             } catch (err) {
                 if (err instanceof ApiError) {
                     if (err.status === 404) {
@@ -124,6 +127,7 @@ const OrderDetails = () => {
         order.fulfillmentMethod === 'pickup' ||
         order?.shippingAddress?.isPickup ||
         order?.shippingAddress?.region === 'PICKUP';
+    const paymentStatusLabel = payment?.status ? payment.status.charAt(0) + payment.status.slice(1).toLowerCase() : null;
 
     return (
         <div className="order-details-page container" style={{ padding: '60px 0' }}>
@@ -543,6 +547,32 @@ const OrderDetails = () => {
                                 </span>
                             </p>
                         </div>
+
+                        {payment && (
+                            <div
+                                style={{
+                                    marginTop: '14px',
+                                    padding: '12px 14px',
+                                    border: '1px solid #bbf7d0',
+                                    backgroundColor: '#f0fdf4',
+                                    borderRadius: '10px',
+                                    fontSize: '13px',
+                                }}
+                            >
+                                <p style={{ margin: '0 0 8px', fontWeight: 700, color: '#166534' }}>
+                                    <i className="fas fa-check-circle" style={{ marginRight: '6px' }}></i>
+                                    Payment details
+                                </p>
+                                <div style={{ display: 'grid', gap: '5px', color: '#374151' }}>
+                                    <span><strong>Status:</strong> {paymentStatusLabel}</span>
+                                    <span><strong>Provider:</strong> Paystack{payment.channel ? ` (${payment.channel})` : ''}</span>
+                                    <span><strong>Reference:</strong> {payment.reference}</span>
+                                    <span><strong>Amount paid:</strong> {payment.currency} {payment.amount.toLocaleString()}</span>
+                                    {payment.receiptNumber && <span><strong>Receipt:</strong> {payment.receiptNumber}</span>}
+                                    {payment.paidAt && <span><strong>Paid on:</strong> {new Date(payment.paidAt).toLocaleString()}</span>}
+                                </div>
+                            </div>
+                        )}
 
                         {user && user.isAdmin && !order.isDelivered && (
                             <button
