@@ -1,6 +1,9 @@
 const SESSION_KEY = 'caseproz_session_id';
 
 export const GOOGLE_ADS_ID = 'AW-18230898154';
+export const GOOGLE_ADS_CONVERSION_LABELS = {
+    getDirections: 'NC9PCOny4YsdEOrblfVD',
+};
 export const PENDING_PURCHASE_KEY = 'caseprozPendingPurchase';
 
 const gtagSafe = (...args) => {
