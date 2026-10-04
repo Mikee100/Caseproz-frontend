@@ -1,5 +1,37 @@
 const SESSION_KEY = 'caseproz_session_id';
 
+export const GOOGLE_ADS_ID = 'AW-18230898154';
+export const PENDING_PURCHASE_KEY = 'caseprozPendingPurchase';
+
+const gtagSafe = (...args) => {
+    if (typeof window === 'undefined' || typeof window.gtag !== 'function') return false;
+    window.gtag(...args);
+    return true;
+};
+
+// Standard GA4/Ads ecommerce event; no-ops if gtag.js hasn't loaded (blocked, SSR, prerender).
+export const trackGtagEvent = (eventName, params = {}) => {
+    if (!eventName) return;
+    gtagSafe('event', eventName, params);
+};
+
+export const trackAdsConversion = (label, params = {}) => {
+    if (!label) return;
+    gtagSafe('event', 'conversion', {
+        send_to: `${GOOGLE_ADS_ID}/${label}`,
+        ...params,
+    });
+};
+
+export const toGtagItems = (cartItems = []) =>
+    cartItems.map((item) => ({
+        item_id: item.variantSku || item._id,
+        item_name: item.name,
+        item_variant: item.variantLabel || undefined,
+        price: Number(item.price) || 0,
+        quantity: item.quantity || 1,
+    }));
+
 const getSessionId = () => {
     let id = localStorage.getItem(SESSION_KEY);
     if (!id) {

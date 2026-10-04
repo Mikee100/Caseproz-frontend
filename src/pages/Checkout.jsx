@@ -7,6 +7,7 @@ import { useSiteConfig } from '../context/SiteConfigContext';
 import { apiFetch, ApiError } from '../utils/apiClient';
 import ErrorBanner from '../components/ErrorBanner';
 import { BUSINESS_LOCATION, SITE_NAME } from '../utils/seo';
+import { trackGtagEvent, toGtagItems, PENDING_PURCHASE_KEY } from '../utils/analytics';
 
 const PICKUP_LOCATION_LABEL = `${SITE_NAME} Shop, ${BUSINESS_LOCATION.streetAddress}`;
 const PICKUP_DEFAULTS = {
@@ -86,6 +87,17 @@ const Checkout = () => {
             navigate('/');
         }
     }, [user, navigate, cart]);
+
+    useEffect(() => {
+        if (cart.length === 0) return;
+        trackGtagEvent('begin_checkout', {
+            currency: 'KES',
+            value: cartTotal,
+            items: toGtagItems(cart),
+        });
+        // Fire once per checkout visit, not on every cart/price tweak.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
@@ -183,6 +195,13 @@ const Checkout = () => {
                 },
                 body: JSON.stringify({ orderId }),
             });
+
+            sessionStorage.setItem(PENDING_PURCHASE_KEY, JSON.stringify({
+                orderId,
+                value: totalPrice,
+                currency: 'KES',
+                items: toGtagItems(cart),
+            }));
 
             clearCart();
             window.location.assign(payment.authorizationUrl);

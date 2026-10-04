@@ -2,6 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ApiError, apiFetch } from '../utils/apiClient';
 import LoadingState from '../components/LoadingState';
+import { trackGtagEvent, PENDING_PURCHASE_KEY } from '../utils/analytics';
+
+const TRACKED_PURCHASES_KEY = 'caseprozTrackedPurchases';
+
+const readJson = (storage, key, fallback) => {
+    try {
+        const raw = storage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch {
+        return fallback;
+    }
+};
+
+// Paystack can redirect here more than once, so a confirmed order is only counted on its first view.
+const trackPurchaseOnce = (reference, payment) => {
+    const tracked = readJson(localStorage, TRACKED_PURCHASES_KEY, []);
+    if (!Array.isArray(tracked) || tracked.includes(reference)) return;
+
+    const pending = readJson(sessionStorage, PENDING_PURCHASE_KEY, {}) || {};
+
+    const value = Number(pending.value) || 0;
+    const currency = pending.currency || 'KES';
+    const transactionId = payment.orderId || reference;
+
+    trackGtagEvent('purchase', {
+        transaction_id: transactionId,
+        value,
+        currency,
+        items: Array.isArray(pending.items) ? pending.items : [],
+    });
+
+    localStorage.setItem(TRACKED_PURCHASES_KEY, JSON.stringify([...tracked, reference].slice(-20)));
+    sessionStorage.removeItem(PENDING_PURCHASE_KEY);
+};
 
 const PaymentCallback = () => {
     const [searchParams] = useSearchParams();
@@ -19,7 +53,10 @@ const PaymentCallback = () => {
                 const data = await apiFetch(`${import.meta.env.VITE_API_URL}/api/payments/paystack/${encodeURIComponent(reference)}`);
                 if (!active) return;
                 setPayment(data);
-                if (data.status === 'SUCCESS') sessionStorage.removeItem('paystackPendingOrderId');
+                if (data.status === 'SUCCESS') {
+                    sessionStorage.removeItem('paystackPendingOrderId');
+                    trackPurchaseOnce(reference, data);
+                }
             } catch (requestError) {
                 if (!active) return;
                 setError(requestError instanceof ApiError ? requestError.message : 'Unable to confirm your payment.');
