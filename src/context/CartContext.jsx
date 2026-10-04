@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { apiFetch } from '../utils/apiClient';
+import { trackGtagEvent } from '../utils/analytics';
 
 const CartContext = createContext();
 const MAX_PER_ITEM = 10;
@@ -106,6 +107,19 @@ export const CartProvider = ({ children }) => {
 
             const initialQty = Math.min(safeIncomingQty, Math.min(maxAllowedFromStock, MAX_PER_ITEM));
             return [...prevCart, { ...product, ...variantPayload, quantity: initialQty }];
+        });
+
+        const unitPrice = Number(variantPayload.price ?? product.price) || 0;
+        trackGtagEvent('add_to_cart', {
+            currency: 'KES',
+            value: unitPrice * safeIncomingQty,
+            items: [{
+                item_id: variantPayload.variantSku || product._id,
+                item_name: product.name,
+                item_variant: variantPayload.variantLabel || undefined,
+                price: unitPrice,
+                quantity: safeIncomingQty,
+            }],
         });
     };
 
