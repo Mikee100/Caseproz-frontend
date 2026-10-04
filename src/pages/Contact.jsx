@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Navigation } from 'lucide-react';
 import { apiFetch } from '../utils/apiClient';
+import { trackAdsConversion, GOOGLE_ADS_CONVERSION_LABELS } from '../utils/analytics';
 import {
     buildLocalBusinessSchema,
     BUSINESS_HOURS,
@@ -10,6 +12,11 @@ import {
     SITE_URL,
     SUPPORT_EMAIL,
 } from '../utils/seo';
+
+const directionsUrl = `https://www.google.com/maps/dir/?${new URLSearchParams({
+    api: '1',
+    destination: `${BUSINESS_LOCATION.streetAddress}, ${BUSINESS_LOCATION.city}, Kenya`,
+})}`;
 
 const Contact = () => {
     const [form, setForm] = useState({
@@ -192,6 +199,18 @@ const Contact = () => {
                                 <h3>Location</h3>
                                 <p>{BUSINESS_LOCATION.city}</p>
                                 <p>{BUSINESS_LOCATION.streetAddress}</p>
+                                <p>
+                                    <a
+                                        className="contact-directions-link"
+                                        href={directionsUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => trackAdsConversion(GOOGLE_ADS_CONVERSION_LABELS.getDirections)}
+                                    >
+                                        <Navigation size={20} aria-hidden="true" />
+                                        Get directions
+                                    </a>
+                                </p>
                             </li>
                         </ul>
                         <p className="contact-note">
