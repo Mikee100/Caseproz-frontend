@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import AdminRoute from './components/AdminRoute'
 import RouteSeo from './components/RouteSeo'
 import LoadingState from './components/LoadingState'
+import AnalyticsTracker from './components/AnalyticsTracker'
 
 const Home = lazy(() => import('./pages/Home'));
 const Cart = lazy(() => import('./pages/Cart'));
@@ -48,6 +49,7 @@ const HomeSections = lazy(() => import('./pages/Admin/HomeSections'));
 const DeliveryRoutes = lazy(() => import('./pages/Admin/DeliveryRoutes'));
 const MerchandisingDiagnostics = lazy(() => import('./pages/Admin/MerchandisingDiagnostics'));
 const AuditLog = lazy(() => import('./pages/Admin/AuditLog'));
+const AdminAnalytics = lazy(() => import('./pages/Admin/AdminAnalytics'));
 
 function RouteFallback() {
   return <LoadingState message="Loading page..." compact />;
@@ -73,6 +75,7 @@ function App() {
   return (
     <ErrorBoundary>
       <div className={`app ${isAuthRoute ? 'auth-layout' : ''} ${isAdminRoute ? 'admin-layout' : ''}`}>
+        <AnalyticsTracker />
         <RouteSeo />
         {!isAdminRoute && !isAuthRoute && (
           <Header isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
@@ -107,6 +110,7 @@ function App() {
               <Route path="/admin" element={<AdminRoute />}>
                 <Route element={<AdminLayout />}>
                   <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
                   <Route path="health" element={<Health />} />
                   <Route path="orderlist" element={<OrderList />} />
                   <Route path="order/:id" element={<OrderDetailsAdmin />} />
