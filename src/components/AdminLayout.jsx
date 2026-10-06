@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const adminLinks = [
     { to: '/admin/dashboard', icon: 'fas fa-chart-line', label: 'Dashboard' },
+    { to: '/admin/analytics', icon: 'fas fa-chart-area', label: 'Analytics' },
     { to: '/admin/health', icon: 'fas fa-heartbeat', label: 'System Health' },
     { to: '/admin/productlist', icon: 'fas fa-box', label: 'Products' },
     { to: '/admin/orderlist', icon: 'fas fa-shopping-cart', label: 'Orders' },
