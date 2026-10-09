@@ -297,7 +297,9 @@ export const buildProductSeo = (product, slugFallback = '') => {
 
 export const buildCategorySeo = (categoryName) => {
     const formattedTitle =
-        categoryName.charAt(0).toUpperCase() + categoryName.slice(1).replace(/-/g, ' ');
+        categoryName === 'power-solar'
+            ? 'Power & Solar'
+            : categoryName.charAt(0).toUpperCase() + categoryName.slice(1).replace(/-/g, ' ');
 
     const title = `${formattedTitle} | CaseProz Kenya`;
     const description = `Browse ${formattedTitle} at CaseProz – curated tech, accessories and gadgets in Kenya.`;
