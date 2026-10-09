@@ -202,6 +202,7 @@ const Search = () => {
     const categoryParam = queryParams.get('category') || '';
     const subCategoryParam = queryParams.get('subCategory') || '';
     const brandParam = queryParams.get('brand') || '';
+    const collectionParam = queryParams.get('collection') === 'anker-soundcore' ? 'anker-soundcore' : '';
     const minPriceParam = queryParams.get('minPrice') || '';
     const maxPriceParam = queryParams.get('maxPrice') || '';
     const sortParamFromUrl = queryParams.get('sort') || '';
@@ -400,6 +401,7 @@ const Search = () => {
             !!activeCategory ||
             !!activeSubCategory ||
             !!activeBrand ||
+            !!collectionParam ||
             priceRange.min !== '' ||
             priceRange.max !== '' ||
             !!sortParamFromUrl;
@@ -427,6 +429,11 @@ const Search = () => {
                 }
                 params.append('page', String(page));
                 params.append('pageSize', '12');
+                params.append('isActive', 'true');
+
+                if (collectionParam) {
+                    params.append('collection', collectionParam);
+                }
 
                 if (activeCategory) {
                     params.append('category', activeCategory);
@@ -504,6 +511,7 @@ const Search = () => {
         subCategoryParam,
         selectedBrand,
         brandParam,
+        collectionParam,
         sortParamFromUrl,
     ]);
 
@@ -682,6 +690,7 @@ const Search = () => {
         !!categoryParam ||
         !!subCategoryParam ||
         !!brandParam ||
+        !!collectionParam ||
         !!minPriceParam ||
         !!maxPriceParam ||
         !!sortParamFromUrl;
@@ -808,6 +817,9 @@ const Search = () => {
     } else if (brandParam) {
         pageTitle = `Shop ${brandParam} products | CaseProz Kenya`;
         metaDescription = `Discover ${brandParam} products at CaseProz – premium tech, power and accessories.`;
+    } else if (collectionParam) {
+        pageTitle = 'Anker & Soundcore Collection | CaseProz Kenya';
+        metaDescription = 'Shop Anker and Soundcore charging, audio and everyday tech products at CaseProz Kenya.';
     }
 
     const searchListSchema = {
@@ -860,6 +872,8 @@ const Search = () => {
                                     Browsing brand{' '}
                                     <span className="highlight">"{brandParam}"</span>
                                 </>
+                            ) : collectionParam ? (
+                                'Anker & Soundcore Collection'
                             ) : (
                                 'Discover our collection'
                             )}

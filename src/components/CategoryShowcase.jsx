@@ -5,7 +5,14 @@ import { Link } from 'react-router-dom';
 import { apiFetch } from '../utils/apiClient';
 import { useSiteConfig } from '../context/SiteConfigContext';
 
-const DEFAULT_TOP_CATEGORIES = ['Anker', 'Soundcore', 'Power Banks', 'Audio & Headphones'];
+const DEFAULT_TOP_CATEGORIES = [
+    'iPhone Cases',
+    // 'Samsung Cases',
+    'Anker',
+    'Soundcore',
+    'Power Banks',
+    'Audio & Headphones',
+];
 
 const PRESET_CATEGORY_DEFINITIONS = {
     iphonecases: {
@@ -24,9 +31,13 @@ const PRESET_CATEGORY_DEFINITIONS = {
         path: '/search?q=phones%20tablets',
         terms: ['phones & tablets', 'phones and tablets', 'tablet', 'phone'],
     },
-    samsungcases: {
-        path: '/search?q=samsung%20case',
-        terms: ['samsung case', 'samsung cases', 'galaxy case'],
+    // samsungcases: {
+    //     path: '/category/samsung-cases',
+    //     terms: ['samsung case', 'samsung cases', 'galaxy case'],
+    // },
+    casestyles: {
+        path: '/category/case-styles',
+        terms: ['case styles', 'silicone case', 'clear case', 'magsafe case', 'leather case', 'wallet case'],
     },
     anker: {
         path: '/search?q=anker',
@@ -48,14 +59,6 @@ const normalizeCategoryToken = (value = '') =>
         .replace(/&/g, 'and')
         .replace(/[^a-z0-9]+/g, '');
 
-const EXCLUDED_TOP_CATEGORY_TOKENS = new Set([
-    'iphonecases',
-    'samsungcases',
-    'phonesandtablets',
-]);
-
-const CASE_CATEGORY_TERMS = ['case', 'cases', 'iphone', 'samsung', 'phone cover'];
-
 const buildConfiguredCards = (configuredNames = []) =>
     configuredNames.map((rawName) => {
         const name = String(rawName || '').trim();
@@ -74,11 +77,7 @@ const buildConfiguredCards = (configuredNames = []) =>
                     .split(/\s+/)
                     .filter(Boolean),
         };
-    }).filter((card) => {
-        if (EXCLUDED_TOP_CATEGORY_TOKENS.has(card.key)) return false;
-        const normalizedName = String(card.name || '').toLowerCase();
-        return !CASE_CATEGORY_TERMS.some((term) => normalizedName.includes(term));
-    });
+    }).filter((card) => !/\b(samsung|galaxy)\b/i.test(card.name));
 
 const buildProductHaystack = (product) => {
     const name = String(product?.name || '').toLowerCase();

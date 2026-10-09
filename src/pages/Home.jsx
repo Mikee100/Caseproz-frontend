@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import ProductCard from '../components/ProductCard';
+import CategoryShowcase from '../components/CategoryShowcase';
 import SkeletonProduct from '../components/SkeletonProduct';
 import ErrorBanner from '../components/ErrorBanner';
 import { apiFetch, ApiError } from '../utils/apiClient';
@@ -21,7 +22,7 @@ import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { useAuth } from '../context/AuthContext';
 
-const SHOW_PHONE_CASES = false;
+const SHOW_PHONE_CASES = true;
 const NEWEST_PAGE_SIZE = 16;
 const FEATURED_PAGE_SIZE = 24;
 const ON_SALE_PAGE_SIZE = 24;
@@ -303,7 +304,9 @@ const Home = () => {
     }, [activeMerchPool]);
 
     const newArrivalsProducts = useMemo(() => {
-        const filtered = activeMerchPool.filter((p) => isAnkerProduct(p) || isSoundcoreProduct(p));
+        const filtered = activeMerchPool.filter((p) =>
+            isAnkerProduct(p) || isSoundcoreProduct(p) || (SHOW_PHONE_CASES && isCaseProduct(p))
+        );
         if (filtered.length === 0) return [];
 
         return [...filtered]
@@ -322,7 +325,7 @@ const Home = () => {
         const featuredFocus = featuredProducts.filter((p) => {
             if (!p) return false;
             if (!SHOW_PHONE_CASES && isCaseProduct(p)) return false;
-            return isAnkerProduct(p) || isSoundcoreProduct(p);
+            return isAnkerProduct(p) || isSoundcoreProduct(p) || (SHOW_PHONE_CASES && isCaseProduct(p));
         });
 
         if (featuredFocus.length > 0) {
@@ -810,7 +813,7 @@ const Home = () => {
 
                                 <div className="home-new-arrivals-footer">
                                     <Link
-                                        to="/search"
+                                        to="/search?sort=newest"
                                         className="home-new-arrivals-view-all"
                                         onClick={() => trackHomeClick('home_new_arrivals_view_all_click', 'new_arrivals', 'view_all_new_arrivals')}
                                     >
@@ -948,6 +951,7 @@ const Home = () => {
 
             {showBelowFoldSections && (
                 <>
+            <CategoryShowcase products={activeMerchPool} />
             <section className="home-brand-hero container" aria-label="Shop by brand">
                 <div className="section-header">
                     <div className="title-area">
@@ -1072,7 +1076,7 @@ const Home = () => {
                         Shop dependable charging, immersive audio and practical electronics for home,
                         office and travel.
                     </p>
-                    <Link to="/search" className="home-primary-cta">
+                    <Link to="/search?collection=anker-soundcore&sort=newest" className="home-primary-cta">
                         Explore Collection
                     </Link>
                 </div>

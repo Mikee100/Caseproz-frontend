@@ -45,6 +45,9 @@ const SHOP_MEGA_SECTIONS = [
     {
         title: 'Shop by Category',
         items: [
+            { label: 'iPhone Cases', path: '/category/iphone-cases' },
+            // { label: 'Samsung Cases', path: '/category/samsung-cases' },
+            { label: 'Case Styles', path: '/category/case-styles' },
             { label: 'Audio Products', path: '/category/audio-headphones' },
             { label: 'Power Products', path: '/category/power-solar' },
             { label: 'Charging Products', path: '/category/accessories' },
