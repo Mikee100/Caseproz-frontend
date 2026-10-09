@@ -192,10 +192,12 @@ const Category = () => {
                 </div>
             ) : (
                 <>
-                    <div className="product-grid">
-                        {products.map((product) => (
-                            <ProductCard key={product._id} product={product} />
-                        ))}
+                    <div className="home-page caseproz-premium-home">
+                        <div className="product-grid">
+                            {products.map((product) => (
+                                <ProductCard key={product._id} product={product} />
+                            ))}
+                        </div>
                     </div>
                     {hasMore && (
                         <div style={{ textAlign: 'center', marginTop: '24px' }}>
